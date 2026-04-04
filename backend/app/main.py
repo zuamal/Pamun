@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.documents import router as documents_router
 from app.api.edges import router as edges_router
+from app.api.impact import router as impact_router
 from app.api.parse import router as parse_router
 from app.api.requirements import router as requirements_router
 
@@ -47,6 +48,7 @@ app.include_router(documents_router)
 app.include_router(parse_router)
 app.include_router(requirements_router)
 app.include_router(edges_router)
+app.include_router(impact_router)
 
 
 @app.get("/health", tags=["Health"])
