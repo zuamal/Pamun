@@ -1,0 +1,659 @@
+# Pamun — Architecture Decision Record
+
+**Requirements Dependency Tracker & Change Impact Analyzer**
+
+| Field   | Value         |
+|---------|---------------|
+| Version | 1.0           |
+| Date    | 2026-03-30    |
+| Status  | Accepted      |
+
+---
+
+## Decisions Summary
+
+| ID | Decision | Choice |
+|----|----------|--------|
+| ADR-1 | 모노레포 구조 | 단순 폴더 분리 (backend/ + frontend/) |
+| ADR-2 | 의존성 방향 및 타입 계약 | Backend-first. Pydantic = SSoT → OpenAPI → openapi-typescript |
+| ADR-3 | 백엔드 저장소 | 인메모리 (dict + networkx) + JSON 파일 영속화 |
+| ADR-4 | 프론트엔드 상태 관리 | Zustand |
+| ADR-5 | 요구사항 위치 표현 | char offset (SSoT) + display_label (UI 보조) |
+| ADR-6 | Edge 방향성 모델링 | relation_type에서 암묵적 결정 |
+| ADR-7 | Scenario 모델 | 불필요. changed 플래그로 대체 |
+| ADR-8 | API 설계 (파싱/추론) | 분리: /parse → 검토 → /edges/infer |
+| ADR-9 | API 설계 (영향 분석) | 플래그 설정과 분석 분리 |
+| ADR-10 | LLM Structured Output | Instructor 라이브러리 (Pydantic 스키마 직접 사용) |
+| ADR-11 | LLM 공급자 | Anthropic Claude (claude-sonnet-4-5) |
+| ADR-12 | 문서 텍스트 추출 | python-docx + pdfplumber + markdown 파싱. Scanned PDF 미지원. |
+| ADR-13 | LLM 장시간 작업 처리 | 동기 HTTP + 타임아웃 120초. 프론트엔드 로딩 상태로 처리. |
+| ADR-14 | 그래프 시각화 라이브러리 | React Flow |
+| ADR-15 | 원문 뷰어 | plain text 렌더링 + char offset 기반 하이라이트 |
+
+---
+
+## ADR-1. 모노레포 구조
+
+**Context:** Pamun은 FastAPI 백엔드와 React 프론트엔드로 구성된다. 코드를 하나의 레포에서 관리하되 패키지 구조를 결정해야 한다.
+
+**Decision:** 단순 폴더 분리. backend/와 frontend/를 독립된 환경으로 운영하고, shared 레이어 없이 OpenAPI 스펙으로 타입을 동기화한다.
+
+**Rationale:** OpenAPI → TS 코드 생성 파이프라인을 사용하면 shared 폴더가 불필요해진다. npm workspaces나 Turborepo는 Python 백엔드와 통합되지 않아 반쪽 모노레포가 되며, 문서 3–5개 규모에서 빌드 캐싱은 의미 없다.
+
+**Alternatives:**
+- npm workspaces + pip 독립: TS 타입 패키지 공유 가능하지만 Python 측과 불일치. 설정 복잡도 증가.
+- Turborepo/Nx: 빌드 오케스트레이션 제공하지만 포트폴리오 규모에 과도한 인프라.
+
+**Project structure:**
+
+```
+pamun/
+├── docs/
+│   ├── Pamun_ADR_v1.md
+│   └── Pamun_PRD_v1.md
+├── backend/          # FastAPI + Python
+│   ├── app/
+│   │   ├── models/     # Pydantic models (SSoT)
+│   │   ├── api/        # Route handlers
+│   │   ├── services/   # Business logic
+│   │   ├── llm/        # LLM pipeline (Instructor)
+│   │   └── storage/    # In-memory + JSON persistence
+│   ├── pyproject.toml
+│   └── requirements.txt
+├── frontend/         # React + Vite + TypeScript
+│   ├── src/
+│   │   ├── api/        # Generated types + manual fetch calls
+│   │   ├── stores/     # Zustand stores
+│   │   ├── components/ # React components
+│   │   └── pages/      # Page-level views
+│   ├── package.json
+│   └── tsconfig.json
+├── scripts/
+│   └── generate-types.sh  # openapi-typescript pipeline
+└── README.md
+```
+
+---
+
+## ADR-2. 의존성 방향 및 프론트-백 타입 계약
+
+**Context:** Backend의 Pydantic 모델과 Frontend의 TypeScript 타입을 동기화하는 전략이 필요하다.
+
+**Decision:** Backend-first. Pydantic 모델이 Single Source of Truth. FastAPI가 OpenAPI spec을 자동 생성하고, openapi-typescript로 TS 타입만 추출한다. API 호출은 직접 작성한다.
+
+**Rationale:** LLM 파이프라인과 Instructor 라이브러리가 백엔드에 있으므로 스키마 주도권이 백엔드에 있는 것이 자연스럽다. openapi-typescript는 타입만 생성하여 블랙박스 코드 없이 투명하게 유지된다.
+
+**Alternatives:**
+- openapi-fetch: 타입 안전 fetch wrapper 제공하지만 추가 의존성. 포트폴리오에서는 직접 작성이 코드 이해도를 보여준다.
+- orval / openapi-generator: React Query 훅까지 자동 생성하지만 블랙박스 코드로 디버깅 까다로움.
+
+**Type generation pipeline:**
+
+```bash
+# scripts/generate-types.sh
+#!/bin/bash
+set -e
+
+# 1. Extract OpenAPI spec from FastAPI
+cd backend && python -c "
+  from app.main import app
+  import json
+  spec = app.openapi()
+  with open('../frontend/src/api/openapi.json', 'w') as f:
+    json.dump(spec, f, indent=2)
+"
+
+# 2. Generate TS types
+cd ../frontend
+npx openapi-typescript src/api/openapi.json -o src/api/types.generated.ts
+
+echo "Types generated successfully"
+```
+
+---
+
+## ADR-3. 백엔드 저장소
+
+**Context:** PM이 작업한 문서, 요구사항, 그래프, 승인 상태를 저장해야 한다.
+
+**Decision:** 인메모리(Python dict + networkx)로 상태를 관리하고, 세션 단위로 JSON 파일에 영속화한다.
+
+**Rationale:** 포트폴리오 프로젝트로서 DB 설정 없이 바로 실행 가능해야 한다. networkx는 그래프 탐색(1-hop 영향 분석)에 최적화된 라이브러리다. 1인 사용 시나리오에서 동시성 문제는 발생하지 않는다.
+
+**Alternatives:**
+- SQLite: 파일 하나로 영속성 확보하지만 그래프 데이터를 관계형 DB에 넣으면 쿼리가 어색해진다. ORM 설정 비용.
+- SQLite + networkx 혼합: 각 데이터에 적합한 저장소이지만 두 저장소 간 동기화가 필요해 복잡도 증가.
+
+---
+
+## ADR-4. 프론트엔드 상태 관리
+
+**Context:** 그래프 시각화, 요구사항 목록, 변경 플래그, 영향 분석 결과 등 복잡한 상태를 관리해야 한다.
+
+**Decision:** Zustand을 사용한다.
+
+**Rationale:** 그래프 시각화 라이브러리(D3, React Flow 등)와 상태를 공유해야 하는데, Zustand는 React 컴포넌트 밖에서도 store에 접근 가능하여 이 케이스에 적합하다. 1KB로 가벼우며 보일러플레이트가 최소화된다.
+
+**Alternatives:**
+- useState/useReducer: 의존성 없지만 prop drilling 발생. 그래프 라이브러리와의 상태 공유 어려움.
+- React Context + useReducer: 내장 기능만 사용하지만 리렌더링 최적화가 어려워 그래프 인터랙션에서 성능 문제 가능성.
+
+**State ownership:**
+
+| State | Backend | Frontend | Note |
+|-------|---------|----------|------|
+| 업로드된 문서 원문 | SSoT | — | 메모리 + 파일 |
+| 파싱된 요구사항 | SSoT | Cache | API로 동기화 |
+| 의존관계 (Edges) | SSoT | Cache | networkx 그래프 |
+| 변경 플래그 | SSoT | UI 반영 | PATCH로 설정 |
+| 영향 분석 결과 | 요청 시 계산 | 응답 표시 | 저장 안 함 |
+| 그래프 레이아웃/줌 | — | Zustand | 프론트 전용 |
+| UI 필터/선택 상태 | — | Zustand | 프론트 전용 |
+
+---
+
+## ADR-5. 요구사항 원문 위치 표현
+
+**Context:** 요구사항이 원본 문서의 어디에서 왔는지 추적해야 한다. jump-to-section 기능에 필요.
+
+**Decision:** 문자 오프셋(char_start, char_end)을 SSoT로 저장하고, UI 표시용으로 display_label(예: "2.1 로그인 기능", "3번째 문단")을 LLM 파싱 시 보조 필드로 함께 추출한다.
+
+**Rationale:** 문서를 plain text로 변환한 후 기계적으로 매핑 가능하여 신뢰성이 높다. 다만 char offset만으로는 사용자가 "왜 여기로 점프했지?"를 이해하기 어려울 수 있다. 특히 PDF/DOCX는 원본 렌더링과 plain text 추출 결과가 1:1로 맞지 않을 수 있다. display_label을 보조값으로 두어 SSoT(기술)와 UX(표시) 계층을 분리한다.
+
+**Alternatives:**
+- 구조적 경로만 (heading_path + paragraph_index): 사람이 읽기 쉬우나 헤더 없는 문서에서 의미 없음.
+- 둘 다 저장 (동등 지위): 용도별 선택 가능하지만 모델 복잡도 증가 및 불일치 위험.
+
+---
+
+## ADR-6. Edge 방향성 모델링
+
+**Context:** depends_on은 방향성이 있고 related_to는 양방향이다. 이를 모델에 어떻게 반영할지 결정해야 한다.
+
+**Decision:** relation_type에서 방향성을 암묵적으로 결정한다. depends_on이면 source→target 방향, related_to이면 양방향으로 처리.
+
+**Impact analysis policy (PRD FR-4.2와 동기화):**
+- `related_to`: 양방향 영향 — 한쪽이 변경되면 다른 쪽도 **영향받음**.
+- `depends_on` (target 변경 → source): source는 **영향받음**으로 하이라이트. (자연스러운 역방향)
+- `depends_on` (source 변경 → target): target은 **검토 권장**으로 하이라이트. (정방향은 약한 신호)
+
+**Rationale:** MVP에서 관계 유형이 2개뿐이고, 방향성은 유형에 내재된 속성이다. directed 필드를 별도로 두면 불일치 상태(depends_on인데 directed=false)가 가능해져 모델 무결성이 깨진다.
+
+**Alternatives:**
+- direction 필드 추가: 명시적이지만 중복 정보로 불일치 위험 발생.
+
+---
+
+## ADR-7. Scenario 모델 불필요
+
+**Context:** PM이 변경을 마킹할 때, 변경 묶음을 Scenario라는 별도 엔티티로 관리할지 결정해야 한다.
+
+**Decision:** Scenario 모델을 도입하지 않는다. Requirement 모델에 changed: bool 플래그만 두고, 영향 분석은 현재 플래그 상태를 기반으로 실시간 계산한다.
+
+**Rationale:** MVP에서 변경 시나리오 비교("이걸 바꾸면?" vs "저걸 바꾸면?") 기능이 없으므로 별도 모델이 불필요하다.
+
+**Alternatives:**
+- 변경 묶음 추적(Scenario): 여러 변경을 독립적으로 추적하고 비교 가능하지만 MVP 범위 초과.
+
+---
+
+## ADR-8. API 설계: 파싱과 추론 분리
+
+**Context:** LLM이 수행하는 파싱(요구사항 추출)과 추론(의존관계 발견)을 하나의 API로 합칠지, 분리할지 결정해야 한다.
+
+**Decision:** 분리한다. POST /api/parse → PM 검토 → POST /api/edges/infer 순서로 실행한다.
+
+**Rationale:** PRD User Flow Step 3(파싱 결과 검토)에서 PM이 요구사항을 분리/병합/삭제한 후에 추론을 실행해야 한다. 파싱이 틀린 상태에서 추론을 쌓으면 결과가 무의미하다.
+
+**Alternatives:**
+- 합체 (/api/analyze): 한 번에 끝나지만 PM 검토 기회가 없어 PRD 흐름과 불일치.
+
+---
+
+## ADR-9. API 설계: 영향 분석 플래그와 분석 분리
+
+**Context:** 변경 플래그 설정과 영향 분석 실행을 하나의 API로 합칠지 분리할지 결정해야 한다.
+
+**Decision:** 분리한다. PATCH /api/requirements/{id}로 changed 플래그를 설정하고, GET /api/impact로 현재 플래그 기반 영향 분석을 실행한다.
+
+**Rationale:** PM이 여러 노드에 플래그를 하나씩 설정한 뒤 한 번에 영향 분석을 실행하는 플로우를 지원한다. RESTful 원칙에 부합하며 각 API의 책임이 명확하다.
+
+**Alternatives:**
+- 플래그+분석 한 번에 (POST /api/impact): 프론트 호출이 간단하지만 단일 API에 역할이 과다.
+
+---
+
+## ADR-10. LLM Structured Output: Instructor 라이브러리
+
+**Context:** LLM으로부터 구조화된 출력(요구사항 목록, 의존관계 목록)을 안정적으로 받아야 한다.
+
+**Decision:** Instructor 라이브러리를 사용하여 Pydantic 모델을 LLM 출력 스키마로 직접 사용한다.
+
+**Rationale:** 프로젝트 전체가 "Pydantic = SSoT" 구조인데, LLM 출력도 같은 Pydantic 모델로 검증하면 스키마 일관성이 극대화된다. Instructor는 자동 retry + validation을 내장하여 파싱 에러를 최소화한다.
+
+**Alternatives:**
+- JSON mode: 대부분 LLM API 지원하지만 스키마 위반 가능성 있어 별도 validation 필요.
+- Function calling / Tool use: 스키마 준수율 높으나 API마다 인터페이스 달라 특정 LLM에 종속적.
+
+---
+
+## ADR-11. LLM 공급자
+
+**Context:** Instructor를 통해 structured output을 받을 LLM 공급자와 모델을 선택해야 한다.
+
+**Decision:** Anthropic Claude (`claude-sonnet-4-5`)를 사용한다. API 키는 `backend/.env`의 `ANTHROPIC_API_KEY`로 관리한다.
+
+**Rationale:** 포트폴리오 프로젝트로서 이 툴 자체가 Claude Code로 개발되고 있으므로 Anthropic 생태계와의 일관성이 높다. claude-sonnet-4-5는 structured output 품질과 속도의 균형이 적합하며, Instructor의 Anthropic 지원이 안정적이다.
+
+**Alternatives:**
+- OpenAI GPT-4o: Instructor 지원이 가장 성숙하지만 공급자 다변화 이점이 없음.
+- Anthropic claude-haiku: 빠르고 저렴하지만 복잡한 문서 파싱 품질이 낮을 수 있음.
+
+**Configuration:**
+
+```
+# backend/.env
+ANTHROPIC_API_KEY=sk-ant-...
+LLM_MODEL=claude-sonnet-4-5
+```
+
+---
+
+## ADR-12. 문서 텍스트 추출
+
+**Context:** Markdown, DOCX, PDF 세 포맷에서 plain text를 추출해야 한다. Scanned PDF 지원 여부도 결정해야 한다.
+
+**Decision:** 포맷별 전용 라이브러리를 사용한다: Markdown → `mistune`(HTML 태그 제거 후 plain text), DOCX → `python-docx`, PDF → `pdfplumber`. Scanned PDF(이미지 기반)는 MVP에서 지원하지 않는다.
+
+**Rationale:** 각 라이브러리는 해당 포맷에 특화되어 추출 품질이 높다. pdfplumber는 텍스트 기반 PDF에서 레이아웃을 고려한 추출이 가능하다. Scanned PDF OCR(Tesseract 등)은 의존성과 처리 시간이 크게 증가하여 MVP 범위를 초과한다.
+
+**Alternatives:**
+- `pypdf` (PDF): 경량이지만 복잡한 레이아웃에서 추출 품질 저하.
+- `mammoth` (DOCX): HTML 변환에 특화되어 plain text 추출 목적과 맞지 않음.
+- `unstructured`: 단일 라이브러리로 모든 포맷 처리 가능하지만 의존성이 매우 무거움.
+
+---
+
+## ADR-13. LLM 장시간 작업 처리
+
+**Context:** `/api/parse`와 `/api/edges/infer`는 LLM 호출로 수십 초가 걸릴 수 있다. 이를 어떻게 처리할지 결정해야 한다.
+
+**Decision:** 동기 HTTP 요청으로 처리한다. FastAPI의 `async def`와 `httpx`로 비동기 LLM 호출을 수행하되, HTTP 응답은 작업 완료 시 한 번에 반환한다. 클라이언트 타임아웃은 120초로 설정한다. 프론트엔드는 로딩 스피너로 처리한다.
+
+**Rationale:** 포트폴리오 데모 시나리오(문서 3–5개, 요구사항 최대 50개)에서 실제 소요 시간은 10–30초 수준으로 예상된다. SSE/polling은 구현 복잡도를 크게 높이는 반면 데모 UX 개선 효과가 제한적이다. 동기 방식이 코드 이해도가 높아 포트폴리오로서도 적합하다.
+
+**Alternatives:**
+- SSE (Server-Sent Events): 실시간 진행 상황 표시 가능하지만 프론트-백 양측 구현 복잡도 증가.
+- Polling (`/api/jobs/{id}`): 백그라운드 작업 큐 필요. MVP 범위 초과.
+- WebSocket: 양방향 통신이 필요 없는 이 케이스에 과도한 복잡성.
+
+---
+
+## ADR-14. 그래프 시각화 라이브러리
+
+**Context:** 요구사항 의존관계 그래프를 인터랙티브하게 시각화할 라이브러리를 선택해야 한다.
+
+**Decision:** `@xyflow/react` (React Flow)를 사용한다.
+
+**Rationale:** React + TypeScript 프로젝트에 가장 네이티브하게 통합된다. 노드/엣지 커스텀 컴포넌트를 React 컴포넌트로 작성할 수 있어 학습 곡선이 낮다. 노드 50개 규모에서 성능 문제가 없으며, 드래그·줌·패닝 인터랙션이 내장되어 있다. Zustand와 상태 공유도 자연스럽다.
+
+**Alternatives:**
+- D3.js: 표현력이 가장 높지만 React와의 통합이 어색하고 보일러플레이트가 많음.
+- Cytoscape.js: 그래프 알고리즘이 풍부하지만 React 바인딩이 비공식적이고 스타일링이 번거로움.
+- Vis.js: React 지원 미흡.
+
+---
+
+## ADR-15. 원문 뷰어
+
+**Context:** jump-to-section 기능에서 원문 문서를 어떻게 렌더링할지 결정해야 한다.
+
+**Decision:** plain text로 렌더링하고, char offset 기반으로 해당 요구사항 범위를 하이라이트한다. 별도의 원문 포맷 재현은 하지 않는다.
+
+**Rationale:** 모든 문서는 이미 backend에서 plain text로 변환되어 저장된다(ADR-3). 이를 그대로 표시하면 추가 처리 없이 char offset이 정확히 대응된다. 원본 포맷(Markdown 렌더링, DOCX 스타일)을 재현하려면 원본 파일을 frontend로 전달하거나 별도 렌더링 파이프라인이 필요해 MVP 범위를 초과한다.
+
+**Implementation:** `<pre>` 태그로 plain text를 표시하고, `char_start`–`char_end` 범위를 `<mark>` 또는 배경색으로 하이라이트한다. 해당 위치로 자동 스크롤.
+
+**Alternatives:**
+- Markdown 렌더링 (`react-markdown`): Markdown 문서에서는 가독성이 높지만 DOCX/PDF와 처리 방식이 달라져 일관성이 깨짐.
+- 원본 파일 직접 렌더링: 포맷별 뷰어 라이브러리 필요. MVP 범위 초과.
+
+---
+
+## Appendix A: Pydantic Schema Code
+
+All models below serve as the Single Source of Truth for the entire system. FastAPI uses these for request/response validation, OpenAPI spec generation, and Instructor uses them for LLM output validation.
+
+### A.1 Core Domain Models
+
+```python
+# backend/app/models/document.py
+
+from pydantic import BaseModel, Field
+from enum import Enum
+from datetime import datetime
+
+
+class DocumentFormat(str, Enum):
+    MARKDOWN = "markdown"
+    DOCX = "docx"
+    PDF = "pdf"
+
+
+class Document(BaseModel):
+    id: str = Field(description="Unique document ID (auto-generated)")
+    filename: str = Field(description="Original filename")
+    format: DocumentFormat
+    raw_text: str = Field(description="Plain text extracted from document")
+    uploaded_at: datetime = Field(default_factory=datetime.now)
+```
+
+```python
+# backend/app/models/requirement.py
+
+from pydantic import BaseModel, Field
+
+
+class RequirementLocation(BaseModel):
+    """Where this requirement exists in the source document."""
+    document_id: str
+    char_start: int = Field(ge=0, description="Start offset in plain text")
+    char_end: int = Field(ge=0, description="End offset in plain text")
+
+
+class Requirement(BaseModel):
+    id: str = Field(description="Unique requirement ID (auto-generated)")
+    title: str = Field(description="Summary title (LLM-generated, PM-editable)")
+    original_text: str = Field(description="Verbatim text from source document")
+    location: RequirementLocation
+    display_label: str = Field(
+        description="Human-readable location label for UI display "
+        "(e.g., '2.1 로그인 기능', '3번째 문단')"
+    )
+    changed: bool = Field(default=False, description="PM change flag")
+```
+
+```python
+# backend/app/models/edge.py
+
+from pydantic import BaseModel, Field
+from enum import Enum
+
+
+class RelationType(str, Enum):
+    DEPENDS_ON = "depends_on"    # Directed: source depends on target
+    RELATED_TO = "related_to"    # Undirected: mutual relation
+
+
+class EdgeStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class Edge(BaseModel):
+    id: str = Field(description="Unique edge ID (auto-generated)")
+    source_id: str = Field(description="Source requirement ID")
+    target_id: str = Field(description="Target requirement ID")
+    relation_type: RelationType
+    evidence: str = Field(description="Evidence sentence from source docs")
+    confidence: float = Field(
+        ge=0.0, le=1.0,
+        description="LLM confidence score (for review prioritization)"
+    )
+    status: EdgeStatus = Field(default=EdgeStatus.PENDING)
+```
+
+```python
+# backend/app/models/impact.py
+
+from pydantic import BaseModel, Field
+from enum import Enum
+from .edge import RelationType
+
+
+class ImpactLevel(str, Enum):
+    AFFECTED = "affected"              # 확정 영향 (역방향 depends_on, 양방향 related_to)
+    REVIEW_RECOMMENDED = "review_recommended"  # 검토 권장 (정방향 depends_on)
+
+
+class ImpactItem(BaseModel):
+    """A single affected requirement in impact analysis."""
+    requirement_id: str
+    requirement_title: str
+    document_id: str
+    document_filename: str
+    char_start: int
+    char_end: int
+    display_label: str
+    edge_id: str = Field(description="The edge that connects to changed node")
+    relation_type: RelationType
+    evidence: str
+    impact_level: ImpactLevel = Field(
+        description="'affected' for confirmed impact, "
+        "'review_recommended' for forward depends_on"
+    )
+
+
+class ImpactResult(BaseModel):
+    """Result of change impact analysis (1-hop)."""
+    changed_requirement_ids: list[str]
+    affected_items: list[ImpactItem] = Field(
+        description="Items with impact_level='affected'"
+    )
+    review_items: list[ImpactItem] = Field(
+        description="Items with impact_level='review_recommended'"
+    )
+    total_affected: int
+    total_review: int
+```
+
+### A.2 LLM Pipeline Schemas (Instructor)
+
+These models are used with Instructor to validate LLM structured output. They are separate from API response models to keep LLM concerns isolated.
+
+```python
+# backend/app/llm/schemas.py
+
+from pydantic import BaseModel, Field
+
+
+# ===== Task 1: Requirement Parsing =====
+
+class ParsedRequirement(BaseModel):
+    """Single requirement extracted by LLM."""
+    title: str = Field(description="Short summary title for this requirement")
+    original_text: str = Field(
+        description="Exact verbatim text from the document"
+    )
+    char_start: int = Field(
+        ge=0,
+        description="Character offset where this requirement starts"
+    )
+    char_end: int = Field(
+        ge=0,
+        description="Character offset where this requirement ends"
+    )
+    display_label: str = Field(
+        description="Human-readable location label "
+        "(e.g., heading text, 'paragraph N', section title)"
+    )
+
+
+class ParseResult(BaseModel):
+    """LLM output for document parsing."""
+    requirements: list[ParsedRequirement] = Field(
+        description="List of requirements extracted from the document"
+    )
+
+
+# ===== Task 2: Dependency Inference =====
+
+class InferredEdge(BaseModel):
+    """Single dependency inferred by LLM."""
+    source_index: int = Field(
+        description="Index of source requirement in the input list"
+    )
+    target_index: int = Field(
+        description="Index of target requirement in the input list"
+    )
+    relation_type: str = Field(
+        description="'depends_on' or 'related_to'"
+    )
+    evidence: str = Field(
+        description="Verbatim sentence from source docs supporting this edge"
+    )
+    confidence: float = Field(
+        ge=0.0, le=1.0,
+        description="How confident the model is in this connection"
+    )
+
+
+class InferenceResult(BaseModel):
+    """LLM output for dependency inference."""
+    edges: list[InferredEdge] = Field(
+        description="List of inferred dependencies between requirements"
+    )
+```
+
+### A.3 API Request/Response Models
+
+```python
+# backend/app/models/api.py
+
+from pydantic import BaseModel, Field
+from .requirement import Requirement
+from .edge import Edge, EdgeStatus, RelationType
+from .impact import ImpactResult
+from .document import Document
+
+
+# --- Document ---
+class DocumentListResponse(BaseModel):
+    documents: list[Document]
+
+
+# --- Parse ---
+class ParseRequest(BaseModel):
+    document_ids: list[str] = Field(
+        description="IDs of documents to parse"
+    )
+
+class ParseResponse(BaseModel):
+    requirements: list[Requirement]
+
+
+# --- Requirements ---
+class RequirementUpdateRequest(BaseModel):
+    title: str | None = None
+    changed: bool | None = None
+
+class RequirementMergeRequest(BaseModel):
+    requirement_ids: list[str] = Field(
+        min_length=2,
+        description="IDs of requirements to merge (same document, adjacent spans only)"
+    )
+
+class RequirementSplitRequest(BaseModel):
+    requirement_id: str = Field(description="ID of requirement to split")
+    split_offset: int = Field(
+        description="Character offset within the requirement text where the split occurs"
+    )
+
+
+# --- Edges ---
+class EdgeInferRequest(BaseModel):
+    requirement_ids: list[str] | None = Field(
+        default=None,
+        description="Specific requirements to infer edges for. None = all."
+    )
+
+class EdgeCreateRequest(BaseModel):
+    """Manual edge creation by PM. Status is auto-set to APPROVED."""
+    source_id: str
+    target_id: str
+    relation_type: RelationType
+    evidence: str = Field(default="Manually added by PM")
+
+class EdgeUpdateRequest(BaseModel):
+    status: EdgeStatus | None = None
+    relation_type: RelationType | None = None
+    evidence: str | None = None
+
+class EdgeListResponse(BaseModel):
+    edges: list[Edge]
+
+
+# --- Impact ---
+class ImpactResponse(BaseModel):
+    result: ImpactResult
+
+
+# --- Session ---
+class SessionSaveResponse(BaseModel):
+    filepath: str
+    saved_at: str
+```
+
+---
+
+## Appendix B: API Endpoint Reference
+
+### B.1 Documents
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/documents/upload` | 다중 파일 업로드. multipart/form-data. 최대 5개. |
+| GET | `/api/documents` | 업로드된 문서 목록 반환. |
+| GET | `/api/documents/{id}` | 문서 상세 (원문 포함) 반환. |
+| DELETE | `/api/documents/{id}` | 문서 삭제. |
+
+### B.2 Parsing & Requirements
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/parse` | LLM 파싱 실행. document_ids 지정. |
+| GET | `/api/requirements` | 파싱된 요구사항 전체 목록. |
+| PATCH | `/api/requirements/{id}` | 제목/changed 플래그 수정. |
+| POST | `/api/requirements/merge` | 여러 요구사항 병합 (같은 문서, 인접 span만). |
+| POST | `/api/requirements/split` | 하나의 요구사항을 두 개로 분리. |
+| DELETE | `/api/requirements/{id}` | 요구사항 삭제 (연결된 edge도 삭제). |
+
+### B.3 Edges (Dependencies)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/edges/infer` | LLM 의존관계 추론 실행. |
+| GET | `/api/edges` | 전체 Edge 목록. ?status=approved 필터 가능. |
+| POST | `/api/edges` | PM이 수동 Edge 추가. 자동으로 approved 상태. |
+| PATCH | `/api/edges/{id}` | 상태 변경 (approve/reject) 및 수정. |
+| DELETE | `/api/edges/{id}` | Edge 삭제. |
+
+### B.4 Impact Analysis
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/impact` | 현재 changed 플래그 기반 1-hop 영향 분석 실행. affected와 review_recommended를 구분하여 반환. |
+
+### B.5 Session
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/session/save` | 현재 상태를 JSON 파일로 저장. |
+| POST | `/api/session/load` | JSON 파일에서 상태 복원. |
+| POST | `/api/session/reset` | 전체 초기화. |
+
+---
+
+## Appendix C: Open Questions
+
+MVP 구현 시 결정이 필요했던 항목들. 모두 ADR로 확정됨.
+
+| # | Question | Status | ADR |
+|---|----------|--------|-----|
+| 1 | DOCX/PDF/Markdown 텍스트 추출 방식 | ✅ 확정 | ADR-12 |
+| 2 | Scanned PDF 지원 여부 | ✅ 확정 (미지원) | ADR-12 |
+| 3 | parse/infer 장시간 작업 처리 | ✅ 확정 | ADR-13 |
+| 4 | LLM 호출 실패/재시도 UX | ✅ 확정 (Instructor retry 위임, 프론트 에러 토스트) | ADR-13 |
+| 5 | 그래프 시각화 라이브러리 선택 | ✅ 확정 | ADR-14 |
+| 6 | 문서 미리보기 / 원문 뷰어 | ✅ 확정 | ADR-15 |

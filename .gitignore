@@ -1,0 +1,17 @@
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+backend/.env
+
+# Node
+node_modules/
+frontend/dist/
+
+# Generated
+frontend/src/api/openapi.json
+frontend/src/api/types.generated.ts
+
+# Session
+*.session.json
