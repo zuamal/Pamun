@@ -6,6 +6,6 @@ const BASE = '/api'
 
 export async function getImpact(): Promise<ImpactResponse> {
   const res = await fetch(`${BASE}/impact`)
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<ImpactResponse>
 }

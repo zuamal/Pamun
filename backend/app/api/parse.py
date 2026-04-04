@@ -42,10 +42,10 @@ async def parse(request: ParseRequest) -> ParseResponse:
             detail=str(exc),
         ) from exc
     except InstructorRetryException as exc:
-        last = exc.__cause__ or exc
+        cause = getattr(exc.__cause__, "message", None) or str(exc.__cause__ or exc)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"LLM 호출 실패: {last}",
+            detail=f"LLM 호출 실패: {cause}",
         ) from exc
 
     return ParseResponse(requirements=requirements)

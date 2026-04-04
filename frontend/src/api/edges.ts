@@ -15,14 +15,14 @@ export async function inferEdges(body: EdgeInferRequest): Promise<Edge[]> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Edge[]>
 }
 
 export async function listEdges(status?: EdgeStatus): Promise<EdgeListResponse> {
   const url = status ? `${BASE}/edges?status=${status}` : `${BASE}/edges`
   const res = await fetch(url)
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<EdgeListResponse>
 }
 
@@ -32,7 +32,7 @@ export async function createEdge(body: EdgeCreateRequest): Promise<Edge> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Edge>
 }
 
@@ -42,11 +42,11 @@ export async function updateEdge(id: string, body: EdgeUpdateRequest): Promise<E
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Edge>
 }
 
 export async function deleteEdge(id: string): Promise<void> {
   const res = await fetch(`${BASE}/edges/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
 }

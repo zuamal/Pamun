@@ -15,13 +15,13 @@ export async function parseDocuments(body: ParseRequest): Promise<ParseResponse>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<ParseResponse>
 }
 
 export async function listRequirements(): Promise<Requirement[]> {
   const res = await fetch(`${BASE}/requirements`)
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Requirement[]>
 }
 
@@ -34,7 +34,7 @@ export async function updateRequirement(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Requirement>
 }
 
@@ -44,7 +44,7 @@ export async function mergeRequirements(body: RequirementMergeRequest): Promise<
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Requirement>
 }
 
@@ -54,11 +54,11 @@ export async function splitRequirement(body: RequirementSplitRequest): Promise<R
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Requirement[]>
 }
 
 export async function deleteRequirement(id: string): Promise<void> {
   const res = await fetch(`${BASE}/requirements/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
 }
