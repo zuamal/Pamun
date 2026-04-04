@@ -76,3 +76,11 @@ class ImpactResponse(BaseModel):
 class SessionSaveResponse(BaseModel):
     filepath: str
     saved_at: str
+
+
+class SessionLoadRequest(BaseModel):
+    filepath: str = Field(description="Absolute or relative path to the session JSON file")
+
+
+class SessionResetResponse(BaseModel):
+    status: str
