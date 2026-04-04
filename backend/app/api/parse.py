@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, status
+from instructor.core.exceptions import InstructorRetryException
 
 from app.models.api import ParseRequest, ParseResponse
 from app.models.requirement import Requirement
@@ -39,6 +40,12 @@ async def parse(request: ParseRequest) -> ParseResponse:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
+        ) from exc
+    except InstructorRetryException as exc:
+        last = exc.__cause__ or exc
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"LLM 호출 실패: {last}",
         ) from exc
 
     return ParseResponse(requirements=requirements)

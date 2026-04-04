@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query, status
+from instructor.core.exceptions import InstructorRetryException
 
 from app.models.api import EdgeCreateRequest, EdgeInferRequest, EdgeListResponse, EdgeUpdateRequest
 from app.models.edge import Edge, EdgeStatus
@@ -29,6 +30,12 @@ async def infer_edges_endpoint(body: EdgeInferRequest) -> list[Edge]:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc),
+        ) from exc
+    except InstructorRetryException as exc:
+        last = exc.__cause__ or exc
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"LLM 호출 실패: {last}",
         ) from exc
 
 
