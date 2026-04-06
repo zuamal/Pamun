@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   ReactFlow,
   Background,
@@ -104,8 +104,11 @@ export default function RequirementGraph({
     [requirements, edges, selectedNodeId, docColorMap],
   )
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes)
-  const [flowEdges, , onEdgesChange] = useEdgesState(initialEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+  const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(initialEdges)
+
+  useEffect(() => { setNodes(initialNodes) }, [initialNodes, setNodes])
+  useEffect(() => { setFlowEdges(initialEdges) }, [initialEdges, setFlowEdges])
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
