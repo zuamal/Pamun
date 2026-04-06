@@ -2,26 +2,21 @@ import { useRef, useState } from 'react'
 import type { components } from '../api/types.generated'
 
 type Requirement = components['schemas']['Requirement']
-type Document = components['schemas']['Document']
 
 interface Props {
   requirement: Requirement
-  document: Document | undefined
   isSelected: boolean
   onToggleSelect: () => void
   onTitleUpdate: (id: string, title: string) => void
-  onDelete: (id: string) => void
   onSplit: (req: Requirement) => void
   disabled?: boolean
 }
 
 export default function RequirementItem({
   requirement,
-  document,
   isSelected,
   onToggleSelect,
   onTitleUpdate,
-  onDelete,
   onSplit,
   disabled = false,
 }: Props) {
@@ -38,13 +33,13 @@ export default function RequirementItem({
     }
   }
 
-  const preview = requirement.original_text.slice(0, 100) + (requirement.original_text.length > 100 ? '…' : '')
+  const preview = requirement.original_text.slice(0, 120) + (requirement.original_text.length > 120 ? '…' : '')
 
   return (
     <li
       className={[
-        'border rounded-lg px-4 py-3 mb-2 flex flex-col gap-1.5',
-        isSelected ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white',
+        'border rounded-lg px-4 py-3 flex flex-col gap-1.5 transition-colors',
+        isSelected ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300',
       ].join(' ')}
     >
       <div className="flex items-center gap-2">
@@ -53,8 +48,11 @@ export default function RequirementItem({
           checked={isSelected}
           onChange={onToggleSelect}
           disabled={disabled}
-          className="cursor-pointer shrink-0"
+          className="cursor-pointer shrink-0 accent-blue-500"
         />
+        <span className="text-[11px] font-bold text-indigo-500 shrink-0">
+          {requirement.display_label}
+        </span>
         {editing ? (
           <input
             ref={inputRef}
@@ -63,13 +61,13 @@ export default function RequirementItem({
             onBlur={commitEdit}
             onKeyDown={(e) => { if (e.key === 'Enter') commitEdit() }}
             autoFocus
-            className="flex-1 font-semibold text-[0.95rem] border border-blue-400 rounded px-1.5 py-0.5 focus:outline-none"
+            className="flex-1 font-semibold text-sm border border-blue-400 rounded px-1.5 py-0.5 focus:outline-none"
           />
         ) : (
           <span
             onClick={() => { if (!disabled) { setEditing(true); setTitleValue(requirement.title) } }}
             title="클릭하여 편집"
-            className={['flex-1 font-semibold text-[0.95rem]', disabled ? 'cursor-default' : 'cursor-text'].join(' ')}
+            className={['flex-1 font-semibold text-sm text-slate-900', disabled ? 'cursor-default' : 'cursor-text'].join(' ')}
           >
             {requirement.title}
           </span>
@@ -77,22 +75,12 @@ export default function RequirementItem({
         <button
           onClick={() => onSplit(requirement)}
           disabled={disabled}
-          className="text-xs px-2 py-0.5 rounded border border-slate-300 bg-slate-50 disabled:cursor-not-allowed cursor-pointer"
+          className="text-xs px-2 py-0.5 rounded border border-slate-300 bg-slate-50 text-slate-600 disabled:cursor-not-allowed cursor-pointer hover:bg-slate-100 transition-colors shrink-0"
         >
           분리
         </button>
-        <button
-          onClick={() => onDelete(requirement.id)}
-          disabled={disabled}
-          className="text-xs px-2 py-0.5 rounded border border-red-300 text-red-500 bg-transparent disabled:cursor-not-allowed cursor-pointer"
-        >
-          삭제
-        </button>
       </div>
-      <p className="m-0 text-sm text-slate-500 pl-6">{preview}</p>
-      {document && (
-        <p className="m-0 text-xs text-slate-400 pl-6">📄 {document.filename}</p>
-      )}
+      <p className="m-0 text-xs text-slate-500 pl-[calc(1rem+0.5rem+1px)] line-clamp-2">{preview}</p>
     </li>
   )
 }

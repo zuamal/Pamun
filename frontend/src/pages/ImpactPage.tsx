@@ -8,6 +8,7 @@ import { useImpactStore } from '../stores/impactStore'
 import RequirementToggleList from '../components/RequirementToggleList'
 import ImpactResultPanel from '../components/ImpactResultPanel'
 import DocumentViewer from '../components/DocumentViewer'
+import EmptyState from '../components/EmptyState'
 import { toastSuccess, toastError } from '../lib/toast'
 import type { components } from '../api/types.generated'
 
@@ -16,7 +17,7 @@ type ImpactItemData = components['schemas']['ImpactItem']
 
 export default function ImpactPage() {
   const navigate = useNavigate()
-  const { requirements, setRequirements } = useGraphStore()
+  const { requirements, setRequirements, edges } = useGraphStore()
   const { impactResult, setImpactResult } = useImpactStore()
 
   const [documents, setDocuments] = useState<Record<string, string>>({})
@@ -37,6 +38,7 @@ export default function ImpactPage() {
   }, [setRequirements])
 
   const changedCount = requirements.filter((r) => r.changed).length
+  const hasApprovedEdges = edges.some((e) => e.status === 'approved')
 
   const handleToggle = useCallback(
     async (req: Requirement, changed: boolean) => {
@@ -44,7 +46,7 @@ export default function ImpactPage() {
         const updated = await updateRequirement(req.id, { changed })
         setRequirements(requirements.map((r) => (r.id === updated.id ? updated : r)))
       } catch {
-        // ignore
+        // ignore toggle errors silently
       }
     },
     [requirements, setRequirements],
@@ -76,13 +78,34 @@ export default function ImpactPage() {
     }
   }, [])
 
+  // No approved edges — show empty state
+  if (!hasApprovedEdges && requirements.length > 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <EmptyState
+          icon="🔗"
+          title="승인된 Edge가 없습니다"
+          description="그래프 페이지에서 LLM이 추론한 Edge를 검토하고 승인해주세요"
+          action={
+            <button
+              onClick={() => navigate('/graph')}
+              className="px-4 py-2 rounded-lg bg-violet-700 text-white text-sm font-semibold cursor-pointer border-none hover:bg-violet-600 transition-colors"
+            >
+              그래프로
+            </button>
+          }
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col bg-slate-50">
       {/* Header */}
       <div className="flex items-center px-6 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
         <button
           onClick={() => navigate('/graph')}
-          className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px]"
+          className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px] hover:bg-slate-100 transition-colors"
         >
           ← 그래프로
         </button>
@@ -90,7 +113,7 @@ export default function ImpactPage() {
         <button
           onClick={() => void handleSave()}
           disabled={saving}
-          className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
         >
           {saving ? '저장 중...' : '세션 저장'}
         </button>
@@ -113,15 +136,22 @@ export default function ImpactPage() {
               onClick={() => void handleAnalyze()}
               disabled={analyzing || changedCount === 0}
               className={[
-                'w-full py-2 rounded-lg border-none text-[13px] font-semibold',
+                'w-full py-2 rounded-lg border-none text-[13px] font-semibold transition-all',
                 changedCount === 0
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   : analyzing
                     ? 'bg-violet-700 text-white cursor-wait'
-                    : 'bg-violet-700 text-white cursor-pointer',
+                    : 'bg-violet-700 text-white cursor-pointer hover:bg-violet-600 animate-pulse',
               ].join(' ')}
             >
-              {analyzing ? '분석 중...' : '영향 분석 실행'}
+              {analyzing ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  분석 중...
+                </span>
+              ) : (
+                '영향 분석 실행'
+              )}
             </button>
           </div>
 
@@ -141,12 +171,6 @@ export default function ImpactPage() {
 
         {/* Right: impact results */}
         <div className="flex-1 overflow-y-auto p-6">
-          {analyzing && (
-            <div className="flex items-center gap-2.5 text-violet-700 text-[14px] mb-5">
-              <span>분석 중...</span>
-            </div>
-          )}
-
           {analysisError && (
             <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-[13px] mb-4">
               {analysisError}

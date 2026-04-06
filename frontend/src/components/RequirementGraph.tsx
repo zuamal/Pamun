@@ -9,12 +9,14 @@ import {
   useEdgesState,
   type Node,
   type Edge as FlowEdge,
+  type Connection,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import dagre from '@dagrejs/dagre'
 import type { components } from '../api/types.generated'
 import RequirementNode, { type RequirementNodeData } from './RequirementNode'
 import { DOC_COLORS } from '../utils/docColors'
+import { useGraphStore } from '../stores/graphStore'
 
 type Requirement = components['schemas']['Requirement']
 type Edge = components['schemas']['Edge']
@@ -60,8 +62,10 @@ function buildLayout(
     }
   })
 
-  const flowEdges: FlowEdge[] = approvedEdges.map((edge) => {
+  const visibleEdges = edges.filter((e) => e.status === 'approved' || e.status === 'pending')
+  const flowEdges: FlowEdge[] = visibleEdges.map((edge) => {
     const isRelatedTo = edge.relation_type === 'related_to'
+    const isPending = edge.status === 'pending'
     return {
       id: edge.id,
       source: edge.source_id,
@@ -69,7 +73,11 @@ function buildLayout(
       type: 'smoothstep',
       markerEnd: { type: MarkerType.ArrowClosed },
       markerStart: isRelatedTo ? { type: MarkerType.ArrowClosed } : undefined,
-      style: { stroke: isRelatedTo ? '#8b5cf6' : '#3b82f6', strokeWidth: 2 },
+      style: {
+        stroke: isPending ? '#f59e0b' : (isRelatedTo ? '#8b5cf6' : '#3b82f6'),
+        strokeWidth: 2,
+        strokeDasharray: isPending ? '5,4' : undefined,
+      },
       label: isRelatedTo ? 'related_to' : 'depends_on',
       labelStyle: { fontSize: 10, fill: '#64748b' },
       labelBgStyle: { fill: '#f8fafc' },
@@ -85,6 +93,7 @@ interface RequirementGraphProps {
   selectedNodeId: string | null
   onNodeClick: (req: Requirement) => void
   onEdgeClick: (edgeId: string) => void
+  onConnect: (sourceId: string, targetId: string) => void
 }
 
 export default function RequirementGraph({
@@ -93,15 +102,33 @@ export default function RequirementGraph({
   selectedNodeId,
   onNodeClick,
   onEdgeClick,
+  onConnect,
 }: RequirementGraphProps) {
+  const { hiddenDocIds, showPending } = useGraphStore()
+
   const docColorMap = useMemo(() => {
     const ids = [...new Set(requirements.map((r) => r.location.document_id))]
     return Object.fromEntries(ids.map((id, i) => [id, DOC_COLORS[i % DOC_COLORS.length]]))
   }, [requirements])
 
+  // Apply filters
+  const filteredRequirements = useMemo(
+    () => requirements.filter((r) => !hiddenDocIds.includes(r.location.document_id)),
+    [requirements, hiddenDocIds],
+  )
+  const filteredEdges = useMemo(() => {
+    const visibleNodeIds = new Set(filteredRequirements.map((r) => r.id))
+    return edges.filter((e) => {
+      if (!visibleNodeIds.has(e.source_id) || !visibleNodeIds.has(e.target_id)) return false
+      if (e.status === 'pending' && !showPending) return false
+      if (e.status === 'rejected') return false
+      return true
+    })
+  }, [edges, filteredRequirements, showPending])
+
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => buildLayout(requirements, edges, selectedNodeId, docColorMap),
-    [requirements, edges, selectedNodeId, docColorMap],
+    () => buildLayout(filteredRequirements, filteredEdges, selectedNodeId, docColorMap),
+    [filteredRequirements, filteredEdges, selectedNodeId, docColorMap],
   )
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -125,6 +152,15 @@ export default function RequirementGraph({
     [onEdgeClick],
   )
 
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (connection.source && connection.target) {
+        onConnect(connection.source, connection.target)
+      }
+    },
+    [onConnect],
+  )
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -135,6 +171,7 @@ export default function RequirementGraph({
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
+        onConnect={handleConnect}
         fitView
         minZoom={0.2}
         maxZoom={2}

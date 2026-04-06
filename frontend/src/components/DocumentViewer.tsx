@@ -17,7 +17,7 @@ export default function DocumentViewer({
   const [rawText, setRawText] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const highlightRef = useRef<HTMLElement | null>(null)
+  const highlightRef = useRef<HTMLSpanElement | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -43,12 +43,12 @@ export default function DocumentViewer({
     return (
       <pre className="m-0 whitespace-pre-wrap break-words font-mono text-xs leading-7 text-slate-700">
         {before}
-        <mark
-          ref={(el) => { highlightRef.current = el }}
-          className="bg-yellow-200 rounded-sm px-px text-slate-900"
+        <span
+          ref={highlightRef}
+          className="bg-yellow-200 font-semibold px-0.5 rounded text-slate-900"
         >
           {highlighted}
-        </mark>
+        </span>
         {after}
       </pre>
     )
@@ -68,7 +68,7 @@ export default function DocumentViewer({
           <div className="font-bold text-[15px] text-slate-900">원문 보기</div>
           <button
             onClick={onClose}
-            className="bg-transparent border-none text-xl cursor-pointer text-slate-400 leading-none"
+            className="bg-transparent border-none text-xl cursor-pointer text-slate-400 hover:text-slate-600 leading-none"
           >
             ×
           </button>

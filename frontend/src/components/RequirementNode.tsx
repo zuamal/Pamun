@@ -22,14 +22,22 @@ const RequirementNode = memo(({ data }: NodeProps) => {
       }}
       className="rounded-lg p-2 min-w-[160px] max-w-[220px] cursor-pointer text-xs"
     >
-      <Handle type="target" position={Position.Top} style={{ background: docColor }} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ background: docColor, width: 10, height: 10 }}
+      />
       <div style={{ color: docColor }} className="font-bold mb-0.5 text-[10px]">
         {requirement.display_label}
       </div>
       <div className="text-slate-900 leading-snug line-clamp-3">
         {requirement.title}
       </div>
-      <Handle type="source" position={Position.Bottom} style={{ background: docColor }} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ background: docColor, width: 10, height: 10 }}
+      />
     </div>
   )
 })

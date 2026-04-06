@@ -51,15 +51,21 @@ export default function FileDropzone({ onFiles, disabled = false }: Props) {
           if (!disabled) handleFiles(e.dataTransfer.files)
         }}
         className={[
-          'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
+          'border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200',
           dragging ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-slate-50',
           disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-blue-400 hover:bg-blue-50',
         ].join(' ')}
       >
-        <p className="m-0 text-slate-500">
+        <div className={[
+          'text-4xl mb-3 transition-transform duration-200 select-none',
+          dragging ? 'scale-110' : 'scale-100',
+        ].join(' ')}>
+          📂
+        </div>
+        <p className="m-0 text-slate-500 font-medium">
           파일을 드래그하거나 <strong>클릭</strong>하여 선택
         </p>
-        <p className="mt-2 mb-0 text-sm text-slate-400">
+        <p className="mt-1.5 mb-0 text-sm text-slate-400">
           .md / .docx / .pdf · 최대 5개
         </p>
       </div>

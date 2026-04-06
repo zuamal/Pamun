@@ -7,7 +7,8 @@ import RequirementGraph from '../components/RequirementGraph'
 import NodeDetailPanel from '../components/NodeDetailPanel'
 import EdgeReviewPanel from '../components/EdgeReviewPanel'
 import AddEdgeModal from '../components/AddEdgeModal'
-import { toastError } from '../lib/toast'
+import GraphFilter from '../components/GraphFilter'
+import { toastError, toastSuccess } from '../lib/toast'
 import type { components } from '../api/types.generated'
 
 type Requirement = components['schemas']['Requirement']
@@ -15,12 +16,10 @@ type RelationType = components['schemas']['RelationType']
 
 export default function GraphPage() {
   const navigate = useNavigate()
-  const { requirements, edges, setEdges } = useGraphStore()
+  const { requirements, edges, setEdges, pendingConnection, setPendingConnection } = useGraphStore()
 
   const [documents, setDocuments] = useState<Record<string, string>>({})
   const [selectedNode, setSelectedNode] = useState<Requirement | null>(null)
-  const [selectedForAdd, setSelectedForAdd] = useState<Requirement[]>([])
-  const [showAddModal, setShowAddModal] = useState(false)
   const [activePanel, setActivePanel] = useState<'detail' | 'review'>('review')
   const [loading, setLoading] = useState(false)
 
@@ -43,17 +42,10 @@ export default function GraphPage() {
 
   const pendingEdges = useMemo(() => edges.filter((e) => e.status === 'pending'), [edges])
 
-  const handleNodeClick = useCallback(
-    (req: Requirement) => {
-      setSelectedNode(req)
-      setActivePanel('detail')
-      setSelectedForAdd((prev) => {
-        if (prev.find((r) => r.id === req.id)) return prev
-        return [...prev, req].slice(-2)
-      })
-    },
-    [],
-  )
+  const handleNodeClick = useCallback((req: Requirement) => {
+    setSelectedNode(req)
+    setActivePanel('detail')
+  }, [])
 
   const handleEdgeClick = useCallback((edgeId: string) => {
     void (async () => {
@@ -68,11 +60,16 @@ export default function GraphPage() {
     })()
   }, [setEdges])
 
+  const handleConnect = useCallback((sourceId: string, targetId: string) => {
+    setPendingConnection({ sourceId, targetId })
+  }, [setPendingConnection])
+
   const handleApprove = useCallback(async (edgeId: string) => {
     try {
       await updateEdge(edgeId, { status: 'approved' })
       const res = await listEdges()
       setEdges(res.edges)
+      toastSuccess('Edge 승인됨')
     } catch (err) {
       toastError(err instanceof Error ? err.message : '승인 실패')
     }
@@ -104,9 +101,18 @@ export default function GraphPage() {
       await createEdge({ source_id: sourceId, target_id: targetId, relation_type: relationType, evidence })
       const res = await listEdges()
       setEdges(res.edges)
+      toastSuccess('Edge 추가됨')
     },
     [setEdges],
   )
+
+  // Resolve pending connection nodes
+  const pendingSourceReq = pendingConnection
+    ? requirements.find((r) => r.id === pendingConnection.sourceId) ?? null
+    : null
+  const pendingTargetReq = pendingConnection
+    ? requirements.find((r) => r.id === pendingConnection.targetId) ?? null
+    : null
 
   if (requirements.length === 0) {
     return (
@@ -128,28 +134,12 @@ export default function GraphPage() {
       {/* Header */}
       <div className="flex items-center px-5 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
         <div className="font-bold text-base text-slate-900 flex-1">의존관계 그래프</div>
-
-        {selectedForAdd.length === 2 && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-1.5 rounded-lg border border-blue-400 bg-blue-50 text-blue-700 cursor-pointer text-[13px] font-semibold"
-          >
-            연결 추가 ({selectedForAdd.map((r) => r.display_label).join(' → ')})
-          </button>
+        {loading && (
+          <span className="text-xs text-slate-400">로딩 중...</span>
         )}
-
-        {selectedForAdd.length > 0 && (
-          <button
-            onClick={() => setSelectedForAdd([])}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 cursor-pointer text-xs"
-          >
-            선택 해제
-          </button>
-        )}
-
         <button
           onClick={() => navigate('/impact')}
-          className="px-4 py-1.5 rounded-lg border-none bg-violet-700 text-white cursor-pointer text-[13px] font-semibold"
+          className="px-4 py-1.5 rounded-lg border-none bg-violet-700 text-white cursor-pointer text-[13px] font-semibold hover:bg-violet-600 transition-colors"
         >
           영향 분석으로 →
         </button>
@@ -159,17 +149,13 @@ export default function GraphPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Graph area */}
         <div className="flex-1 overflow-hidden relative">
-          {loading && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-white px-3.5 py-1 rounded-full shadow text-xs text-slate-500 z-10">
-              로딩 중...
-            </div>
-          )}
           <RequirementGraph
             requirements={requirements}
             edges={edges}
             selectedNodeId={selectedNode?.id ?? null}
             onNodeClick={handleNodeClick}
             onEdgeClick={handleEdgeClick}
+            onConnect={handleConnect}
           />
         </div>
 
@@ -202,7 +188,7 @@ export default function GraphPage() {
           </div>
 
           {/* Panel content */}
-          <div className="flex-1 overflow-hidden p-3">
+          <div className="flex-1 overflow-hidden p-3 min-h-0">
             {activePanel === 'review' ? (
               <EdgeReviewPanel
                 pendingEdges={pendingEdges}
@@ -221,14 +207,19 @@ export default function GraphPage() {
               />
             )}
           </div>
+
+          {/* Filter */}
+          <GraphFilter requirements={requirements} documents={documents} />
         </div>
       </div>
 
-      {showAddModal && (
+      {/* AddEdgeModal triggered by handle drag */}
+      {pendingConnection && pendingSourceReq && pendingTargetReq && (
         <AddEdgeModal
-          selectedNodes={selectedForAdd}
+          sourceReq={pendingSourceReq}
+          targetReq={pendingTargetReq}
           onAdd={handleAddEdge}
-          onClose={() => setShowAddModal(false)}
+          onClose={() => setPendingConnection(null)}
         />
       )}
     </div>

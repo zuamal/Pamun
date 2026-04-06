@@ -5,6 +5,7 @@ import { parseDocumentsSSE, listRequirements } from '../api/requirements'
 import DocumentList from '../components/DocumentList'
 import FileDropzone from '../components/FileDropzone'
 import ProgressModal from '../components/ProgressModal'
+import EmptyState from '../components/EmptyState'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
 import { toastError } from '../lib/toast'
@@ -72,7 +73,7 @@ export default function UploadPage() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <section className="mb-8">
-        <h2 className="text-base font-semibold mb-3">문서 업로드</h2>
+        <h2 className="text-base font-semibold mb-3 text-slate-700">문서 업로드</h2>
         <FileDropzone onFiles={handleFiles} disabled={busy} />
         {uploading && (
           <p className="text-blue-500 mt-2 text-sm">업로드 중…</p>
@@ -80,10 +81,23 @@ export default function UploadPage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-base font-semibold mb-3">
-          업로드된 문서 ({documents.length})
+        <h2 className="text-base font-semibold mb-3 text-slate-700">
+          업로드된 문서
+          {documents.length > 0 && (
+            <span className="ml-2 text-xs font-normal bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">
+              {documents.length}
+            </span>
+          )}
         </h2>
-        <DocumentList documents={documents} onDelete={handleDelete} disabled={busy} />
+        {documents.length === 0 ? (
+          <EmptyState
+            icon="📭"
+            title="업로드된 문서가 없습니다"
+            description="위 드롭존에서 .md / .docx / .pdf 파일을 선택하세요"
+          />
+        ) : (
+          <DocumentList documents={documents} onDelete={handleDelete} disabled={busy} />
+        )}
       </section>
 
       <button
