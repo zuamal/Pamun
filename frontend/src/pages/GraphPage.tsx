@@ -7,6 +7,7 @@ import RequirementGraph from '../components/RequirementGraph'
 import NodeDetailPanel from '../components/NodeDetailPanel'
 import EdgeReviewPanel from '../components/EdgeReviewPanel'
 import AddEdgeModal from '../components/AddEdgeModal'
+import { toastError } from '../lib/toast'
 import type { components } from '../api/types.generated'
 
 type Requirement = components['schemas']['Requirement']
@@ -22,10 +23,8 @@ export default function GraphPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [activePanel, setActivePanel] = useState<'detail' | 'review'>('review')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Load edges and documents
     void (async () => {
       try {
         setLoading(true)
@@ -35,7 +34,7 @@ export default function GraphPage() {
         for (const doc of docRes.documents) docMap[doc.id] = doc.filename
         setDocuments(docMap)
       } catch (err) {
-        setError(err instanceof Error ? err.message : '로드 실패')
+        toastError(err instanceof Error ? err.message : '로드 실패')
       } finally {
         setLoading(false)
       }
@@ -48,11 +47,9 @@ export default function GraphPage() {
     (req: Requirement) => {
       setSelectedNode(req)
       setActivePanel('detail')
-
       setSelectedForAdd((prev) => {
         if (prev.find((r) => r.id === req.id)) return prev
-        const next = [...prev, req].slice(-2)
-        return next
+        return [...prev, req].slice(-2)
       })
     },
     [],
@@ -66,38 +63,41 @@ export default function GraphPage() {
         const res = await listEdges()
         setEdges(res.edges)
       } catch (err) {
-        setError(err instanceof Error ? err.message : '삭제 실패')
+        toastError(err instanceof Error ? err.message : '삭제 실패')
       }
     })()
   }, [setEdges])
 
-  const handleApprove = useCallback(
-    async (edgeId: string) => {
+  const handleApprove = useCallback(async (edgeId: string) => {
+    try {
       await updateEdge(edgeId, { status: 'approved' })
       const res = await listEdges()
       setEdges(res.edges)
-    },
-    [setEdges],
-  )
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : '승인 실패')
+    }
+  }, [setEdges])
 
-  const handleReject = useCallback(
-    async (edgeId: string) => {
+  const handleReject = useCallback(async (edgeId: string) => {
+    try {
       await updateEdge(edgeId, { status: 'rejected' })
       const res = await listEdges()
       setEdges(res.edges)
-    },
-    [setEdges],
-  )
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : '거부 실패')
+    }
+  }, [setEdges])
 
-  const handleDeleteEdge = useCallback(
-    async (edgeId: string) => {
-      if (!confirm('이 Edge를 삭제하시겠습니까?')) return
+  const handleDeleteEdge = useCallback(async (edgeId: string) => {
+    if (!confirm('이 Edge를 삭제하시겠습니까?')) return
+    try {
       await deleteEdge(edgeId)
       const res = await listEdges()
       setEdges(res.edges)
-    },
-    [setEdges],
-  )
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }, [setEdges])
 
   const handleAddEdge = useCallback(
     async (sourceId: string, targetId: string, relationType: RelationType, evidence: string) => {
@@ -110,12 +110,12 @@ export default function GraphPage() {
 
   if (requirements.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', flexDirection: 'column', gap: 16, color: '#64748b' }}>
-        <div style={{ fontSize: 48 }}>🕸️</div>
-        <div style={{ fontSize: 16 }}>요구사항이 없습니다. 먼저 파싱을 완료하세요.</div>
+      <div className="flex items-center justify-center h-full flex-col gap-4 text-slate-500">
+        <div className="text-5xl">🕸️</div>
+        <div className="text-base">요구사항이 없습니다. 먼저 파싱을 완료하세요.</div>
         <button
           onClick={() => navigate('/')}
-          style={{ padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer' }}
+          className="px-5 py-2 rounded-lg bg-blue-500 text-white border-none cursor-pointer"
         >
           업로드 페이지로
         </button>
@@ -124,36 +124,15 @@ export default function GraphPage() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', flexDirection: 'column', background: '#f8fafc' }}>
+    <div className="flex h-full flex-col bg-slate-50">
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '10px 20px',
-          background: '#fff',
-          borderBottom: '1px solid #e2e8f0',
-          gap: 12,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 16, color: '#1e293b', flex: 1 }}>
-          의존관계 그래프
-        </div>
+      <div className="flex items-center px-5 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
+        <div className="font-bold text-base text-slate-900 flex-1">의존관계 그래프</div>
 
         {selectedForAdd.length === 2 && (
           <button
             onClick={() => setShowAddModal(true)}
-            style={{
-              padding: '7px 16px',
-              borderRadius: 7,
-              border: '1px solid #3b82f6',
-              background: '#eff6ff',
-              color: '#1d4ed8',
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-            }}
+            className="px-4 py-1.5 rounded-lg border border-blue-400 bg-blue-50 text-blue-700 cursor-pointer text-[13px] font-semibold"
           >
             연결 추가 ({selectedForAdd.map((r) => r.display_label).join(' → ')})
           </button>
@@ -162,15 +141,7 @@ export default function GraphPage() {
         {selectedForAdd.length > 0 && (
           <button
             onClick={() => setSelectedForAdd([])}
-            style={{
-              padding: '7px 12px',
-              borderRadius: 7,
-              border: '1px solid #e2e8f0',
-              background: '#f8fafc',
-              color: '#64748b',
-              cursor: 'pointer',
-              fontSize: 12,
-            }}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 cursor-pointer text-xs"
           >
             선택 해제
           </button>
@@ -178,34 +149,18 @@ export default function GraphPage() {
 
         <button
           onClick={() => navigate('/impact')}
-          style={{
-            padding: '7px 16px',
-            borderRadius: 7,
-            border: 'none',
-            background: '#7c3aed',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: 13,
-            fontWeight: 600,
-          }}
+          className="px-4 py-1.5 rounded-lg border-none bg-violet-700 text-white cursor-pointer text-[13px] font-semibold"
         >
           영향 분석으로 →
         </button>
       </div>
 
-      {error && (
-        <div style={{ padding: '8px 20px', background: '#fef2f2', color: '#b91c1c', fontSize: 13, borderBottom: '1px solid #fecaca' }}>
-          {error}
-          <button onClick={() => setError(null)} style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#b91c1c' }}>×</button>
-        </div>
-      )}
-
       {/* Body */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="flex flex-1 overflow-hidden">
         {/* Graph area */}
-        <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        <div className="flex-1 overflow-hidden relative">
           {loading && (
-            <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', background: '#fff', padding: '4px 14px', borderRadius: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 12, color: '#64748b', zIndex: 10 }}>
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-white px-3.5 py-1 rounded-full shadow text-xs text-slate-500 z-10">
               로딩 중...
             </div>
           )}
@@ -219,54 +174,35 @@ export default function GraphPage() {
         </div>
 
         {/* Side panel */}
-        <div
-          style={{
-            width: 320,
-            borderLeft: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            background: '#f8fafc',
-            overflow: 'hidden',
-          }}
-        >
+        <div className="w-80 border-l border-slate-200 flex flex-col bg-slate-50 overflow-hidden">
           {/* Panel tabs */}
-          <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#fff', flexShrink: 0 }}>
+          <div className="flex border-b border-slate-200 bg-white shrink-0">
             <button
               onClick={() => setActivePanel('review')}
-              style={{
-                flex: 1,
-                padding: '10px 0',
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-                fontSize: 13,
-                fontWeight: activePanel === 'review' ? 700 : 400,
-                color: activePanel === 'review' ? '#3b82f6' : '#64748b',
-                borderBottom: activePanel === 'review' ? '2px solid #3b82f6' : '2px solid transparent',
-              }}
+              className={[
+                'flex-1 py-2.5 border-none bg-transparent cursor-pointer text-[13px]',
+                activePanel === 'review'
+                  ? 'font-bold text-blue-500 border-b-2 border-b-blue-500'
+                  : 'font-normal text-slate-500 border-b-2 border-b-transparent',
+              ].join(' ')}
             >
               Edge 검토 {pendingEdges.length > 0 ? `(${pendingEdges.length})` : ''}
             </button>
             <button
               onClick={() => setActivePanel('detail')}
-              style={{
-                flex: 1,
-                padding: '10px 0',
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-                fontSize: 13,
-                fontWeight: activePanel === 'detail' ? 700 : 400,
-                color: activePanel === 'detail' ? '#3b82f6' : '#64748b',
-                borderBottom: activePanel === 'detail' ? '2px solid #3b82f6' : '2px solid transparent',
-              }}
+              className={[
+                'flex-1 py-2.5 border-none bg-transparent cursor-pointer text-[13px]',
+                activePanel === 'detail'
+                  ? 'font-bold text-blue-500 border-b-2 border-b-blue-500'
+                  : 'font-normal text-slate-500 border-b-2 border-b-transparent',
+              ].join(' ')}
             >
               노드 상세
             </button>
           </div>
 
           {/* Panel content */}
-          <div style={{ flex: 1, overflow: 'hidden', padding: 12 }}>
+          <div className="flex-1 overflow-hidden p-3">
             {activePanel === 'review' ? (
               <EdgeReviewPanel
                 pendingEdges={pendingEdges}

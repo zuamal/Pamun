@@ -36,48 +36,24 @@ export default function AddEdgeModal({ selectedNodes, onAdd, onClose }: AddEdgeM
     }
   }
 
-  const labelStyle: React.CSSProperties = { fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 4 }
-  const selectStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '6px 10px',
-    border: '1px solid #e2e8f0',
-    borderRadius: 6,
-    fontSize: 13,
-    color: '#1e293b',
-    background: '#fff',
-  }
+  const selectCls = 'w-full px-2.5 py-1.5 border border-slate-200 rounded-md text-[13px] text-slate-900 bg-white focus:outline-none focus:border-blue-400'
+  const labelCls = 'text-xs text-slate-500 font-semibold mb-1'
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.35)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className="fixed inset-0 bg-black/35 flex items-center justify-center z-[1000]"
       onClick={onClose}
     >
       <div
-        style={{
-          background: '#fff',
-          borderRadius: 12,
-          padding: 28,
-          width: 440,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-        }}
+        className="bg-white rounded-xl p-7 w-[440px] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ fontWeight: 700, fontSize: 16, color: '#1e293b', marginBottom: 20 }}>
-          Edge 수동 추가
-        </div>
+        <div className="font-bold text-base text-slate-900 mb-5">Edge 수동 추가</div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           <div>
-            <div style={labelStyle}>Source 요구사항</div>
-            <select value={sourceId} onChange={(e) => setSourceId(e.target.value)} style={selectStyle}>
+            <div className={labelCls}>Source 요구사항</div>
+            <select value={sourceId} onChange={(e) => setSourceId(e.target.value)} className={selectCls}>
               <option value="">선택...</option>
               {selectedNodes.map((r) => (
                 <option key={r.id} value={r.id}>{r.display_label} — {r.title}</option>
@@ -86,8 +62,8 @@ export default function AddEdgeModal({ selectedNodes, onAdd, onClose }: AddEdgeM
           </div>
 
           <div>
-            <div style={labelStyle}>Target 요구사항</div>
-            <select value={targetId} onChange={(e) => setTargetId(e.target.value)} style={selectStyle}>
+            <div className={labelCls}>Target 요구사항</div>
+            <select value={targetId} onChange={(e) => setTargetId(e.target.value)} className={selectCls}>
               <option value="">선택...</option>
               {selectedNodes.map((r) => (
                 <option key={r.id} value={r.id}>{r.display_label} — {r.title}</option>
@@ -96,11 +72,11 @@ export default function AddEdgeModal({ selectedNodes, onAdd, onClose }: AddEdgeM
           </div>
 
           <div>
-            <div style={labelStyle}>관계 유형</div>
+            <div className={labelCls}>관계 유형</div>
             <select
               value={relationType}
               onChange={(e) => setRelationType(e.target.value as RelationType)}
-              style={selectStyle}
+              className={selectCls}
             >
               <option value="depends_on">depends_on (의존)</option>
               <option value="related_to">related_to (관련)</option>
@@ -108,56 +84,34 @@ export default function AddEdgeModal({ selectedNodes, onAdd, onClose }: AddEdgeM
           </div>
 
           <div>
-            <div style={labelStyle}>근거 (evidence)</div>
+            <div className={labelCls}>근거 (evidence)</div>
             <textarea
               value={evidence}
               onChange={(e) => setEvidence(e.target.value)}
               placeholder="근거 텍스트를 입력하세요"
               rows={3}
-              style={{
-                ...selectStyle,
-                resize: 'vertical',
-                fontFamily: 'inherit',
-              }}
+              className={`${selectCls} resize-y font-[inherit]`}
             />
           </div>
 
           {error && (
-            <div style={{ fontSize: 12, color: '#ef4444', background: '#fef2f2', padding: '6px 10px', borderRadius: 6 }}>
+            <div className="text-xs text-red-500 bg-red-50 px-2.5 py-1.5 rounded-md">
               {error}
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+          <div className="flex gap-2.5 justify-end mt-1">
             <button
               type="button"
               onClick={onClose}
-              style={{
-                padding: '8px 18px',
-                borderRadius: 7,
-                border: '1px solid #e2e8f0',
-                background: '#f8fafc',
-                cursor: 'pointer',
-                fontSize: 13,
-                color: '#475569',
-              }}
+              className="px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer text-[13px] text-slate-600"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={loading}
-              style={{
-                padding: '8px 18px',
-                borderRadius: 7,
-                border: 'none',
-                background: '#3b82f6',
-                color: '#fff',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontSize: 13,
-                fontWeight: 600,
-                opacity: loading ? 0.7 : 1,
-              }}
+              className="px-4 py-2 rounded-lg border-none bg-blue-500 text-white cursor-pointer text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? '추가 중...' : '추가'}
             </button>

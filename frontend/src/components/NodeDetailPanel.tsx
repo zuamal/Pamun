@@ -31,68 +31,42 @@ export default function NodeDetailPanel({
   )
 
   return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        borderRadius: 10,
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-        overflowY: 'auto',
-        height: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-4 overflow-y-auto h-full box-border">
+      <div className="flex justify-between items-start">
         <div>
-          <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 700, marginBottom: 2 }}>
+          <div className="text-[11px] text-indigo-500 font-bold mb-0.5">
             {requirement.display_label}
           </div>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b' }}>{requirement.title}</div>
+          <div className="font-bold text-[15px] text-slate-900">{requirement.title}</div>
         </div>
         <button
           onClick={onClose}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#94a3b8' }}
+          className="bg-transparent border-none cursor-pointer text-lg text-slate-400 leading-none"
         >
           ×
         </button>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>소속 문서</div>
-        <div style={{ fontSize: 13, color: '#334155' }}>
+        <div className="text-[11px] text-slate-500 font-semibold mb-1">소속 문서</div>
+        <div className="text-[13px] text-slate-700">
           {documents[requirement.location.document_id] ?? requirement.location.document_id}
         </div>
       </div>
 
       <div>
-        <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>원문</div>
-        <div
-          style={{
-            fontSize: 12,
-            color: '#475569',
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: 6,
-            padding: '8px 10px',
-            whiteSpace: 'pre-wrap',
-            lineHeight: 1.6,
-            maxHeight: 160,
-            overflowY: 'auto',
-          }}
-        >
+        <div className="text-[11px] text-slate-500 font-semibold mb-1">원문</div>
+        <div className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-2 whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">
           {requirement.original_text}
         </div>
       </div>
 
       {connectedEdges.length > 0 && (
         <div>
-          <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 8 }}>
+          <div className="text-[11px] text-slate-500 font-semibold mb-2">
             연결된 Edge ({connectedEdges.length})
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {connectedEdges.map((edge) => {
               const other = edge.source_id === requirement.id
                 ? reqMap[edge.target_id]
@@ -101,33 +75,26 @@ export default function NodeDetailPanel({
               return (
                 <div
                   key={edge.id}
-                  style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 6,
-                    padding: '8px 10px',
-                    fontSize: 12,
-                  }}
+                  className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-2 text-xs"
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ color: '#3b82f6', fontWeight: 600 }}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-blue-500 font-semibold">
                       {direction} {other?.display_label ?? '?'}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div className="flex items-center gap-1.5">
                       <span
-                        style={{
-                          fontSize: 10,
-                          padding: '1px 6px',
-                          borderRadius: 4,
-                          background: edge.relation_type === 'depends_on' ? '#dbeafe' : '#ede9fe',
-                          color: edge.relation_type === 'depends_on' ? '#1d4ed8' : '#6d28d9',
-                        }}
+                        className={[
+                          'text-[10px] px-1.5 py-0.5 rounded',
+                          edge.relation_type === 'depends_on'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-violet-100 text-violet-700',
+                        ].join(' ')}
                       >
                         {edge.relation_type}
                       </span>
                       <button
                         onClick={() => onDeleteEdge(edge.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 14, padding: 0 }}
+                        className="bg-transparent border-none cursor-pointer text-red-500 text-sm p-0 leading-none"
                         title="Edge 삭제"
                       >
                         ×
@@ -135,10 +102,10 @@ export default function NodeDetailPanel({
                     </div>
                   </div>
                   {other && (
-                    <div style={{ color: '#475569', marginBottom: 4 }}>{other.title}</div>
+                    <div className="text-slate-600 mb-1">{other.title}</div>
                   )}
                   {edge.evidence && (
-                    <div style={{ color: '#64748b', fontStyle: 'italic' }}>"{edge.evidence}"</div>
+                    <div className="text-slate-500 italic">"{edge.evidence}"</div>
                   )}
                 </div>
               )
@@ -148,7 +115,7 @@ export default function NodeDetailPanel({
       )}
 
       {connectedEdges.length === 0 && (
-        <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: '12px 0' }}>
+        <div className="text-xs text-slate-400 text-center py-3">
           연결된 Edge 없음
         </div>
       )}

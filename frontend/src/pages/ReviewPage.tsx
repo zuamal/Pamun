@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { inferEdgesSSE, listEdges } from '../api/edges'
 import {
   deleteRequirement,
-  listRequirements,
   mergeRequirements,
   splitRequirement,
   updateRequirement,
@@ -13,6 +12,7 @@ import SplitModal from '../components/SplitModal'
 import ProgressModal from '../components/ProgressModal'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
+import { toastError } from '../lib/toast'
 import type { components } from '../api/types.generated'
 import type { ProgressEvent } from '../api/sseTypes'
 
@@ -27,13 +27,6 @@ export default function ReviewPage() {
   const [inferring, setInferring] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressMsg, setProgressMsg] = useState('')
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    listRequirements()
-      .then(setRequirements)
-      .catch(() => {/* server may not be running */})
-  }, [setRequirements])
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) =>
@@ -42,28 +35,25 @@ export default function ReviewPage() {
   }
 
   async function handleTitleUpdate(id: string, title: string) {
-    setError(null)
     try {
       const updated = await updateRequirement(id, { title })
       setRequirements(requirements.map((r) => (r.id === id ? updated : r)))
     } catch (e) {
-      setError(e instanceof Error ? e.message : '수정 실패')
+      toastError(e instanceof Error ? e.message : '수정 실패')
     }
   }
 
   async function handleDelete(id: string) {
-    setError(null)
     try {
       await deleteRequirement(id)
       setRequirements(requirements.filter((r) => r.id !== id))
       setSelectedIds((prev) => prev.filter((x) => x !== id))
     } catch (e) {
-      setError(e instanceof Error ? e.message : '삭제 실패')
+      toastError(e instanceof Error ? e.message : '삭제 실패')
     }
   }
 
   async function handleMerge(ids: string[]) {
-    setError(null)
     try {
       const merged = await mergeRequirements({ requirement_ids: ids })
       setRequirements([
@@ -72,12 +62,11 @@ export default function ReviewPage() {
       ])
       setSelectedIds([])
     } catch (e) {
-      setError(e instanceof Error ? e.message : '병합 실패')
+      toastError(e instanceof Error ? e.message : '병합 실패')
     }
   }
 
   async function handleSplitConfirm(id: string, offset: number) {
-    setError(null)
     setSplitTarget(null)
     try {
       const parts = await splitRequirement({ requirement_id: id, split_offset: offset })
@@ -86,12 +75,11 @@ export default function ReviewPage() {
         ...parts,
       ])
     } catch (e) {
-      setError(e instanceof Error ? e.message : '분리 실패')
+      toastError(e instanceof Error ? e.message : '분리 실패')
     }
   }
 
   async function handleInfer() {
-    setError(null)
     setInferring(true)
     setProgress(0)
     setProgressMsg('추론 준비 중...')
@@ -107,45 +95,28 @@ export default function ReviewPage() {
           }
         },
       )
-      // Fetch edges after done
       const edgeRes = await listEdges()
       setEdges(edgeRes.edges)
       navigate('/graph')
     } catch (e) {
+      toastError(e instanceof Error ? e.message : '추론 실패')
+    } finally {
       setInferring(false)
-      setError(e instanceof Error ? e.message : '추론 실패')
-      return
     }
-    setInferring(false)
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '2rem auto', padding: '0 1rem', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate('/')}
-          style={{ background: 'none', border: '1px solid #cbd5e1', borderRadius: 6, padding: '0.3rem 0.75rem', cursor: 'pointer' }}
+          className="bg-transparent border border-slate-300 rounded-md px-3 py-1 cursor-pointer text-sm"
         >
           ← 업로드
         </button>
-        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>요구사항 검토</h1>
-        <span style={{ color: '#64748b', fontSize: '0.875rem' }}>({requirements.length}개)</span>
+        <h1 className="m-0 text-[1.4rem] font-bold">요구사항 검토</h1>
+        <span className="text-slate-500 text-sm">({requirements.length}개)</span>
       </div>
-
-      {error && (
-        <div style={{
-          background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6,
-          padding: '0.75rem 1rem', color: '#dc2626', marginBottom: '1rem', fontSize: '0.875rem',
-        }}>
-          {error}
-          <button
-            onClick={() => setError(null)}
-            style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       <RequirementList
         requirements={requirements}
@@ -159,16 +130,11 @@ export default function ReviewPage() {
         disabled={inferring}
       />
 
-      <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+      <div className="mt-8 pt-6 border-t border-slate-200">
         <button
           onClick={() => void handleInfer()}
           disabled={inferring || requirements.length === 0}
-          style={{
-            padding: '0.65rem 1.5rem', borderRadius: 8, border: 'none',
-            background: inferring || requirements.length === 0 ? '#cbd5e1' : '#7c3aed',
-            color: '#fff', fontWeight: 700, fontSize: '1rem',
-            cursor: inferring || requirements.length === 0 ? 'not-allowed' : 'pointer',
-          }}
+          className="px-6 py-2.5 rounded-lg border-none bg-violet-700 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed"
         >
           의존관계 추론 시작
         </button>

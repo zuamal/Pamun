@@ -10,51 +10,38 @@ interface ImpactItemProps {
 
 export default function ImpactItem({ item, onClick, selected }: ImpactItemProps) {
   const isAffected = item.impact_level === 'affected'
-  const accent = isAffected ? '#ef4444' : '#f59e0b'
-  const bg = isAffected ? (selected ? '#fef2f2' : '#fff') : (selected ? '#fffbeb' : '#fff')
-  const border = isAffected
-    ? selected ? '#fca5a5' : '#fecaca'
-    : selected ? '#fcd34d' : '#fde68a'
 
   return (
     <div
       onClick={() => onClick(item)}
-      style={{
-        padding: '10px 12px',
-        borderRadius: 8,
-        border: `1px solid ${border}`,
-        background: bg,
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        boxShadow: selected ? `0 0 0 2px ${accent}33` : 'none',
-      }}
+      className={[
+        'px-3 py-2.5 rounded-lg border cursor-pointer transition-all',
+        isAffected
+          ? selected ? 'border-red-300 bg-red-50 shadow-[0_0_0_2px_#ef444433]' : 'border-red-200 bg-white'
+          : selected ? 'border-yellow-300 bg-amber-50 shadow-[0_0_0_2px_#f59e0b33]' : 'border-yellow-200 bg-white',
+      ].join(' ')}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 700 }}>
+      <div className="flex items-center gap-1.5 mb-1">
+        <span className="text-[11px] text-indigo-500 font-bold">
           {item.display_label}
         </span>
-        <span style={{ fontSize: 11, color: '#94a3b8', flex: 1 }}>
+        <span className="text-[11px] text-slate-400 flex-1">
           {item.document_filename}
         </span>
         <span
-          style={{
-            fontSize: 10,
-            padding: '1px 7px',
-            borderRadius: 10,
-            background: accent,
-            color: '#fff',
-            fontWeight: 700,
-            flexShrink: 0,
-          }}
+          className={[
+            'text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white shrink-0',
+            isAffected ? 'bg-red-500' : 'bg-amber-500',
+          ].join(' ')}
         >
           {isAffected ? '영향받음' : '검토 권장'}
         </span>
       </div>
-      <div style={{ fontSize: 13, color: '#1e293b', fontWeight: 500, marginBottom: 4 }}>
+      <div className="text-[13px] text-slate-900 font-medium mb-1">
         {item.requirement_title}
       </div>
       {item.evidence && (
-        <div style={{ fontSize: 12, color: '#64748b', fontStyle: 'italic' }}>
+        <div className="text-xs text-slate-500 italic">
           "{item.evidence}"
         </div>
       )}

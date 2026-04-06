@@ -42,24 +42,18 @@ export default function RequirementItem({
 
   return (
     <li
-      style={{
-        border: `1px solid ${isSelected ? '#3b82f6' : '#e2e8f0'}`,
-        borderRadius: 8,
-        padding: '0.75rem 1rem',
-        marginBottom: '0.5rem',
-        background: isSelected ? '#eff6ff' : '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.4rem',
-      }}
+      className={[
+        'border rounded-lg px-4 py-3 mb-2 flex flex-col gap-1.5',
+        isSelected ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white',
+      ].join(' ')}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div className="flex items-center gap-2">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={onToggleSelect}
           disabled={disabled}
-          style={{ cursor: 'pointer', flexShrink: 0 }}
+          className="cursor-pointer shrink-0"
         />
         {editing ? (
           <input
@@ -69,16 +63,13 @@ export default function RequirementItem({
             onBlur={commitEdit}
             onKeyDown={(e) => { if (e.key === 'Enter') commitEdit() }}
             autoFocus
-            style={{
-              flex: 1, fontWeight: 600, fontSize: '0.95rem',
-              border: '1px solid #3b82f6', borderRadius: 4, padding: '0.15rem 0.4rem',
-            }}
+            className="flex-1 font-semibold text-[0.95rem] border border-blue-400 rounded px-1.5 py-0.5 focus:outline-none"
           />
         ) : (
           <span
             onClick={() => { if (!disabled) { setEditing(true); setTitleValue(requirement.title) } }}
             title="클릭하여 편집"
-            style={{ flex: 1, fontWeight: 600, fontSize: '0.95rem', cursor: disabled ? 'default' : 'text' }}
+            className={['flex-1 font-semibold text-[0.95rem]', disabled ? 'cursor-default' : 'cursor-text'].join(' ')}
           >
             {requirement.title}
           </span>
@@ -86,32 +77,21 @@ export default function RequirementItem({
         <button
           onClick={() => onSplit(requirement)}
           disabled={disabled}
-          style={{
-            fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: 4,
-            border: '1px solid #cbd5e1', background: '#f8fafc', cursor: disabled ? 'not-allowed' : 'pointer',
-          }}
+          className="text-xs px-2 py-0.5 rounded border border-slate-300 bg-slate-50 disabled:cursor-not-allowed cursor-pointer"
         >
           분리
         </button>
         <button
           onClick={() => onDelete(requirement.id)}
           disabled={disabled}
-          style={{
-            fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: 4,
-            border: '1px solid #fca5a5', color: '#ef4444', background: 'none',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-          }}
+          className="text-xs px-2 py-0.5 rounded border border-red-300 text-red-500 bg-transparent disabled:cursor-not-allowed cursor-pointer"
         >
           삭제
         </button>
       </div>
-      <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', paddingLeft: '1.5rem' }}>
-        {preview}
-      </p>
+      <p className="m-0 text-sm text-slate-500 pl-6">{preview}</p>
       {document && (
-        <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', paddingLeft: '1.5rem' }}>
-          📄 {document.filename}
-        </p>
+        <p className="m-0 text-xs text-slate-400 pl-6">📄 {document.filename}</p>
       )}
     </li>
   )

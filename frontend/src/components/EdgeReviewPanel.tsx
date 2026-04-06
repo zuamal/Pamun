@@ -19,40 +19,18 @@ export default function EdgeReviewPanel({
   const reqMap = Object.fromEntries(requirements.map((r) => [r.id, r]))
 
   return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        borderRadius: 10,
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-        overflowY: 'auto',
-        height: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
-      <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>
+    <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 overflow-y-auto h-full box-border">
+      <div className="font-bold text-[14px] text-slate-900">
         PENDING Edge 검토
         {pendingEdges.length > 0 && (
-          <span
-            style={{
-              marginLeft: 8,
-              background: '#fef3c7',
-              color: '#92400e',
-              borderRadius: 10,
-              padding: '1px 8px',
-              fontSize: 12,
-            }}
-          >
+          <span className="ml-2 bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-xs">
             {pendingEdges.length}
           </span>
         )}
       </div>
 
       {pendingEdges.length === 0 && (
-        <div style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
+        <div className="text-[13px] text-slate-400 text-center py-4">
           검토할 PENDING Edge가 없습니다
         </div>
       )}
@@ -64,83 +42,57 @@ export default function EdgeReviewPanel({
         return (
           <div
             key={edge.id}
-            style={{
-              border: '1px solid #fed7aa',
-              borderRadius: 8,
-              padding: '10px 12px',
-              background: '#fffbf5',
-              fontSize: 12,
-            }}
+            className="border border-orange-200 rounded-lg px-3 py-2.5 bg-orange-50 text-xs"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
-              <span style={{ fontWeight: 600, color: '#334155' }}>
+            <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+              <span className="font-semibold text-slate-700">
                 {src?.display_label ?? edge.source_id}
               </span>
-              <span style={{ color: '#64748b' }}>→</span>
-              <span style={{ fontWeight: 600, color: '#334155' }}>
+              <span className="text-slate-500">→</span>
+              <span className="font-semibold text-slate-700">
                 {tgt?.display_label ?? edge.target_id}
               </span>
               <span
-                style={{
-                  marginLeft: 'auto',
-                  fontSize: 10,
-                  padding: '1px 6px',
-                  borderRadius: 4,
-                  background: edge.relation_type === 'depends_on' ? '#dbeafe' : '#ede9fe',
-                  color: edge.relation_type === 'depends_on' ? '#1d4ed8' : '#6d28d9',
-                }}
+                className={[
+                  'ml-auto text-[10px] px-1.5 py-0.5 rounded',
+                  edge.relation_type === 'depends_on'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-violet-100 text-violet-700',
+                ].join(' ')}
               >
                 {edge.relation_type}
               </span>
             </div>
 
             {src && (
-              <div style={{ color: '#475569', marginBottom: 2 }}>
-                <span style={{ fontWeight: 500 }}>{src.title}</span>
+              <div className="text-slate-600 mb-0.5">
+                <span className="font-medium">{src.title}</span>
               </div>
             )}
             {tgt && (
-              <div style={{ color: '#475569', marginBottom: 6 }}>
-                <span style={{ fontWeight: 500 }}>→ {tgt.title}</span>
+              <div className="text-slate-600 mb-1.5">
+                <span className="font-medium">→ {tgt.title}</span>
               </div>
             )}
 
             {edge.evidence && (
-              <div style={{ color: '#64748b', fontStyle: 'italic', marginBottom: 6 }}>
+              <div className="text-slate-500 italic mb-1.5">
                 "{edge.evidence}"
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: '#94a3b8' }}>신뢰도 {confidence}%</span>
-              <div style={{ display: 'flex', gap: 6 }}>
+            <div className="flex justify-between items-center">
+              <span className="text-[11px] text-slate-400">신뢰도 {confidence}%</span>
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => onApprove(edge.id)}
-                  style={{
-                    padding: '3px 10px',
-                    borderRadius: 5,
-                    border: 'none',
-                    background: '#22c55e',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    fontWeight: 600,
-                  }}
+                  className="px-2.5 py-0.5 rounded border-none bg-green-500 text-white cursor-pointer text-xs font-semibold"
                 >
                   승인
                 </button>
                 <button
                   onClick={() => onReject(edge.id)}
-                  style={{
-                    padding: '3px 10px',
-                    borderRadius: 5,
-                    border: 'none',
-                    background: '#ef4444',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    fontWeight: 600,
-                  }}
+                  className="px-2.5 py-0.5 rounded border-none bg-red-500 text-white cursor-pointer text-xs font-semibold"
                 >
                   거부
                 </button>

@@ -21,24 +21,16 @@ export default function SplitModal({ requirement, onConfirm, onClose }: Props) {
 
   return (
     <div
-      style={{
-        position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,0.4)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]"
       onClick={onClose}
     >
       <div
-        style={{
-          background: '#fff', borderRadius: 10, padding: '1.5rem',
-          width: '90%', maxWidth: 600, maxHeight: '80vh', overflowY: 'auto',
-        }}
+        className="bg-white rounded-xl p-6 w-[90%] max-w-2xl max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ margin: '0 0 1rem' }}>요구사항 분리</h3>
+        <h3 className="m-0 mb-4 font-bold text-base">요구사항 분리</h3>
 
-        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 0.75rem' }}>
+        <p className="text-sm text-slate-500 m-0 mb-3">
           분리 위치(offset): 0 ~ {text.length} 사이 값 입력
         </p>
 
@@ -48,7 +40,7 @@ export default function SplitModal({ requirement, onConfirm, onClose }: Props) {
           max={text.length}
           value={clampedOffset}
           onChange={(e) => setOffset(Number(e.target.value))}
-          style={{ width: '100%', marginBottom: '0.5rem' }}
+          className="w-full mb-2"
         />
         <input
           type="number"
@@ -56,36 +48,28 @@ export default function SplitModal({ requirement, onConfirm, onClose }: Props) {
           max={text.length}
           value={clampedOffset}
           onChange={(e) => setOffset(Number(e.target.value))}
-          style={{ width: '5rem', marginBottom: '1rem' }}
+          className="w-20 mb-4 border border-slate-200 rounded px-2 py-1 text-sm"
         />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem' }}>파트 1</p>
-            <pre style={{
-              background: '#f1f5f9', borderRadius: 6, padding: '0.5rem',
-              fontSize: '0.8rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-              margin: 0, minHeight: '3rem',
-            }}>
-              {part1 || <span style={{ color: '#94a3b8' }}>(비어 있음)</span>}
+            <p className="text-xs text-slate-500 m-0 mb-1">파트 1</p>
+            <pre className="bg-slate-100 rounded-md p-2 text-xs whitespace-pre-wrap break-words m-0 min-h-12">
+              {part1 || <span className="text-slate-400">(비어 있음)</span>}
             </pre>
           </div>
           <div>
-            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem' }}>파트 2</p>
-            <pre style={{
-              background: '#f1f5f9', borderRadius: 6, padding: '0.5rem',
-              fontSize: '0.8rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-              margin: 0, minHeight: '3rem',
-            }}>
-              {part2 || <span style={{ color: '#94a3b8' }}>(비어 있음)</span>}
+            <p className="text-xs text-slate-500 m-0 mb-1">파트 2</p>
+            <pre className="bg-slate-100 rounded-md p-2 text-xs whitespace-pre-wrap break-words m-0 min-h-12">
+              {part2 || <span className="text-slate-400">(비어 있음)</span>}
             </pre>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+        <div className="flex gap-2 justify-end">
           <button
             onClick={onClose}
-            style={{ padding: '0.4rem 1rem', borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer' }}
+            className="px-4 py-1.5 rounded-md border border-slate-300 bg-white cursor-pointer"
           >
             취소
           </button>
@@ -96,10 +80,7 @@ export default function SplitModal({ requirement, onConfirm, onClose }: Props) {
               }
             }}
             disabled={clampedOffset <= 0 || clampedOffset >= text.length}
-            style={{
-              padding: '0.4rem 1rem', borderRadius: 6, border: 'none',
-              background: '#3b82f6', color: '#fff', cursor: 'pointer',
-            }}
+            className="px-4 py-1.5 rounded-md border-none bg-blue-500 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             분리 확인
           </button>

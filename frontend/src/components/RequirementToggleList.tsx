@@ -15,67 +15,43 @@ export default function RequirementToggleList({
 }: RequirementToggleListProps) {
   if (requirements.length === 0) {
     return (
-      <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: '16px 0' }}>
+      <div className="text-[13px] text-slate-400 text-center py-4">
         요구사항이 없습니다
       </div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div className="flex flex-col gap-1.5">
       {requirements.map((req) => (
         <div
           key={req.id}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '8px 12px',
-            borderRadius: 8,
-            border: `1px solid ${req.changed ? '#fed7aa' : '#e2e8f0'}`,
-            background: req.changed ? '#fffbf5' : '#fff',
-            transition: 'all 0.15s',
-          }}
+          className={[
+            'flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all',
+            req.changed ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white',
+          ].join(' ')}
         >
           <input
             type="checkbox"
             checked={req.changed ?? false}
             onChange={(e) => onToggle(req, e.target.checked)}
-            style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#f97316', flexShrink: 0 }}
+            className="w-4 h-4 cursor-pointer accent-orange-500 shrink-0"
           />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-              <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 700 }}>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-[11px] text-indigo-500 font-bold">
                 {req.display_label}
               </span>
-              <span style={{ fontSize: 11, color: '#94a3b8' }}>
+              <span className="text-[11px] text-slate-400">
                 {documents[req.location.document_id] ?? req.location.document_id}
               </span>
               {req.changed && (
-                <span
-                  style={{
-                    fontSize: 10,
-                    padding: '1px 7px',
-                    borderRadius: 10,
-                    background: '#f97316',
-                    color: '#fff',
-                    fontWeight: 700,
-                    marginLeft: 'auto',
-                  }}
-                >
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500 text-white font-bold ml-auto">
                   변경 예정
                 </span>
               )}
             </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: '#334155',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <div className="text-[13px] text-slate-700 truncate">
               {req.title}
             </div>
           </div>

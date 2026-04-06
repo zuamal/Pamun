@@ -8,6 +8,7 @@ import { useImpactStore } from '../stores/impactStore'
 import RequirementToggleList from '../components/RequirementToggleList'
 import ImpactResultPanel from '../components/ImpactResultPanel'
 import DocumentViewer from '../components/DocumentViewer'
+import { toastSuccess, toastError } from '../lib/toast'
 import type { components } from '../api/types.generated'
 
 type Requirement = components['schemas']['Requirement']
@@ -22,7 +23,6 @@ export default function ImpactPage() {
   const [analyzing, setAnalyzing] = useState(false)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<ImpactItemData | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function ImpactPage() {
         const updated = await updateRequirement(req.id, { changed })
         setRequirements(requirements.map((r) => (r.id === updated.id ? updated : r)))
       } catch {
-        // ignore toggle errors silently — could add toast here
+        // ignore
       }
     },
     [requirements, setRequirements],
@@ -68,121 +68,43 @@ export default function ImpactPage() {
     setSaving(true)
     try {
       const res = await saveSession()
-      setToast(`저장 완료: ${res.filepath}`)
-      setTimeout(() => setToast(null), 4000)
+      toastSuccess(`저장 완료: ${res.filepath}`)
     } catch (err) {
-      setToast(err instanceof Error ? err.message : '저장 실패')
-      setTimeout(() => setToast(null), 4000)
+      toastError(err instanceof Error ? err.message : '저장 실패')
     } finally {
       setSaving(false)
     }
   }, [])
 
   return (
-    <div style={{ display: 'flex', height: '100vh', flexDirection: 'column', background: '#f8fafc' }}>
+    <div className="flex h-full flex-col bg-slate-50">
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '10px 24px',
-          background: '#fff',
-          borderBottom: '1px solid #e2e8f0',
-          gap: 12,
-          flexShrink: 0,
-        }}
-      >
+      <div className="flex items-center px-6 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
         <button
           onClick={() => navigate('/graph')}
-          style={{
-            padding: '6px 14px',
-            borderRadius: 7,
-            border: '1px solid #e2e8f0',
-            background: '#f8fafc',
-            color: '#475569',
-            cursor: 'pointer',
-            fontSize: 13,
-          }}
+          className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px]"
         >
           ← 그래프로
         </button>
-        <div style={{ fontWeight: 700, fontSize: 16, color: '#1e293b', flex: 1 }}>
-          영향 분석
-        </div>
+        <div className="font-bold text-base text-slate-900 flex-1">영향 분석</div>
         <button
           onClick={() => void handleSave()}
           disabled={saving}
-          style={{
-            padding: '7px 16px',
-            borderRadius: 7,
-            border: '1px solid #e2e8f0',
-            background: '#f8fafc',
-            color: '#475569',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            fontSize: 13,
-            opacity: saving ? 0.7 : 1,
-          }}
+          className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {saving ? '저장 중...' : '세션 저장'}
         </button>
       </div>
 
-      {/* Toast */}
-      {toast && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 24,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#1e293b',
-            color: '#fff',
-            padding: '10px 20px',
-            borderRadius: 8,
-            fontSize: 13,
-            zIndex: 2000,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-            maxWidth: '80vw',
-            textAlign: 'center',
-          }}
-        >
-          {toast}
-        </div>
-      )}
-
       {/* Body */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="flex flex-1 overflow-hidden">
         {/* Left: requirement toggle list */}
-        <div
-          style={{
-            width: 360,
-            borderRight: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              padding: '14px 16px 10px',
-              borderBottom: '1px solid #e2e8f0',
-              background: '#fff',
-              flexShrink: 0,
-            }}
-          >
-            <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', marginBottom: 10 }}>
+        <div className="w-[360px] border-r border-slate-200 flex flex-col overflow-hidden">
+          <div className="px-4 pt-3.5 pb-2.5 border-b border-slate-200 bg-white shrink-0">
+            <div className="font-semibold text-[13px] text-slate-900 mb-2.5">
               변경 예정 요구사항
               {changedCount > 0 && (
-                <span
-                  style={{
-                    marginLeft: 8,
-                    background: '#f97316',
-                    color: '#fff',
-                    borderRadius: 10,
-                    padding: '1px 8px',
-                    fontSize: 11,
-                  }}
-                >
+                <span className="ml-2 bg-orange-500 text-white rounded-full px-2 py-0.5 text-[11px]">
                   {changedCount}
                 </span>
               )}
@@ -190,34 +112,22 @@ export default function ImpactPage() {
             <button
               onClick={() => void handleAnalyze()}
               disabled={analyzing || changedCount === 0}
-              style={{
-                width: '100%',
-                padding: '8px 0',
-                borderRadius: 7,
-                border: 'none',
-                background: changedCount === 0 ? '#e2e8f0' : '#7c3aed',
-                color: changedCount === 0 ? '#94a3b8' : '#fff',
-                cursor: changedCount === 0 ? 'not-allowed' : analyzing ? 'wait' : 'pointer',
-                fontSize: 13,
-                fontWeight: 600,
-              }}
+              className={[
+                'w-full py-2 rounded-lg border-none text-[13px] font-semibold',
+                changedCount === 0
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : analyzing
+                    ? 'bg-violet-700 text-white cursor-wait'
+                    : 'bg-violet-700 text-white cursor-pointer',
+              ].join(' ')}
             >
               {analyzing ? '분석 중...' : '영향 분석 실행'}
             </button>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px' }}>
+          <div className="flex-1 overflow-y-auto p-3">
             {changedCount === 0 && requirements.length > 0 && (
-              <div
-                style={{
-                  fontSize: 13,
-                  color: '#94a3b8',
-                  textAlign: 'center',
-                  padding: '12px 0 16px',
-                  borderBottom: '1px solid #f1f5f9',
-                  marginBottom: 12,
-                }}
-              >
+              <div className="text-[13px] text-slate-400 text-center py-3 pb-4 border-b border-slate-100 mb-3">
                 변경 예정으로 표시된 요구사항이 없습니다
               </div>
             )}
@@ -230,52 +140,23 @@ export default function ImpactPage() {
         </div>
 
         {/* Right: impact results */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        <div className="flex-1 overflow-y-auto p-6">
           {analyzing && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                color: '#7c3aed',
-                fontSize: 14,
-                marginBottom: 20,
-              }}
-            >
+            <div className="flex items-center gap-2.5 text-violet-700 text-[14px] mb-5">
               <span>분석 중...</span>
             </div>
           )}
 
           {analysisError && (
-            <div
-              style={{
-                padding: '10px 14px',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: 8,
-                color: '#b91c1c',
-                fontSize: 13,
-                marginBottom: 16,
-              }}
-            >
+            <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-[13px] mb-4">
               {analysisError}
             </div>
           )}
 
           {!impactResult && !analyzing && !analysisError && (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '60%',
-                color: '#94a3b8',
-                gap: 12,
-              }}
-            >
-              <div style={{ fontSize: 40 }}>📊</div>
-              <div style={{ fontSize: 14 }}>
+            <div className="flex flex-col items-center justify-center h-[60%] text-slate-400 gap-3">
+              <div className="text-[40px]">📊</div>
+              <div className="text-[14px]">
                 왼쪽에서 변경 예정 요구사항을 선택하고 분석을 실행하세요
               </div>
             </div>

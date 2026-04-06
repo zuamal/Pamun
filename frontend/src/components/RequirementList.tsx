@@ -30,30 +30,24 @@ export default function RequirementList({
   const docMap = Object.fromEntries(documents.map((d) => [d.id, d]))
 
   if (requirements.length === 0) {
-    return <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>파싱된 요구사항이 없습니다.</p>
+    return <p className="text-slate-400 text-sm">파싱된 요구사항이 없습니다.</p>
   }
 
   return (
     <div>
       {selectedIds.length >= 2 && (
-        <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.875rem', color: '#475569' }}>
-            {selectedIds.length}개 선택됨
-          </span>
+        <div className="mb-3 flex items-center gap-2">
+          <span className="text-sm text-slate-600">{selectedIds.length}개 선택됨</span>
           <button
             onClick={() => onMerge(selectedIds)}
             disabled={disabled}
-            style={{
-              padding: '0.3rem 0.9rem', borderRadius: 6, border: 'none',
-              background: '#8b5cf6', color: '#fff', cursor: disabled ? 'not-allowed' : 'pointer',
-              fontWeight: 600, fontSize: '0.875rem',
-            }}
+            className="px-3 py-1 rounded-md bg-violet-500 text-white font-semibold text-sm disabled:cursor-not-allowed cursor-pointer"
           >
             병합
           </button>
         </div>
       )}
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      <ul className="list-none p-0 m-0">
         {requirements.map((req) => (
           <RequirementItem
             key={req.id}

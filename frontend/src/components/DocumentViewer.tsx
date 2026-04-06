@@ -41,26 +41,11 @@ export default function DocumentViewer({
     const after = rawText.slice(charEnd)
 
     return (
-      <pre
-        style={{
-          margin: 0,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-          fontSize: 12,
-          lineHeight: 1.7,
-          color: '#334155',
-        }}
-      >
+      <pre className="m-0 whitespace-pre-wrap break-words font-mono text-xs leading-7 text-slate-700">
         {before}
         <mark
           ref={(el) => { highlightRef.current = el }}
-          style={{
-            background: '#fef08a',
-            borderRadius: 3,
-            padding: '0 1px',
-            color: '#1e293b',
-          }}
+          className="bg-yellow-200 rounded-sm px-px text-slate-900"
         >
           {highlighted}
         </mark>
@@ -71,67 +56,31 @@ export default function DocumentViewer({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.45)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className="fixed inset-0 bg-black/45 flex items-center justify-center z-[1000]"
       onClick={onClose}
     >
       <div
-        style={{
-          background: '#fff',
-          borderRadius: 12,
-          width: '70vw',
-          maxWidth: 860,
-          maxHeight: '80vh',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 12px 48px rgba(0,0,0,0.2)',
-          overflow: 'hidden',
-        }}
+        className="bg-white rounded-xl w-[70vw] max-w-[860px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 20px',
-            borderBottom: '1px solid #e2e8f0',
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b' }}>원문 보기</div>
+        <div className="flex justify-between items-center px-5 py-3.5 border-b border-slate-200 shrink-0">
+          <div className="font-bold text-[15px] text-slate-900">원문 보기</div>
           <button
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: 20,
-              cursor: 'pointer',
-              color: '#94a3b8',
-              lineHeight: 1,
-            }}
+            className="bg-transparent border-none text-xl cursor-pointer text-slate-400 leading-none"
           >
             ×
           </button>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+        <div className="flex-1 overflow-y-auto px-5 py-4">
           {loading && (
-            <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>
-              로딩 중...
-            </div>
+            <div className="text-slate-400 text-[13px] text-center py-6">로딩 중...</div>
           )}
           {error && (
-            <div style={{ color: '#ef4444', fontSize: 13 }}>{error}</div>
+            <div className="text-red-500 text-[13px]">{error}</div>
           )}
           {!loading && !error && renderText()}
         </div>
