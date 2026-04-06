@@ -25,7 +25,7 @@ _MAX_FILES = 5
 async def upload_documents(files: list[UploadFile]) -> list[Document]:
     if len(files) > _MAX_FILES:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"최대 {_MAX_FILES}개까지 업로드할 수 있습니다.",
         )
 
@@ -35,7 +35,7 @@ async def upload_documents(files: list[UploadFile]) -> list[Document]:
         fmt = detect_format(filename)
         if fmt is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"지원하지 않는 파일 형식입니다: {filename}. (.md, .docx, .pdf만 허용)",
             )
 
@@ -44,7 +44,7 @@ async def upload_documents(files: list[UploadFile]) -> list[Document]:
             raw_text = extract_text(content, fmt)
         except ValueError as exc:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=str(exc),
             ) from exc
 

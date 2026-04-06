@@ -30,7 +30,7 @@ async def patch_requirement(
 ) -> Requirement:
     if body.title is None and body.changed is None:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="title과 changed 중 하나 이상을 제공해야 합니다.",
         )
     try:
@@ -67,7 +67,7 @@ async def merge_requirements_endpoint(body: RequirementMergeRequest) -> Requirem
         )
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         )
 
@@ -86,6 +86,6 @@ async def split_requirement_endpoint(body: RequirementSplitRequest) -> list[Requ
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="요구사항을 찾을 수 없습니다.")
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         )

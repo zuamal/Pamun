@@ -20,7 +20,7 @@ router = APIRouter(tags=["Parse & Requirements"])
 async def parse(request: ParseRequest) -> ParseResponse:
     if not request.document_ids:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="document_ids는 비어 있을 수 없습니다.",
         )
 
@@ -28,7 +28,7 @@ async def parse(request: ParseRequest) -> ParseResponse:
     missing = [did for did in request.document_ids if did not in store.documents]
     if missing:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"존재하지 않는 document_id: {missing}",
         )
 

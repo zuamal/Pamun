@@ -28,7 +28,7 @@ async def infer_edges_endpoint(body: EdgeInferRequest) -> list[Edge]:
         return run_inference(body.requirement_ids)
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         ) from exc
     except InstructorRetryException as exc:
@@ -69,7 +69,7 @@ async def create_edge_endpoint(body: EdgeCreateRequest) -> Edge:
         )
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         ) from exc
 
