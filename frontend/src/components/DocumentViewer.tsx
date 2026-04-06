@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { getDocument } from '../api/documents'
 
 interface DocumentViewerProps {
@@ -43,12 +44,16 @@ export default function DocumentViewer({
     return (
       <pre className="m-0 whitespace-pre-wrap break-words font-mono text-xs leading-7 text-slate-700">
         {before}
-        <span
+        {/* FR-9.4: scaleX wipe-reveal from left */}
+        <motion.span
           ref={highlightRef}
-          className="bg-yellow-200 font-semibold px-0.5 rounded text-slate-900"
+          className="bg-yellow-200 font-semibold px-0.5 rounded text-slate-900 inline-block origin-left"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
         >
           {highlighted}
-        </span>
+        </motion.span>
         {after}
       </pre>
     )

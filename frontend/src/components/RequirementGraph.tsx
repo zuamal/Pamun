@@ -1,20 +1,24 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
   MarkerType,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type Node,
   type Edge as FlowEdge,
   type Connection,
+  type NodeMouseHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import dagre from '@dagrejs/dagre'
 import type { components } from '../api/types.generated'
 import RequirementNode, { type RequirementNodeData } from './RequirementNode'
+import CustomConnectionLine from './CustomConnectionLine'
 import { DOC_COLORS } from '../utils/docColors'
 import { useGraphStore } from '../stores/graphStore'
 
@@ -96,7 +100,8 @@ interface RequirementGraphProps {
   onConnect: (sourceId: string, targetId: string) => void
 }
 
-export default function RequirementGraph({
+// Inner component — can use useReactFlow() because it's inside ReactFlowProvider
+function GraphCanvas({
   requirements,
   edges,
   selectedNodeId,
@@ -104,6 +109,7 @@ export default function RequirementGraph({
   onEdgeClick,
   onConnect,
 }: RequirementGraphProps) {
+  const { fitView } = useReactFlow()
   const { hiddenDocIds, showPending } = useGraphStore()
 
   const docColorMap = useMemo(() => {
@@ -111,7 +117,6 @@ export default function RequirementGraph({
     return Object.fromEntries(ids.map((id, i) => [id, DOC_COLORS[i % DOC_COLORS.length]]))
   }, [requirements])
 
-  // Apply filters
   const filteredRequirements = useMemo(
     () => requirements.filter((r) => !hiddenDocIds.includes(r.location.document_id)),
     [requirements, hiddenDocIds],
@@ -140,9 +145,16 @@ export default function RequirementGraph({
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
       const req = requirements.find((r) => r.id === node.id)
-      if (req) onNodeClick(req)
+      if (req) {
+        onNodeClick(req)
+        void fitView({
+          nodes: [{ id: node.id }],
+          duration: 800,
+          padding: 0.5,
+        })
+      }
     },
-    [requirements, onNodeClick],
+    [requirements, onNodeClick, fitView],
   )
 
   const handleEdgeClick = useCallback(
@@ -161,6 +173,18 @@ export default function RequirementGraph({
     [onConnect],
   )
 
+  // MiniMap node click — smooth pan to clicked node
+  const handleMiniMapNodeClick: NodeMouseHandler = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      void fitView({
+        nodes: [{ id: node.id }],
+        duration: 800,
+        padding: 0.5,
+      })
+    },
+    [fitView],
+  )
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -172,14 +196,24 @@ export default function RequirementGraph({
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
         onConnect={handleConnect}
+        connectionRadius={40}
+        connectionLineComponent={CustomConnectionLine}
         fitView
         minZoom={0.2}
         maxZoom={2}
       >
         <Background />
         <Controls />
-        <MiniMap />
+        <MiniMap onNodeClick={handleMiniMapNodeClick} />
       </ReactFlow>
     </div>
+  )
+}
+
+export default function RequirementGraph(props: RequirementGraphProps) {
+  return (
+    <ReactFlowProvider>
+      <GraphCanvas {...props} />
+    </ReactFlowProvider>
   )
 }

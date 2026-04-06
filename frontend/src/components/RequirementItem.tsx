@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import type { components } from '../api/types.generated'
 
 type Requirement = components['schemas']['Requirement']
@@ -36,7 +37,13 @@ export default function RequirementItem({
   const preview = requirement.original_text.slice(0, 120) + (requirement.original_text.length > 120 ? '…' : '')
 
   return (
-    <li
+    <motion.li
+      layout
+      layoutId={requirement.id}
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       className={[
         'border rounded-lg px-4 py-3 flex flex-col gap-1.5 transition-colors',
         isSelected ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300',
@@ -81,6 +88,6 @@ export default function RequirementItem({
         </button>
       </div>
       <p className="m-0 text-xs text-slate-500 pl-[calc(1rem+0.5rem+1px)] line-clamp-2">{preview}</p>
-    </li>
+    </motion.li>
   )
 }

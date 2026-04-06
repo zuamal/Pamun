@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { components } from '../api/types.generated'
 import ImpactItem from './ImpactItem'
 
@@ -10,12 +11,25 @@ interface ImpactResultPanelProps {
   onItemClick: (item: ImpactItemData) => void
 }
 
+// FR-9.4: container stagger — triggers re-run when the key changes
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+}
+
 export default function ImpactResultPanel({
   result,
   selectedItemId,
   onItemClick,
 }: ImpactResultPanelProps) {
   const { affected_items, review_items } = result
+
+  // Use a stable key based on the result to retrigger stagger on every new analysis
+  const resultKey = JSON.stringify({ a: affected_items.length, r: review_items.length })
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,7 +50,13 @@ export default function ImpactResultPanel({
             영향받는 요구사항 없음
           </div>
         ) : (
-          <div className="flex flex-col gap-1.5">
+          <motion.ul
+            key={`affected-${resultKey}`}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col gap-1.5 list-none p-0 m-0"
+          >
             {affected_items.map((item) => (
               <ImpactItem
                 key={item.requirement_id}
@@ -45,7 +65,7 @@ export default function ImpactResultPanel({
                 onClick={onItemClick}
               />
             ))}
-          </div>
+          </motion.ul>
         )}
       </div>
 
@@ -66,7 +86,13 @@ export default function ImpactResultPanel({
             검토 권장 요구사항 없음
           </div>
         ) : (
-          <div className="flex flex-col gap-1.5">
+          <motion.ul
+            key={`review-${resultKey}`}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col gap-1.5 list-none p-0 m-0"
+          >
             {review_items.map((item) => (
               <ImpactItem
                 key={item.requirement_id}
@@ -75,7 +101,7 @@ export default function ImpactResultPanel({
                 onClick={onItemClick}
               />
             ))}
-          </div>
+          </motion.ul>
         )}
       </div>
     </div>
