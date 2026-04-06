@@ -60,6 +60,7 @@ def doc_in_store() -> Document:
         filename="spec.md",
         format=DocumentFormat.MARKDOWN,
         raw_text=RAW_TEXT,
+        file_size=len(RAW_TEXT.encode()),
         uploaded_at=datetime.now(),
     )
     store.documents[doc.id] = doc
@@ -145,11 +146,11 @@ def test_parse_sse_multiple_documents(client: TestClient) -> None:
     """Multiple documents produce one 'parsing' event each."""
     doc1 = Document(
         id="doc-1", filename="a.md", format=DocumentFormat.MARKDOWN,
-        raw_text="Doc A", uploaded_at=datetime.now(),
+        raw_text="Doc A", file_size=5, uploaded_at=datetime.now(),
     )
     doc2 = Document(
         id="doc-2", filename="b.md", format=DocumentFormat.MARKDOWN,
-        raw_text="Doc B", uploaded_at=datetime.now(),
+        raw_text="Doc B", file_size=5, uploaded_at=datetime.now(),
     )
     store.documents["doc-1"] = doc1
     store.documents["doc-2"] = doc2

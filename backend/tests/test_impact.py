@@ -34,6 +34,7 @@ def _doc(doc_id: str = "doc-1", filename: str = "spec.md") -> Document:
         filename=filename,
         format=DocumentFormat.MARKDOWN,
         raw_text="text",
+        file_size=4,
         uploaded_at=datetime.now(),
     )
     store.documents[doc_id] = d

@@ -21,7 +21,11 @@ const DISABLED_TOOLTIPS: Record<number, string> = {
   4: '먼저 Edge를 승인하세요',
 }
 
-export default function Stepper() {
+interface StepperProps {
+  compact?: boolean
+}
+
+export default function Stepper({ compact = false }: StepperProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { requirements, edges } = useGraphStore()
@@ -44,6 +48,32 @@ export default function Stepper() {
       return
     }
     navigate(step.path)
+  }
+
+  if (compact) {
+    return (
+      <nav className="flex items-center gap-1">
+        {STEPS.map((step, i) => {
+          const active = pathname === step.path || (step.path === '/graph' && pathname.startsWith('/graph'))
+          const enabled = isEnabled(step.step)
+          return (
+            <button
+              key={step.path}
+              onClick={() => handleClick(step)}
+              title={step.label}
+              className={[
+                'flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-colors',
+                active ? 'bg-indigo-600 text-white' : '',
+                !active && enabled ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : '',
+                !enabled ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : '',
+              ].filter(Boolean).join(' ')}
+            >
+              {i + 1}
+            </button>
+          )
+        })}
+      </nav>
+    )
   }
 
   return (

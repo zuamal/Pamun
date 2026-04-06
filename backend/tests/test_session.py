@@ -35,6 +35,7 @@ def _populate_store() -> None:
         filename="spec.md",
         format=DocumentFormat.MARKDOWN,
         raw_text="Users must log in.",
+        file_size=18,
         uploaded_at=datetime.now(),
     )
     req = Requirement(

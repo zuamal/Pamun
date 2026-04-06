@@ -50,6 +50,7 @@ def doc() -> Document:
         filename="spec.md",
         format=DocumentFormat.MARKDOWN,
         raw_text=RAW_TEXT,
+        file_size=len(RAW_TEXT.encode()),
         uploaded_at=datetime.now(),
     )
     store.documents[d.id] = d
@@ -189,6 +190,7 @@ def test_merge_different_documents_fails(client: TestClient, doc: Document) -> N
         filename="other.md",
         format=DocumentFormat.MARKDOWN,
         raw_text="Other text",
+        file_size=10,
         uploaded_at=datetime.now(),
     )
     store.documents["doc-2"] = doc2

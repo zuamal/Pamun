@@ -51,7 +51,7 @@ export default function FileDropzone({ onFiles, disabled = false }: Props) {
           if (!disabled) handleFiles(e.dataTransfer.files)
         }}
         className={[
-          'border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200',
+          'border-2 border-dashed rounded-xl p-6 sm:p-10 text-center transition-all duration-200',
           dragging ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-slate-50',
           disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-blue-400 hover:bg-blue-50',
         ].join(' ')}
@@ -62,7 +62,7 @@ export default function FileDropzone({ onFiles, disabled = false }: Props) {
         ].join(' ')}>
           📂
         </div>
-        <p className="m-0 text-slate-500 font-medium">
+        <p className="m-0 text-slate-500 font-medium text-sm sm:text-base">
           파일을 드래그하거나 <strong>클릭</strong>하여 선택
         </p>
         <p className="mt-1.5 mb-0 text-sm text-slate-400">

@@ -23,6 +23,7 @@ def test_store_add_document(store: AppStore) -> None:
         filename="spec.md",
         format=DocumentFormat.MARKDOWN,
         raw_text="# Requirements\n- Login\n- Logout",
+        file_size=32,
         uploaded_at=datetime.now(),
     )
     store.documents[doc.id] = doc
@@ -35,6 +36,7 @@ def test_store_delete_document(store: AppStore) -> None:
         filename="spec.md",
         format=DocumentFormat.MARKDOWN,
         raw_text="text",
+        file_size=4,
         uploaded_at=datetime.now(),
     )
     store.documents[doc.id] = doc
@@ -130,6 +132,7 @@ def test_store_reset(store: AppStore) -> None:
         filename="f.md",
         format=DocumentFormat.MARKDOWN,
         raw_text="x",
+        file_size=1,
         uploaded_at=datetime.now(),
     )
     store.requirements["req-1"] = Requirement(
