@@ -91,6 +91,12 @@ class ImpactResponse(BaseModel):
     result: ImpactResult
 
 
+# --- Dummy bundles ---
+class BundleInfo(BaseModel):
+    name: str
+    files: list[str]
+
+
 # --- Session ---
 class SessionSaveResponse(BaseModel):
     filepath: str
