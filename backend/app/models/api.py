@@ -1,8 +1,27 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
 from .requirement import Requirement
 from .edge import Edge, EdgeStatus, RelationType
 from .impact import ImpactResult
 from .document import Document
+
+
+# --- SSE Progress ---
+
+class ProgressStep(str, Enum):
+    PREPARING = "preparing"
+    PARSING = "parsing"
+    INFERRING = "inferring"
+    SAVING = "saving"
+    DONE = "done"
+    ERROR = "error"
+
+
+class ProgressEvent(BaseModel):
+    step: ProgressStep
+    message: str
+    progress: int
 
 
 # --- Document ---

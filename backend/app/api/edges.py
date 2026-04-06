@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query, status
-from instructor.core.exceptions import InstructorRetryException
+from fastapi.responses import StreamingResponse
 
 from app.models.api import EdgeCreateRequest, EdgeInferRequest, EdgeListResponse, EdgeUpdateRequest
 from app.models.edge import Edge, EdgeStatus
 from app.services.edge_service import (
     create_edge,
     delete_edge,
-    run_inference,
+    stream_run_inference,
     update_edge,
 )
 from app.storage.store import store
@@ -19,24 +19,15 @@ router = APIRouter(prefix="/api/edges", tags=["Edges"])
 
 @router.post(
     "/infer",
-    response_model=list[Edge],
-    status_code=status.HTTP_201_CREATED,
-    summary="Infer dependency edges via LLM",
+    summary="Infer dependency edges via LLM (SSE stream)",
+    response_class=StreamingResponse,
 )
-async def infer_edges_endpoint(body: EdgeInferRequest) -> list[Edge]:
-    try:
-        return run_inference(body.requirement_ids)
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=str(exc),
-        ) from exc
-    except InstructorRetryException as exc:
-        cause = getattr(exc.__cause__, "message", None) or str(exc.__cause__ or exc)
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"LLM 호출 실패: {cause}",
-        ) from exc
+async def infer_edges_endpoint(body: EdgeInferRequest) -> StreamingResponse:
+    return StreamingResponse(
+        stream_run_inference(body.requirement_ids),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.get(
@@ -69,7 +60,7 @@ async def create_edge_endpoint(body: EdgeCreateRequest) -> Edge:
         )
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc),
         ) from exc
 

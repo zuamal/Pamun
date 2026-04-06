@@ -2,11 +2,19 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Iterator
+
+from instructor.core.exceptions import InstructorRetryException
 
 from app.llm.inferrer import infer_edges
+from app.models.api import ProgressEvent, ProgressStep
 from app.models.edge import Edge, EdgeStatus, RelationType
 from app.models.requirement import Requirement
 from app.storage.store import store
+
+
+def _sse(event: ProgressEvent) -> str:
+    return f"data: {event.model_dump_json()}\n\n"
 
 
 # ── Graph sync helpers ────────────────────────────────────────────────────────
@@ -46,6 +54,67 @@ def _existing_pairs() -> set[tuple[str, str]]:
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
+def stream_run_inference(requirement_ids: list[str] | None) -> Iterator[str]:
+    """Streaming version of run_inference.
+
+    Yields SSE-formatted strings with ProgressEvent JSON.
+    """
+    yield _sse(ProgressEvent(step=ProgressStep.PREPARING, message="추론 준비 중...", progress=0))
+
+    if requirement_ids is not None:
+        reqs: list[Requirement] = [
+            store.requirements[rid]
+            for rid in requirement_ids
+            if rid in store.requirements
+        ]
+    else:
+        reqs = list(store.requirements.values())
+
+    if not reqs:
+        yield _sse(ProgressEvent(
+            step=ProgressStep.ERROR,
+            message="추론할 요구사항이 없습니다. 먼저 /api/parse를 실행하세요.",
+            progress=0,
+        ))
+        return
+
+    yield _sse(ProgressEvent(
+        step=ProgressStep.INFERRING,
+        message=f"의존관계 추론 중... (요구사항 {len(reqs)}개)",
+        progress=50,
+    ))
+
+    try:
+        candidate_edges = infer_edges(reqs)
+    except InstructorRetryException as exc:
+        cause = getattr(exc.__cause__, "message", None) or str(exc.__cause__ or exc)
+        yield _sse(ProgressEvent(
+            step=ProgressStep.ERROR,
+            message=f"LLM 호출 실패: {cause}",
+            progress=50,
+        ))
+        return
+
+    yield _sse(ProgressEvent(step=ProgressStep.SAVING, message="Edge 생성 중...", progress=90))
+
+    existing_pairs = _existing_pairs()
+    new_edges: list[Edge] = []
+    for edge in candidate_edges:
+        pair = (edge.source_id, edge.target_id)
+        if pair in existing_pairs:
+            continue
+        existing_pairs.add(pair)
+        store.edges[edge.id] = edge
+        new_edges.append(edge)
+
+    count = len(new_edges)
+    yield _sse(ProgressEvent(
+        step=ProgressStep.DONE,
+        message=f"추론 완료 — Edge {count}개 생성",
+        progress=100,
+    ))
+
 
 def run_inference(requirement_ids: list[str] | None) -> list[Edge]:
     """Run LLM inference and store new edges (PENDING).

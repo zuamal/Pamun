@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { inferEdges } from '../api/edges'
+import { inferEdgesSSE, listEdges } from '../api/edges'
 import {
   deleteRequirement,
   listRequirements,
@@ -10,19 +10,23 @@ import {
 } from '../api/requirements'
 import RequirementList from '../components/RequirementList'
 import SplitModal from '../components/SplitModal'
+import ProgressModal from '../components/ProgressModal'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
 import type { components } from '../api/types.generated'
+import type { ProgressEvent } from '../api/sseTypes'
 
 type Requirement = components['schemas']['Requirement']
 
 export default function ReviewPage() {
   const navigate = useNavigate()
   const { documents } = useDocumentStore()
-  const { requirements, setRequirements } = useGraphStore()
+  const { requirements, setRequirements, setEdges } = useGraphStore()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [splitTarget, setSplitTarget] = useState<Requirement | null>(null)
   const [inferring, setInferring] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [progressMsg, setProgressMsg] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -89,14 +93,30 @@ export default function ReviewPage() {
   async function handleInfer() {
     setError(null)
     setInferring(true)
+    setProgress(0)
+    setProgressMsg('추론 준비 중...')
+
     try {
-      await inferEdges({ requirement_ids: null })
+      await inferEdgesSSE(
+        { requirement_ids: null },
+        (event: ProgressEvent) => {
+          setProgress(event.progress)
+          setProgressMsg(event.message)
+          if (event.step === 'error') {
+            throw new Error(event.message)
+          }
+        },
+      )
+      // Fetch edges after done
+      const edgeRes = await listEdges()
+      setEdges(edgeRes.edges)
       navigate('/graph')
     } catch (e) {
-      setError(e instanceof Error ? e.message : '추론 실패')
-    } finally {
       setInferring(false)
+      setError(e instanceof Error ? e.message : '추론 실패')
+      return
     }
+    setInferring(false)
   }
 
   return (
@@ -141,7 +161,7 @@ export default function ReviewPage() {
 
       <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
         <button
-          onClick={handleInfer}
+          onClick={() => void handleInfer()}
           disabled={inferring || requirements.length === 0}
           style={{
             padding: '0.65rem 1.5rem', borderRadius: 8, border: 'none',
@@ -150,7 +170,7 @@ export default function ReviewPage() {
             cursor: inferring || requirements.length === 0 ? 'not-allowed' : 'pointer',
           }}
         >
-          {inferring ? '추론 중… (최대 120초)' : '의존관계 추론 시작'}
+          의존관계 추론 시작
         </button>
       </div>
 
@@ -159,6 +179,8 @@ export default function ReviewPage() {
         onConfirm={handleSplitConfirm}
         onClose={() => setSplitTarget(null)}
       />
+
+      {inferring && <ProgressModal message={progressMsg} progress={progress} />}
     </div>
   )
 }

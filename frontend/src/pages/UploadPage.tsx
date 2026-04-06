@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { deleteDocument, listDocuments, uploadDocuments } from '../api/documents'
-import { parseDocuments } from '../api/requirements'
+import { parseDocumentsSSE } from '../api/requirements'
+import { listRequirements } from '../api/requirements'
 import DocumentList from '../components/DocumentList'
 import FileDropzone from '../components/FileDropzone'
+import ProgressModal from '../components/ProgressModal'
 import { useDocumentStore } from '../stores/documentStore'
+import { useGraphStore } from '../stores/graphStore'
+import type { ProgressEvent } from '../api/sseTypes'
 
 export default function UploadPage() {
   const navigate = useNavigate()
   const { documents, setDocuments } = useDocumentStore()
+  const { setRequirements } = useGraphStore()
   const [uploading, setUploading] = useState(false)
   const [parsing, setParsing] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [progressMsg, setProgressMsg] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  // Load existing documents on mount
   useEffect(() => {
     listDocuments()
       .then((res) => setDocuments(res.documents))
@@ -47,14 +53,30 @@ export default function UploadPage() {
     if (documents.length === 0) return
     setError(null)
     setParsing(true)
+    setProgress(0)
+    setProgressMsg('파싱 준비 중...')
+
     try {
-      await parseDocuments({ document_ids: documents.map((d) => d.id) })
+      await parseDocumentsSSE(
+        { document_ids: documents.map((d) => d.id) },
+        (event: ProgressEvent) => {
+          setProgress(event.progress)
+          setProgressMsg(event.message)
+          if (event.step === 'error') {
+            throw new Error(event.message)
+          }
+        },
+      )
+      // Fetch requirements after done
+      const reqs = await listRequirements()
+      setRequirements(reqs)
       navigate('/review')
     } catch (e) {
-      setError(e instanceof Error ? e.message : '파싱 실패')
-    } finally {
       setParsing(false)
+      setError(e instanceof Error ? e.message : '파싱 실패')
+      return
     }
+    setParsing(false)
   }
 
   const busy = uploading || parsing
@@ -89,7 +111,7 @@ export default function UploadPage() {
       )}
 
       <button
-        onClick={handleParse}
+        onClick={() => void handleParse()}
         disabled={busy || documents.length === 0}
         style={{
           padding: '0.65rem 1.5rem', borderRadius: 8, border: 'none',
@@ -99,8 +121,10 @@ export default function UploadPage() {
           display: 'flex', alignItems: 'center', gap: '0.5rem',
         }}
       >
-        {parsing ? '파싱 중… (최대 120초)' : '파싱 시작'}
+        파싱 시작
       </button>
+
+      {parsing && <ProgressModal message={progressMsg} progress={progress} />}
     </div>
   )
 }
