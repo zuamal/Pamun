@@ -3,6 +3,7 @@ import type { components } from '../api/types.generated'
 
 type Requirement = components['schemas']['Requirement']
 type Edge = components['schemas']['Edge']
+type ImpactResult = components['schemas']['ImpactResult']
 
 interface GraphStore {
   // Backend state (cache)
@@ -26,6 +27,12 @@ interface GraphStore {
   // Pending handle-drag connection
   pendingConnection: { sourceId: string; targetId: string } | null
   setPendingConnection: (conn: { sourceId: string; targetId: string } | null) => void
+
+  // Impact mode
+  impactMode: boolean
+  setImpactMode: (v: boolean) => void
+  impactResult: ImpactResult | null
+  setImpactResult: (result: ImpactResult | null) => void
 }
 
 export const useGraphStore = create<GraphStore>((set, get) => ({
@@ -53,4 +60,9 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
 
   pendingConnection: null,
   setPendingConnection: (conn) => set({ pendingConnection: conn }),
+
+  impactMode: false,
+  setImpactMode: (v) => set({ impactMode: v }),
+  impactResult: null,
+  setImpactResult: (result) => set({ impactResult: result }),
 }))

@@ -111,6 +111,7 @@ export default function ReviewPage() {
   }
 
   return (
+    <div className="flex-1 overflow-y-auto">
     <div className="max-w-3xl mx-auto py-8 px-4 pb-24">
       <div className="flex items-center gap-4 mb-6">
         <h1 className="m-0 text-xl font-bold text-slate-900">요구사항 검토</h1>
@@ -174,6 +175,7 @@ export default function ReviewPage() {
       />
 
       {inferring && <ProgressModal message={progressMsg} progress={progress} />}
+    </div>
     </div>
   )
 }

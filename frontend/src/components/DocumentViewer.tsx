@@ -7,6 +7,8 @@ interface DocumentViewerProps {
   charStart: number
   charEnd: number
   onClose: () => void
+  /** When true, renders as an inline panel (no fixed overlay/backdrop) */
+  panelMode?: boolean
 }
 
 export default function DocumentViewer({
@@ -14,6 +16,7 @@ export default function DocumentViewer({
   charStart,
   charEnd,
   onClose,
+  panelMode = false,
 }: DocumentViewerProps) {
   const [rawText, setRawText] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -23,6 +26,7 @@ export default function DocumentViewer({
   useEffect(() => {
     setLoading(true)
     setError(null)
+    setRawText(null)
     getDocument(documentId)
       .then((doc) => setRawText(doc.raw_text))
       .catch((err: unknown) => setError(err instanceof Error ? err.message : '로드 실패'))
@@ -59,36 +63,43 @@ export default function DocumentViewer({
     )
   }
 
+  const content = (
+    <div className={panelMode ? 'flex flex-col h-full bg-white' : 'bg-white rounded-xl w-[70vw] max-w-[860px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden'}>
+      {/* Header */}
+      <div className="flex justify-between items-center px-5 py-3.5 border-b border-slate-200 shrink-0">
+        <div className="font-bold text-[15px] text-slate-900">원문 보기</div>
+        <button
+          onClick={onClose}
+          className="bg-transparent border-none text-xl cursor-pointer text-slate-400 hover:text-slate-600 leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        {loading && (
+          <div className="text-slate-400 text-[13px] text-center py-6">로딩 중...</div>
+        )}
+        {error && (
+          <div className="text-red-500 text-[13px]">{error}</div>
+        )}
+        {!loading && !error && renderText()}
+      </div>
+    </div>
+  )
+
+  if (panelMode) {
+    return content
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/45 flex items-center justify-center z-[1000]"
       onClick={onClose}
     >
-      <div
-        className="bg-white rounded-xl w-[70vw] max-w-[860px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex justify-between items-center px-5 py-3.5 border-b border-slate-200 shrink-0">
-          <div className="font-bold text-[15px] text-slate-900">원문 보기</div>
-          <button
-            onClick={onClose}
-            className="bg-transparent border-none text-xl cursor-pointer text-slate-400 hover:text-slate-600 leading-none"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
-          {loading && (
-            <div className="text-slate-400 text-[13px] text-center py-6">로딩 중...</div>
-          )}
-          {error && (
-            <div className="text-red-500 text-[13px]">{error}</div>
-          )}
-          {!loading && !error && renderText()}
-        </div>
+      <div onClick={(e) => e.stopPropagation()}>
+        {content}
       </div>
     </div>
   )

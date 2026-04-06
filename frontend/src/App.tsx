@@ -5,7 +5,6 @@ import AppShell from './components/AppShell'
 import UploadPage from './pages/UploadPage'
 import ReviewPage from './pages/ReviewPage'
 import GraphPage from './pages/GraphPage'
-import ImpactPage from './pages/ImpactPage'
 
 interface ProtectedRouteProps {
   check: () => boolean
@@ -17,9 +16,8 @@ function ProtectedRoute({ check, children }: ProtectedRouteProps) {
 }
 
 export default function App() {
-  const { requirements, edges } = useGraphStore()
+  const { requirements } = useGraphStore()
   const hasRequirements = requirements.length > 0
-  const hasApprovedEdges = edges.some((e) => e.status === 'approved')
 
   return (
     <AppShell>
@@ -41,14 +39,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/impact"
-          element={
-            <ProtectedRoute check={() => hasApprovedEdges}>
-              <ImpactPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* F17: /impact → /graph 리디렉션 (F11 라우트 대체) */}
+        <Route path="/impact" element={<Navigate to="/graph" replace />} />
       </Routes>
     </AppShell>
   )
