@@ -8,16 +8,17 @@ interface Step {
   step: number
 }
 
-// ADR-17: 3단계 Stepper (F17에서 4단계 → 3단계)
 const STEPS: Step[] = [
   { label: '문서 업로드', path: '/', step: 1 },
   { label: '요구사항 검토', path: '/review', step: 2 },
-  { label: '그래프 & 영향 분석', path: '/graph', step: 3 },
+  { label: '그래프 & Edge 검토', path: '/graph', step: 3 },
+  { label: '영향 분석', path: '/impact', step: 4 },
 ]
 
 const DISABLED_TOOLTIPS: Record<number, string> = {
   2: '먼저 문서를 파싱하세요',
-  3: '먼저 Edge를 승인하세요',
+  3: '먼저 문서를 파싱하세요',
+  4: '먼저 Edge를 승인하세요',
 }
 
 interface StepperProps {
@@ -36,7 +37,8 @@ export default function Stepper({ compact = false }: StepperProps) {
   function isEnabled(step: number): boolean {
     if (step === 1) return true
     if (step === 2) return hasRequirements
-    if (step === 3) return hasApprovedEdges
+    if (step === 3) return hasRequirements
+    if (step === 4) return hasApprovedEdges
     return false
   }
 
@@ -49,11 +51,17 @@ export default function Stepper({ compact = false }: StepperProps) {
     navigate(step.path)
   }
 
+  function isActive(step: Step): boolean {
+    return pathname === step.path ||
+      (step.path === '/graph' && pathname.startsWith('/graph')) ||
+      (step.path === '/impact' && pathname.startsWith('/impact'))
+  }
+
   if (compact) {
     return (
       <nav className="flex items-center gap-1">
         {STEPS.map((step, i) => {
-          const active = pathname === step.path || (step.path === '/graph' && pathname.startsWith('/graph'))
+          const active = isActive(step)
           const enabled = isEnabled(step.step)
           return (
             <button
@@ -78,7 +86,7 @@ export default function Stepper({ compact = false }: StepperProps) {
   return (
     <nav className="flex flex-col gap-1 p-3 flex-1">
       {STEPS.map((step, i) => {
-        const active = pathname === step.path || (step.path === '/graph' && pathname.startsWith('/graph'))
+        const active = isActive(step)
         const enabled = isEnabled(step.step)
         const showTooltip = tooltip === step.step
 

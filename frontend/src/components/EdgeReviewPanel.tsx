@@ -9,6 +9,7 @@ interface EdgeReviewPanelProps {
   requirements: Requirement[]
   onApprove: (edgeId: string) => void
   onReject: (edgeId: string) => void
+  onEdgeHover?: (edgeId: string | null) => void
 }
 
 function confidenceColor(confidence: number): string {
@@ -22,6 +23,7 @@ export default function EdgeReviewPanel({
   requirements,
   onApprove,
   onReject,
+  onEdgeHover,
 }: EdgeReviewPanelProps) {
   const reqMap = Object.fromEntries(requirements.map((r) => [r.id, r]))
   // Optimistic UI: track locally removed edge IDs
@@ -64,6 +66,8 @@ export default function EdgeReviewPanel({
         return (
           <div
             key={edge.id}
+            onMouseEnter={() => onEdgeHover?.(edge.id)}
+            onMouseLeave={() => onEdgeHover?.(null)}
             className="border border-orange-200 rounded-xl p-3 bg-orange-50 flex flex-col gap-2"
           >
             {/* Labels */}

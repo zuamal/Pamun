@@ -30,9 +30,9 @@
 | ADR-14 | 그래프 시각화 라이브러리 | React Flow |
 | ADR-15 | 원문 뷰어 | plain text 렌더링 + char offset 기반 하이라이트 |
 | ADR-16 | 프론트엔드 스타일링 | Tailwind CSS. 인라인 style 전면 제거. |
-| ADR-17 | App Shell 레이아웃 | 좌측 고정 Sidebar + 4단계 Stepper |
+| ADR-17 | App Shell 레이아웃 | 좌측 고정 Sidebar + 4단계 Stepper (GraphPage/ImpactPage 분리) |
 | ADR-18 | Toast 라이브러리 | sonner |
-| ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions (CI/CD) |
+| ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions 직접 배포 (gh-pages 브랜치 없음) |
 | ADR-20 | 데모 모드 API 처리 | 프론트엔드 mock 레이어. LLM 기능은 비활성화 안내. |
 
 ---
@@ -385,7 +385,7 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 **Context:** 4단계 선형 워크플로우에서 사용자가 현재 어느 단계에 있는지 항상 인지해야 하고, 단계 간 자유로운 이동을 지원해야 한다.
 
-**Decision:** 좌측 고정 Sidebar에 3단계 Stepper를 배치한다. 콘텐츠 영역은 Sidebar 우측에 렌더링된다. 영향 분석은 Step 3(GraphPage)의 "영향 분석 모드" 내에서 수행하므로 별도 Step 4가 없다.
+**Decision:** 좌측 고정 Sidebar에 4단계 Stepper를 배치한다. 콘텐츠 영역은 Sidebar 우측에 렌더링된다. Step 3(GraphPage)은 Edge 검토·관리에 집중하고, Step 4(ImpactPage)는 영향 분석 전용 레이아웃으로 분리한다.
 
 **Stepper 활성화 조건:**
 
@@ -393,7 +393,8 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 |------|------|
 | 1. 문서 업로드 | 항상 활성 |
 | 2. 요구사항 검토 | `requirements.length > 0` (파싱 완료) |
-| 3. 그래프 & 영향 분석 | `edges.filter(APPROVED).length > 0` |
+| 3. 그래프 & Edge 검토 | `edges.filter(APPROVED).length > 0` |
+| 4. 영향 분석 | Step 3과 동일 (`edges.filter(APPROVED).length > 0`) |
 
 조건 미충족 단계 클릭 시 다음 행동을 안내하는 툴팁을 표시한다. 비활성 단계로 라우터 직접 접근 시, 아래의 hydration 이후 조건을 재평가하여 여전히 미충족이면 Step 1로 리디렉션한다.
 
@@ -408,6 +409,8 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 4. 결과에 따라 요청한 경로 유지 또는 Step 1 리디렉션
 
 이 방식은 인메모리 저장소(ADR-3)의 특성상 서버가 재시작되지 않는 한 백엔드 상태가 유지된다는 전제에서 동작한다. 서버 재시작 후에는 세션 로드(F7)로 복원한다.
+
+**GraphPage/ImpactPage 분리 근거:** 두 페이지가 요구하는 레이아웃이 다르다. GraphPage는 그래프 캔버스가 전체 높이를 사용해야 하고(하단 패널 없음), ImpactPage는 좌측 패널(요구사항 + 결과)과 우측 탭 영역(그래프/DocumentViewer)이 필요하다. 한 페이지에서 토글로 전환하면 레이아웃이 서로를 제약한다.
 
 **Rationale:** 좌측 Sidebar는 그래프처럼 화면을 넓게 사용하는 페이지에서 상단 헤더보다 콘텐츠 수직 공간 손실이 없다. 선형 4단계 플로우는 Sidebar Stepper가 진행 상태를 항상 시야에 두기에 적합하다.
 
@@ -435,7 +438,7 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 **Context:** 포트폴리오 목적의 라이브 데모를 비용 없이 안정적으로 제공해야 한다. 데모는 백엔드 없이 동작하는 프론트엔드 전용 모드다.
 
-**Decision:** GitHub Pages(`{user}.github.io/pamun`)로 정적 SPA를 호스팅하고, GitHub Actions로 main 브랜치 push 시 자동 빌드·배포한다.
+**Decision:** GitHub Pages(`{user}.github.io/pamun`)로 정적 SPA를 호스팅하고, GitHub Actions로 main 브랜치 push 시 자동 빌드·배포한다. 배포 방식은 **GitHub Actions 직접 배포**(`actions/upload-pages-artifact` + `actions/deploy-pages`)를 사용한다. `gh-pages` 브랜치를 생성하지 않는다.
 
 **사용자 구분:**
 
@@ -446,12 +449,20 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 **Rationale:** 비용 0, 인프라 관리 0. 데모 세션 JSON을 정적 자산으로 빌드에 포함하므로 서버 없이 충분하다. GitHub Actions는 이미 레포에 통합되어 있어 별도 CI 설정 불필요. 커스텀 도메인은 DNS 관리 비용이 발생하므로 기본 서브도메인으로 충분하다.
 
-**Vite 설정:** `base: '/pamun/'`으로 설정하여 서브패스에서 정적 자산 경로가 올바르게 resolve되도록 한다. 로컬 개발 시에는 `base: '/'`를 유지하므로 환경 변수 분기가 필요하다.
+**GitHub Actions 직접 배포를 선택한 이유 (vs gh-pages 브랜치):**
+- 레포에 `gh-pages` 브랜치와 빌드 결과물 커밋이 누적되지 않아 레포가 오염되지 않는다.
+- 서드파티 액션(`peaceiris/actions-gh-pages`) 의존성이 제거된다. GitHub 공식 액션만 사용한다.
+- 배포 단계가 하나로 줄어든다 (브랜치 푸시 → Pages 빌드 두 단계 없음).
+
+**레포 설정 요구사항:** Settings → Pages → Source를 **"GitHub Actions"** 로 지정해야 한다.
+
+**Vite 설정:** `base: '/Pamun/'`으로 설정하여 서브패스에서 정적 자산 경로가 올바르게 resolve되도록 한다. 로컬 개발 시에는 `base: '/'`를 유지하므로 환경 변수 분기가 필요하다.
 
 **Alternatives:**
 - Vercel/Netlify: 설정이 더 간단하지만 GitHub 생태계 외부. GitHub Pages로 충분한 규모.
 - 커스텀 도메인: 브랜딩에 유리하나 DNS 구매·관리 비용 발생.
 - 수동 배포: push 시 자동이 더 일관성 있고 실수 방지.
+- `peaceiris/actions-gh-pages` (이전 방식): gh-pages 브랜치 생성, 서드파티 의존, 레포 오염 — 채택하지 않음.
 
 ---
 

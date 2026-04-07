@@ -34,9 +34,10 @@
 | F14 · Page-level UX 고도화 (4개 페이지) | [F14.md](F14.md) | [ ] | F13 |
 | F15 · Sample Bundle Loader | [F15.md](F15.md) | [ ] | F1, F2, F7, F8, F13 |
 | F16 · Premium Motion & Interaction | [F16.md](F16.md) | [ ] | F12, F13, F14 |
-| F17 · Impact Mode on GraphPage | [F17.md](F17.md) | [ ] | F10, F11, F13 |
+| F17 · Impact Mode on GraphPage | [F17.md](F17.md) | [ ] | F10, F11, F13 | ⚠️ F20으로 대체됨. 컴포넌트(DocumentViewer, ImpactSummaryPanel 등)는 F20에서 재사용 |
 | F18 · Key-free Demo Mode (backend-side) | [F18.md](F18.md) | [x] | F1, F7, F15, F8, F13 |
 | F19 · Frontend-only Demo + GitHub Pages 배포 | [F19.md](F19.md) | [ ] | F18, F13, F17 |
+| F20 · GraphPage/ImpactPage UI/UX 재구성 | [F20.md](F20.md) | [ ] | F17, F19 |
 
 ---
 

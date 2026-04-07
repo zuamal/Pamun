@@ -39,6 +39,7 @@ function buildLayout(
   impactMode: boolean,
   affectedIds: Set<string>,
   reviewIds: Set<string>,
+  hoveredEdgeId: string | null,
 ): { nodes: Node[]; edges: FlowEdge[] } {
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
@@ -108,6 +109,8 @@ function buildLayout(
       strokeColor = isRelatedTo ? '#8b5cf6' : '#3b82f6'
     }
 
+    const isHovered = edge.id === hoveredEdgeId
+
     return {
       id: edge.id,
       source: edge.source_id,
@@ -116,8 +119,8 @@ function buildLayout(
       markerEnd: { type: MarkerType.ArrowClosed },
       markerStart: isRelatedTo ? { type: MarkerType.ArrowClosed } : undefined,
       style: {
-        stroke: strokeColor,
-        strokeWidth: isImpactEdge ? 3 : 2,
+        stroke: isHovered ? '#f97316' : strokeColor,
+        strokeWidth: isHovered ? 4 : isImpactEdge ? 3 : 2,
         strokeDasharray: isPending ? '5,4' : undefined,
         opacity: impactMode && !isImpactEdge ? 0.25 : 1,
       },
@@ -137,8 +140,9 @@ interface RequirementGraphProps {
   onNodeClick: (req: Requirement) => void
   onEdgeClick: (edgeId: string) => void
   onConnect: (sourceId: string, targetId: string) => void
-  impactMode: boolean
-  impactResult: ImpactResult | null
+  impactMode?: boolean
+  impactResult?: ImpactResult | null
+  hoveredEdgeId?: string | null
 }
 
 // Inner component — can use useReactFlow() because it's inside ReactFlowProvider
@@ -149,8 +153,9 @@ function GraphCanvas({
   onNodeClick,
   onEdgeClick,
   onConnect,
-  impactMode,
-  impactResult,
+  impactMode = false,
+  impactResult = null,
+  hoveredEdgeId = null,
 }: RequirementGraphProps) {
   const { fitView } = useReactFlow()
   const { hiddenDocIds, showPending } = useGraphStore()
@@ -184,8 +189,8 @@ function GraphCanvas({
   }, [edges, filteredRequirements, showPending])
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => buildLayout(filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds),
-    [filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds],
+    () => buildLayout(filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds, hoveredEdgeId),
+    [filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds, hoveredEdgeId],
   )
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)

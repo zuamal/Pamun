@@ -82,7 +82,9 @@ MVP의 전체 사용 흐름을 단계별로 정리한다.
 | FR-2.4 | PM이 LLM이 찾지 못한 연결을 수동으로 추가할 수 있다. 수동 추가된 연결은 자동으로 승인 상태가 된다. |
 | FR-2.5 | 승인된 연결을 사후에 수정·삭제할 수 있다. 연결 수정 시 그래프에 즉시 반영된다. |
 
-### 3.3 그래프 시각화
+### 3.3 그래프 시각화 (Step 3 — Edge 관리)
+
+GraphPage는 Edge 검토·관리에 집중한다. 영향 분석 모드는 별도 ImpactPage(Step 4)에서 수행한다.
 
 | ID | Requirement |
 |----|-------------|
@@ -90,19 +92,25 @@ MVP의 전체 사용 흐름을 단계별로 정리한다.
 | FR-3.2 | 노드: 요구사항 ID + 요약 제목. 엣지: 관계 유형(depends_on / related_to). 문서별 클러스터링으로 시각적 구분. |
 | FR-3.3 | 노드 클릭 시 해당 요구사항 상세 패널 표시: 원문 범위, 연결된 요구사항 목록, 근거 문장. |
 | FR-3.4 | 그래프에서 직접 연결을 추가/삭제할 수 있다 (FR-2.4, FR-2.5의 UI). |
+| FR-3.5 | 우측 Edge 검토 카드에서 hover 시 그래프의 해당 Edge가 강조된다(두께 증가 + 색상 강조). Edge 카드와 그래프 간 시각적 대응을 제공한다. |
 
-### 3.4 변경 영향 분석 (Impact Analysis)
+### 3.4 변경 영향 분석 (Step 4 — ImpactPage)
 
-영향 분석은 GraphPage 내 "영향 분석 모드"에서 수행한다. 별도의 ImpactPage로 이동하지 않고, 의존관계 그래프 위에서 직접 영향을 확인한다.
+영향 분석은 독립된 ImpactPage(Step 4)에서 수행한다. GraphPage와 레이아웃을 분리하여 각 페이지가 자신의 역할에 집중한다.
+
+**ImpactPage 레이아웃:**
+- 좌측 패널(리사이저블, 기본 280px): 상단 — 요구사항 리스트 + changed 토글 / 하단 — 영향 분석 결과
+- 우측 영역: 그래프 뷰(기본 탭) + DocumentViewer 탭 전환
 
 | ID | Requirement |
 |----|-------------|
-| FR-4.1 | GraphPage 우상단의 "영향 분석 모드" 토글로 모드를 전환한다. 모드 활성화 시 노드 클릭이 `changed` 플래그 토글로 동작한다. 플래그 변경 즉시 `GET /api/impact`를 자동 호출하여 그래프에 반영한다. 원문 수정은 도구 외부에서 PM이 직접 수행한다. |
-| FR-4.2 | 플래그가 설정된 노드에 대해, 의존관계로 연결된 요구사항을 다음 정책에 따라 하이라이트한다: (1) `related_to` 연결: 양방향 영향 — 양쪽 모두 하이라이트. (2) `depends_on` 연결: target이 변경되면 source는 **영향받음**으로 하이라이트. source가 변경되면 target은 **검토 권장**으로 하이라이트. |
+| FR-4.1 | ImpactPage 좌측 패널은 리사이저블이다. 기본 폭 280px. 상단에 요구사항 리스트와 changed 토글을 표시하고, 하단에 영향 분석 결과(affected N개 / review_recommended M개 + 항목 목록)를 표시한다. |
+| FR-4.2 | 요구사항의 `changed` 토글 변경 즉시 `GET /api/impact`를 호출하여 영향 결과를 갱신한다. 원문 수정은 도구 외부에서 PM이 직접 수행한다. |
 | FR-4.3 | 노드 색상 코딩: changed 노드는 주황색 테두리 + 플래그 아이콘. affected 노드는 빨간 링. review_recommended 노드는 노란 링. 영향에 관여한 Edge는 색상 변경 + 방향 강조로 인과관계를 시각화한다. |
-| FR-4.4 | GraphPage 하단에 슬라이드 업 패널로 영향 결과 요약을 표시한다: 영향받음 N개 / 검토 권장 M개 + 항목 목록(요구사항 제목, 문서명, display_label, evidence). |
-| FR-4.5 | 패널 항목 클릭 시 그래프 우측에 DocumentViewer 패널이 슬라이드 인 되어 원문에서 해당 범위를 하이라이트하고 자동 스크롤한다. |
+| FR-4.4 | 우측 영역은 그래프 뷰와 DocumentViewer를 탭으로 전환한다. 기본 탭은 그래프 뷰. 그래프 뷰는 changed / affected / review_recommended 노드를 하이라이트하여 영향 범위를 시각화한다. |
+| FR-4.5 | 영향 결과 항목 클릭 시 우측이 DocumentViewer 탭으로 자동 전환되고, 원문에서 해당 범위(`char_start`–`char_end`)를 하이라이트하며 자동 스크롤한다. |
 | FR-4.6 | 영향 분석은 직접 연결(1-hop)만 표시한다. N-hop 전파는 v2에서 검토한다. |
+| FR-4.7 | 의존관계 방향 정책: (1) `related_to` 연결 — 양방향 영향, 양쪽 모두 affected. (2) `depends_on` 연결 — target이 변경되면 source는 **affected**, source가 변경되면 target은 **review_recommended**. |
 
 ### 3.5 실시간 진행상황
 
@@ -120,8 +128,8 @@ MVP의 전체 사용 흐름을 단계별로 정리한다.
 | ID | Requirement |
 |----|-------------|
 | FR-6.1 | 스타일링은 Tailwind CSS 유틸리티 클래스만 사용한다. 인라인 `style={{...}}`은 전면 제거한다. hover/focus/active 상태 스타일을 적용하여 인터랙티브 요소에 시각적 피드백을 제공한다. |
-| FR-6.2 | 좌측 고정 Sidebar에 3단계 Stepper를 배치한다. 단계: 1. 문서 업로드 → 2. 요구사항 검토 → 3. 그래프 & 영향 분석. 영향 분석은 Step 3(GraphPage) 내 모드 전환으로 수행하므로 별도 단계가 없다. |
-| FR-6.3 | Stepper 각 단계의 활성화 조건: Step 1은 항상 활성. Step 2는 파싱 완료(`requirements.length > 0`) 후 활성. Step 3은 승인된 Edge가 1개 이상 존재 시 활성. 조건 미충족 단계 클릭 시 다음 행동을 안내하는 툴팁을 표시한다. |
+| FR-6.2 | 좌측 고정 Sidebar에 4단계 Stepper를 배치한다. 단계: 1. 문서 업로드 → 2. 요구사항 검토 → 3. 그래프 & Edge 검토 → 4. 영향 분석. |
+| FR-6.3 | Stepper 각 단계의 활성화 조건: Step 1은 항상 활성. Step 2는 파싱 완료(`requirements.length > 0`) 후 활성. Step 3은 승인된 Edge가 1개 이상 존재 시 활성. Step 4는 Step 3과 동일 조건(`edges.filter(APPROVED).length > 0`). 조건 미충족 단계 클릭 시 다음 행동을 안내하는 툴팁을 표시한다. |
 | FR-6.4 | Toast 알림 시스템을 전역에 제공한다. API 성공/실패, 저장 완료 등의 피드백을 우측 하단 Toast로 표시한다. |
 | FR-6.5 | 데이터 패칭 중 Skeleton UI를 표시한다. 데이터가 없는 상태(Empty State)는 안내 메시지와 다음 행동 유도 버튼을 표시한다. |
 
@@ -137,8 +145,8 @@ MVP의 전체 사용 흐름을 단계별로 정리한다.
 | FR-7.4 | **[GraphPage]** 엣지 생성 방식을 버튼 클릭 방식에서 React Flow Handle 드래그&드롭 방식으로 전환한다. 노드 핸들을 드래그하여 다른 노드에 드롭하면 Edge 생성 모달이 열린다. |
 | FR-7.5 | **[GraphPage]** 우측 하단에 미니맵을 추가한다. 문서별·Edge 상태별 필터 컨트롤을 제공한다. |
 | FR-7.6 | **[GraphPage]** Edge 검토 패널에서 승인/거부 버튼 영역을 키우고 confidence 점수를 시각화하여 빠른 검토를 지원한다. |
-| FR-7.7 | **[GraphPage]** 영향 분석 모드 토글 버튼에 활성/비활성 상태 스타일을 적용한다. 모드 활성화 시 노드에 `changed` 상태임을 나타내는 시각적 피드백(주황 강조)을 즉시 제공한다. |
-| FR-7.8 | **[GraphPage]** DocumentViewer 패널에서 영향 대상 범위(`char_start`–`char_end`)를 형광펜 방식으로 강하게 하이라이트한다. 패널은 그래프 우측에 슬라이드 인 방식으로 표시된다. |
+| FR-7.7 | **[ImpactPage]** 좌측 패널의 요구사항 카드에 changed 토글을 포함한다. 토글 활성화 시 해당 요구사항 카드에 주황 강조를 즉시 반영한다. |
+| FR-7.8 | **[ImpactPage]** DocumentViewer에서 영향 대상 범위(`char_start`–`char_end`)를 형광펜 방식으로 강하게 하이라이트한다. 영향 항목 클릭 시 DocumentViewer 탭으로 자동 전환된다. |
 
 ### 3.8 샘플 데이터 로더
 
@@ -168,7 +176,7 @@ MVP의 전체 사용 흐름을 단계별로 정리한다.
 | ID | Requirement |
 |----|-------------|
 | FR-11.1 | 데모는 GitHub Pages(`{user}.github.io/pamun`)에서 정적 SPA로 호스팅된다. 백엔드 서버 불필요. |
-| FR-11.2 | main 브랜치 push 시 GitHub Actions가 `npm run build`를 실행하고 `dist/`를 GitHub Pages에 자동 배포한다. 빌드 실패 시 배포하지 않는다. |
+| FR-11.2 | main 브랜치 push 시 GitHub Actions가 `npm run build:demo`를 실행하고 `dist/`를 GitHub Pages에 직접 배포한다. `gh-pages` 브랜치를 생성하지 않는다. 빌드 실패 시 배포하지 않는다. |
 | FR-11.3 | 셀프호스팅 사용자(실사용)는 리포를 포크하여 백엔드와 프론트엔드를 직접 실행한다. README에 셀프호스팅 가이드를 제공한다. |
 
 ### 3.10 프리미엄 모션 & 인터랙션
