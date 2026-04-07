@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { Joyride, type EventHandler } from 'react-joyride'
 import { updateRequirement } from '../api/requirements'
 import { getImpact, saveSession } from '../api/impact'
+import { listDocuments } from '../api/documents'
 import { useGraphStore } from '../stores/graphStore'
 import { useTourStore, hasTourBeenSeen, markTourSeen } from '../stores/tourStore'
 import { isDemoMode } from '../lib/demoApi'
 import { IMPACT_STEPS, JOYRIDE_OPTIONS, JOYRIDE_LOCALE } from '../lib/tourSteps'
 import RequirementGraph from '../components/RequirementGraph'
+import GraphLegend from '../components/GraphLegend'
 import DocumentViewer from '../components/DocumentViewer'
 import ImpactItem from '../components/ImpactItem'
 import { toastError, toastSuccess } from '../lib/toast'
@@ -25,6 +27,7 @@ export default function ImpactPage() {
   const navigate = useNavigate()
   const { requirements, edges, setRequirements } = useGraphStore()
 
+  const [documents, setDocuments] = useState<Record<string, string>>({})
   const [impactResult, setImpactResult] = useState<ImpactResult | null>(null)
   const [selectedItem, setSelectedItem] = useState<ImpactItemData | null>(null)
   const [activeTab, setActiveTab] = useState<'graph' | 'doc'>('graph')
@@ -60,6 +63,15 @@ export default function ImpactPage() {
       setAnalyzing(false)
     }
   }, [requirements])
+
+  // Load documents for legend
+  useEffect(() => {
+    void listDocuments().then((res) => {
+      const map: Record<string, string> = {}
+      for (const doc of res.documents) map[doc.id] = doc.filename
+      setDocuments(map)
+    })
+  }, [])
 
   // Run impact on mount if there are already changed requirements
   useEffect(() => {
@@ -308,18 +320,21 @@ export default function ImpactPage() {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-hidden min-h-0">
+          <div className="flex-1 overflow-hidden min-h-0 relative">
             {activeTab === 'graph' ? (
-              <RequirementGraph
-                requirements={requirements}
-                edges={edges}
-                selectedNodeId={null}
-                onNodeClick={() => {}}
-                onEdgeClick={() => {}}
-                onConnect={() => {}}
-                impactMode={true}
-                impactResult={impactResult}
-              />
+              <>
+                <GraphLegend documents={documents} showImpactLegend />
+                <RequirementGraph
+                  requirements={requirements}
+                  edges={edges}
+                  selectedNodeId={null}
+                  onNodeClick={() => {}}
+                  onEdgeClick={() => {}}
+                  onConnect={() => {}}
+                  impactMode={true}
+                  impactResult={impactResult}
+                />
+              </>
             ) : selectedItem ? (
               <DocumentViewer
                 documentId={selectedItem.document_id}

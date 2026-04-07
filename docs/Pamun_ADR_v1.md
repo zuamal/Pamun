@@ -35,6 +35,7 @@
 | ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions 직접 배포 (gh-pages 브랜치 없음) |
 | ADR-20 | 데모 모드 API 처리 | 프론트엔드 mock 레이어. LLM 기능은 비활성화 안내. |
 | ADR-21 | 온보딩 튜토리얼 라이브러리 | react-joyride (spotlight + 툴팁 코치마크) |
+| ADR-22 | Semantic Zoom 구현 방식 | React Flow onViewportChange + Zustand zoomLevel 상태 |
 
 ---
 
@@ -524,6 +525,22 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 - driver.js: 더 가벼운 API이지만 React 비의존 라이브러리라 ref 관리가 번거롭다.
 - intro.js: 오래된 API, React 통합 wrapper가 별도 패키지로 분리되어 있어 유지보수 부담.
 - 자체 구현: Tailwind로 가능하지만 spotlight 마스크 + 포지셔닝 계산 비용이 높다.
+
+---
+
+## ADR-22. Semantic Zoom 구현 방식
+
+**Context:** 줌 레벨에 따라 노드/Edge 렌더링 디테일을 조절해야 한다. React Flow의 줌 상태를 컴포넌트 트리에 전파하는 방법이 필요하다.
+
+**Decision:** React Flow의 `onViewportChange` 콜백으로 줌 레벨을 감지하고, `graphStore`에 `zoomLevel: number` 상태를 추가한다. `RequirementNode`와 Edge 커스텀 컴포넌트가 `zoomLevel`을 구독하여 렌더링을 분기한다.
+
+**임계값:** 줌 < 0.6 (overview), 0.6–1.2 (normal), > 1.2 (detail). 구현 중 미세 조정 가능.
+
+**Rationale:** React Flow는 노드를 CSS transform으로 스케일하므로 노드 내부 텍스트는 줌 아웃 시 자동으로 작아지지 않는다. 줌 레벨을 store에 두면 노드/Edge 컴포넌트 어디서든 props 드릴링 없이 참조할 수 있다.
+
+**Alternatives:**
+- React Flow `useViewport` hook 직접 사용: 노드 컴포넌트 내부에서 호출 가능하지만, 매 viewport 변경마다 모든 노드가 리렌더링되어 성능 부담. store에 debounce 적용으로 완화.
+- CSS zoom 기반: React Flow 내부 스케일과 충돌하여 좌표 계산 오류 발생.
 
 ---
 

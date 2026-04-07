@@ -13,11 +13,13 @@ import {
   type Edge as FlowEdge,
   type Connection,
   type NodeMouseHandler,
+  type Viewport,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import dagre from '@dagrejs/dagre'
 import type { components } from '../api/types.generated'
 import RequirementNode, { type RequirementNodeData, type ImpactStatus } from './RequirementNode'
+import RelationEdge from './RelationEdge'
 import CustomConnectionLine from './CustomConnectionLine'
 import { DOC_COLORS } from '../utils/docColors'
 import { useGraphStore } from '../stores/graphStore'
@@ -27,6 +29,7 @@ type Edge = components['schemas']['Edge']
 type ImpactResult = components['schemas']['ImpactResult']
 
 const nodeTypes = { requirement: RequirementNode }
+const edgeTypes = { relation: RelationEdge }
 
 const NODE_WIDTH = 256
 const NODE_HEIGHT = 80
@@ -109,7 +112,7 @@ function buildLayout(
       const sourceReview = reviewIds.has(edge.source_id) || reviewIds.has(edge.target_id)
       strokeColor = sourceAffected ? '#ef4444' : sourceReview ? '#eab308' : '#f59e0b'
     } else if (isPending) {
-      strokeColor = '#f59e0b'
+      strokeColor = '#94a3b8'
     } else {
       strokeColor = isRelatedTo ? '#8b5cf6' : '#3b82f6'
     }
@@ -120,18 +123,21 @@ function buildLayout(
       id: edge.id,
       source: edge.source_id,
       target: edge.target_id,
-      type: 'smoothstep',
+      type: 'relation',
       markerEnd: { type: MarkerType.ArrowClosed },
       markerStart: isRelatedTo ? { type: MarkerType.ArrowClosed } : undefined,
       style: {
         stroke: isHovered ? '#f97316' : strokeColor,
         strokeWidth: isHovered ? 4 : isImpactEdge ? 3 : 2,
-        strokeDasharray: isPending ? '5,4' : undefined,
-        opacity: impactMode && !isImpactEdge ? 0.25 : 1,
+        // depends_on: solid, related_to: dashed, pending: dashed grey
+        strokeDasharray: isPending || isRelatedTo ? '5,4' : undefined,
+        opacity: isPending ? 0.5 : impactMode && !isImpactEdge ? 0.25 : 1,
       },
-      label: isRelatedTo ? 'related_to' : 'depends_on',
-      labelStyle: { fontSize: 10, fill: '#64748b' },
-      labelBgStyle: { fill: '#f8fafc' },
+      data: {
+        relationType: edge.relation_type,
+        evidence: edge.evidence ?? '',
+        confidence: edge.confidence,
+      },
     }
   })
 
@@ -163,7 +169,7 @@ function GraphCanvas({
   hoveredEdgeId = null,
 }: RequirementGraphProps) {
   const { fitView } = useReactFlow()
-  const { hiddenDocIds, showPending } = useGraphStore()
+  const { hiddenDocIds, showPending, setZoom } = useGraphStore()
 
   const docColorMap = useMemo(() => {
     const ids = [...new Set(requirements.map((r) => r.location.document_id))]
@@ -238,6 +244,11 @@ function GraphCanvas({
     [onConnect],
   )
 
+  const handleViewportChange = useCallback(
+    ({ zoom }: Viewport) => setZoom(zoom),
+    [setZoom],
+  )
+
   // MiniMap node click — smooth pan to clicked node
   const handleMiniMapNodeClick: NodeMouseHandler = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -256,11 +267,13 @@ function GraphCanvas({
         nodes={nodes}
         edges={flowEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
         onConnect={handleConnect}
+        onViewportChange={handleViewportChange}
         // Disable edge creation in impact mode
         nodesConnectable={!impactMode}
         connectionRadius={40}

@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Handle, Position, useStore } from '@xyflow/react'
 import type { NodeProps } from '@xyflow/react'
 import type { components } from '../api/types.generated'
+import { useGraphStore } from '../stores/graphStore'
 
 type Requirement = components['schemas']['Requirement']
 
@@ -37,6 +38,13 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
     )
   })
 
+  // Semantic zoom — derive tier from zoom so component only rerenders on tier change
+  const zoomTier = useGraphStore((s) => {
+    if (s.zoom < 0.6) return 'overview' as const
+    if (s.zoom > 1.2) return 'detail' as const
+    return 'normal' as const
+  })
+
   const impact = impactMode && impactStatus ? IMPACT_STYLES[impactStatus] : null
 
   const borderColor = impact ? impact.border : docColor
@@ -50,12 +58,14 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
   return (
     <div
       style={{
+        width: 256,
+        height: 80,
         border: `2px solid ${borderColor}`,
         background: bgColor,
         boxShadow,
         transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
       }}
-      className="rounded-lg px-2.5 py-2 w-[256px] h-[80px] cursor-pointer flex flex-col justify-between overflow-hidden"
+      className="rounded-lg px-2.5 py-2 cursor-pointer flex flex-col justify-between overflow-hidden"
     >
       <Handle
         type="target"
@@ -87,16 +97,21 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
         {impactMode && impactStatus === 'changed' && (
           <span className="text-[10px] leading-none shrink-0" title="변경 예정">🚩</span>
         )}
-        {/* APPROVED edge count badge — hidden when 0 */}
-        {edgeCount > 0 && (
+        {/* APPROVED edge count badge — only at detail zoom */}
+        {zoomTier === 'detail' && edgeCount > 0 && (
           <span className="text-[10px] text-slate-400 shrink-0">{edgeCount}↗</span>
         )}
       </div>
 
-      {/* Title */}
-      <div className="text-slate-900 text-sm leading-snug line-clamp-2">
-        {requirement.title}
-      </div>
+      {/* Title — hidden at overview zoom; 1-line at normal, 2-line at detail */}
+      {zoomTier !== 'overview' && (
+        <div className={[
+          'text-slate-900 text-sm leading-snug',
+          zoomTier === 'detail' ? 'line-clamp-2' : 'line-clamp-1',
+        ].join(' ')}>
+          {requirement.title}
+        </div>
+      )}
 
       <Handle
         type="source"

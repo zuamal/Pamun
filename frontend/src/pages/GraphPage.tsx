@@ -10,6 +10,7 @@ import { useGraphStore } from '../stores/graphStore'
 import { useTourStore, hasTourBeenSeen, markTourSeen } from '../stores/tourStore'
 import { GRAPH_STEPS, JOYRIDE_OPTIONS, JOYRIDE_LOCALE } from '../lib/tourSteps'
 import RequirementGraph from '../components/RequirementGraph'
+import GraphLegend from '../components/GraphLegend'
 import NodeDetailPanel from '../components/NodeDetailPanel'
 import EdgeReviewPanel from '../components/EdgeReviewPanel'
 import AddEdgeModal from '../components/AddEdgeModal'
@@ -196,6 +197,7 @@ export default function GraphPage() {
         <div className="flex-1 overflow-hidden relative">
           {/* Small anchor for tour tooltip — avoids clipping from targeting the full-size div */}
           <div data-tour="graph-anchor" className="absolute top-4 left-4 w-0 h-0 pointer-events-none" />
+          <GraphLegend documents={documents} />
           <RequirementGraph
             requirements={requirements}
             edges={edges}
