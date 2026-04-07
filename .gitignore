@@ -10,7 +10,7 @@ node_modules/
 frontend/dist/
 
 # Generated
-frontend/src/api/openapi.json
+# openapi.json is committed so CI can generate types without a running backend
 frontend/src/api/types.generated.ts
 
 # Session

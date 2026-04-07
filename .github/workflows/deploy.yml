@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: cd frontend && npm ci
 
+      - name: Generate TypeScript types from OpenAPI spec
+        run: cd frontend && npx openapi-typescript src/api/openapi.json -o src/api/types.generated.ts
+
       - name: Build demo
         run: cd frontend && npm run build:demo
 
