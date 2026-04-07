@@ -165,13 +165,12 @@ GraphPage는 Edge 검토·관리에 집중한다. 영향 분석 모드는 별도
 |----|-------------|
 | FR-9.1 | 데모 모드는 백엔드 서버 없이 프론트엔드 단독으로 동작한다. 모든 상태는 프론트엔드 Zustand store에서 관리하며, API 호출은 mock 레이어를 통해 store를 직접 조작한다. |
 | FR-9.2 | UploadPage에 "데모 체험" 버튼을 제공한다. 클릭 시 BookFlow / LearnHub / MediBook 3개 번들 중 하나를 선택할 수 있는 UI가 표시된다. |
-| FR-9.3 | 번들 선택 시 `frontend/public/demo/{BundleName}.json`(정적 자산)을 fetch하여 store를 즉시 초기화하고 그래프 페이지로 이동한다. LLM 호출 없이 그래프·영향 분석까지 즉시 체험 가능하다. |
-| FR-9.4 | 데모 모드에서 Edge 승인·거부·수정, `changed` 플래그 토글, 1-hop 영향 분석 실행이 정상 동작한다. 영향 분석은 store 데이터 기반으로 프론트엔드에서 직접 계산한다. |
+| FR-9.3 | 번들 선택 시 `frontend/public/demo/{BundleName}.json`을 fetch하여 전체 데이터(documents, requirements, edges)를 `demoStore.pendingBundle`에 적재한다. 이후 `documentStore`에 documents만 반영하고 UploadPage에 머문다. requirements와 edges는 각 LLM 단계가 시뮬레이션될 때 순차적으로 graphStore에 반영된다. |
+| FR-9.4 | 데모 모드의 전체 워크플로우는 실제 사용 흐름과 동일하다: UploadPage(문서 확인) → 파싱 시뮬레이션 → ReviewPage(요구사항 검토) → 추론 시뮬레이션 → GraphPage(Edge 검토) → ImpactPage(영향 분석). LLM 호출 단계만 fake progress로 대체되며, 나머지 인터랙션(요구사항 편집, Edge 승인/거부/추가/삭제, changed 토글, 영향 분석)은 실제와 동일하게 동작한다. |
 | FR-9.4a | 데모 모드에서 mock 처리 대상 API: `GET /api/edges`, `GET /api/documents`, `GET /api/documents/{id}`, `PATCH /api/requirements/{id}`, `PATCH /api/edges/{id}`, `DELETE /api/edges/{id}`, `POST /api/edges`, `GET /api/impact`. 이 목록에 속한 호출은 백엔드를 호출하지 않고 store를 직접 조작하거나 store에서 반환한다. 수동 Edge 추가(`POST /api/edges`)는 demo mode에서도 동작하며 그래프에 즉시 반영된다. 세션 저장 버튼은 `disabled` + 툴팁으로 처리한다. |
-| FR-9.4b | 번들 선택 후 store 업데이트가 완료된 시점에 페이지 이동이 발생한다. store가 비어 있어 ProtectedRoute에 의해 리디렉션되는 현상이 없어야 한다. |
-| FR-9.5 | LLM 의존 기능(파싱, 의존관계 추론)은 데모 모드에서 비활성화된다. 해당 버튼에 "LLM API 키가 필요합니다. 셀프호스팅으로 이용하세요" 안내를 표시한다. |
-| FR-9.6 | 데모 세션 JSON은 `frontend/public/demo/{BundleName}.json`에 위치하며 레포에 커밋된다. |
-| FR-9.7 | `VITE_DEMO_MODE=true` 빌드 시 앱은 데모 전용 모드로 동작한다. 실제 파일 업로드 UI는 숨기고 "데모 체험" 진입만 노출한다. |
+| FR-9.5 | LLM 의존 기능(파싱, 의존관계 추론)은 데모 모드에서 실제 LLM을 호출하지 않고 fake progress로 시뮬레이션한다. `parseDocumentsSSE`, `inferEdgesSSE` 호출 시 progress 이벤트를 약 2–3초에 걸쳐 단계적으로 emit하고, 완료 시 `demoStore.pendingBundle`에서 해당 데이터를 graphStore에 반영한다. 버튼은 활성 상태를 유지한다. |
+| FR-9.6 | 데모 세션 JSON은 `frontend/public/demo/{BundleName}.json`에 위치하며 레포에 커밋된다. JSON 구조: `{ documents: Record<id, Document>, requirements: Record<id, Requirement>, edges: Record<id, Edge> }` |
+| FR-9.7 | `VITE_DEMO_MODE=true` 빌드 시 UploadPage에서 FileDropzone(실제 파일 업로드 영역)을 숨기거나 비활성화한다. 번들 로드 전에는 "데모 체험" 버튼만 노출하고, 번들 로드 후에는 문서 목록과 "파싱 시작" 버튼을 표시한다. |
 
 ### 3.11 배포 아키텍처
 

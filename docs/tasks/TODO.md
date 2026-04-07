@@ -38,6 +38,7 @@
 | F18 · Key-free Demo Mode (backend-side) | [F18.md](F18.md) | [x] | F1, F7, F15, F8, F13 |
 | F19 · Frontend-only Demo + GitHub Pages 배포 | [F19.md](F19.md) | [ ] | F18, F13, F17 |
 | F20 · GraphPage/ImpactPage UI/UX 재구성 | [F20.md](F20.md) | [ ] | F17, F19 |
+| F21 · 데모 워크플로우 자연스러운 흐름 개선 | [F21.md](F21.md) | [ ] | BUG-01, F19 |
 
 ---
 

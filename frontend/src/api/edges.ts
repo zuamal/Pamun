@@ -1,6 +1,6 @@
 import type { components } from './types.generated'
 import { consumeSSE, type ProgressEvent } from './sseTypes'
-import { isDemoMode, patchEdge } from '../lib/demoApi'
+import { isDemoMode, patchEdge, demoInferSSE } from '../lib/demoApi'
 import { useGraphStore } from '../stores/graphStore'
 
 type Edge = components['schemas']['Edge']
@@ -16,6 +16,7 @@ export async function inferEdgesSSE(
   body: EdgeInferRequest,
   onProgress: (event: ProgressEvent) => void,
 ): Promise<void> {
+  if (isDemoMode()) return demoInferSSE(onProgress)
   const res = await fetch(`${BASE}/edges/infer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -5,7 +5,6 @@ import { deleteDocument, uploadDocuments } from '../api/documents'
 import { listBundles, loadBundle } from '../api/dummy'
 import { listDemoBundles, loadDemoBundle } from '../api/demo'
 import { parseDocumentsSSE, listRequirements } from '../api/requirements'
-import { listEdges } from '../api/edges'
 import DocumentList from '../components/DocumentList'
 import FileDropzone from '../components/FileDropzone'
 import ProgressModal from '../components/ProgressModal'
@@ -27,8 +26,8 @@ const isStaticDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
 export default function UploadPage() {
   const navigate = useNavigate()
   const { documents, setDocuments } = useDocumentStore()
-  const { setRequirements, setEdges } = useGraphStore()
-  const { setIsDemoMode } = useDemoStore()
+  const { setRequirements } = useGraphStore()
+  const { pendingBundle, setIsDemoMode, setPendingBundle } = useDemoStore()
   const [uploading, setUploading] = useState(false)
   const [parsing, setParsing] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -130,40 +129,42 @@ export default function UploadPage() {
   async function handleLoadDemo(bundle: DemoBundleInfo) {
     setLoadingDemo(true)
     try {
+      let session: {
+        documents: Record<string, components['schemas']['Document']>
+        requirements: Record<string, components['schemas']['Requirement']>
+        edges: Record<string, components['schemas']['Edge']>
+      }
+
       if (isStaticDemoMode) {
-        // GitHub Pages: fetch static pre-parsed JSON, populate stores directly
+        // GitHub Pages: fetch static pre-parsed JSON
         const resp = await fetch(`${import.meta.env.BASE_URL}demo/${bundle.name}.json`)
         if (!resp.ok) throw new Error('데모 파일을 불러올 수 없습니다.')
-        const session = await resp.json() as {
-          documents: Record<string, components['schemas']['Document']>
-          requirements: Record<string, components['schemas']['Requirement']>
-          edges: Record<string, components['schemas']['Edge']>
-        }
-        flushSync(() => {
-          setDocuments(Object.values(session.documents))
-          setRequirements(Object.values(session.requirements))
-          setEdges(Object.values(session.edges))
-          setIsDemoMode(true)
-        })
-        setShowDemoModal(false)
-        toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
-        navigate('/graph')
+        session = await resp.json() as typeof session
       } else {
-        // Local backend: POST /api/demo/load then sync stores from API
-        const result = await loadDemoBundle(bundle.name)
+        // Local backend: POST /api/demo/load, then fetch session data from API
+        await loadDemoBundle(bundle.name)
         const [reqs, edgesResp, docResp] = await Promise.all([
-          listRequirements(),
-          listEdges(),
+          fetch('/api/requirements').then((r) => r.json()) as Promise<components['schemas']['Requirement'][]>,
+          fetch('/api/edges').then((r) => r.json()) as Promise<{ edges: components['schemas']['Edge'][] }>,
           fetch('/api/documents').then((r) => r.json()) as Promise<{ documents: components['schemas']['Document'][] }>,
         ])
-        setDocuments(docResp.documents)
-        setRequirements(reqs)
-        setEdges(edgesResp.edges)
-        void result // suppress unused-var warning
-        setShowDemoModal(false)
-        toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
-        navigate('/graph')
+        session = {
+          documents: Object.fromEntries(docResp.documents.map((d) => [d.id, d])),
+          requirements: Object.fromEntries(reqs.map((r) => [r.id, r])),
+          edges: Object.fromEntries(edgesResp.edges.map((e) => [e.id, e])),
+        }
       }
+
+      // Store the full bundle for step-by-step simulation;
+      // only populate documents now — requirements/edges are committed during fake SSE
+      flushSync(() => {
+        setPendingBundle(session)
+        setDocuments(Object.values(session.documents))
+        setIsDemoMode(true)
+      })
+      setShowDemoModal(false)
+      toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
+      // Stay on UploadPage — user clicks "파싱 시작" to proceed
     } catch (e) {
       toastError(e instanceof Error ? e.message : '데모 적재 실패')
     } finally {
@@ -173,15 +174,51 @@ export default function UploadPage() {
 
   const busy = uploading || parsing || loadingBundle || loadingDemo
 
-  // ── Static demo mode: show only the demo launcher ─────────────────────────
+  // ── Static demo mode ──────────────────────────────────────────────────────
   if (isStaticDemoMode) {
+    // After bundle selection: show document list + "파싱 시작"
+    if (pendingBundle) {
+      return (
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto py-8 px-4">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="text-2xl">🗺️</div>
+              <h1 className="text-xl font-bold text-slate-900">Pamun Demo</h1>
+              <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2.5 py-0.5 font-medium">데모 모드</span>
+            </div>
+
+            <section className="mb-8">
+              <h2 className="text-base font-semibold mb-3 text-slate-700">
+                업로드된 문서
+                <span className="ml-2 text-xs font-normal bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">
+                  {documents.length}
+                </span>
+              </h2>
+              <DocumentList documents={documents} onDelete={() => {}} disabled />
+            </section>
+
+            <button
+              onClick={() => void handleParse()}
+              disabled={busy}
+              className="px-6 py-2.5 rounded-lg border-none bg-blue-500 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {parsing ? '파싱 중...' : '파싱 시작'}
+            </button>
+
+            {parsing && <ProgressModal message={progressMsg} progress={progress} />}
+          </div>
+        </div>
+      )
+    }
+
+    // Before bundle selection: show launcher
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-sm w-full text-center">
           <div className="text-5xl mb-4">🗺️</div>
           <h1 className="text-xl font-bold text-slate-900 mb-2">Pamun Demo</h1>
           <p className="text-sm text-slate-500 mb-6">
-            사전 파싱된 샘플 세션을 선택하면 그래프·영향 분석을 즉시 체험할 수 있습니다.
+            샘플 번들을 선택하면 파싱·추론 과정을 직접 체험할 수 있습니다.
           </p>
           <button
             onClick={() => setShowDemoModal(true)}
