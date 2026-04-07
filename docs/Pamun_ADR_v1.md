@@ -532,15 +532,20 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 **Context:** 줌 레벨에 따라 노드/Edge 렌더링 디테일을 조절해야 한다. React Flow의 줌 상태를 컴포넌트 트리에 전파하는 방법이 필요하다.
 
-**Decision:** React Flow의 `onViewportChange` 콜백으로 줌 레벨을 감지하고, `graphStore`에 `zoomLevel: number` 상태를 추가한다. `RequirementNode`와 Edge 커스텀 컴포넌트가 `zoomLevel`을 구독하여 렌더링을 분기한다.
+**Decision:** React Flow의 `onViewportChange` 콜백으로 줌 레벨을 감지하고, `graphStore`에 `zoomLevel: number` 상태를 추가한다. `RequirementNode`와 Edge 커스텀 컴포넌트가 `zoomLevel`을 구독하여 다음 두 가지 보정을 적용한다.
 
-**임계값:** 줌 < 0.6 (overview), 0.6–1.2 (normal), > 1.2 (detail). 구현 중 미세 조정 가능.
+**노드 역보정(Counter-scale):** zoom < 0.9 구간에서 노드 내부 컨테이너에 `transform: scale(min(1/zoom, 1.8))`을 적용한다. React Flow가 캔버스 전체를 CSS transform으로 축소하면 노드 내 텍스트도 함께 작아지는데, 역보정으로 라벨을 읽을 수 있는 크기로 유지한다. 상한 1.8은 매우 작은 줌(< 0.56)에서 노드가 지나치게 커지는 것을 방지한다.
 
-**Rationale:** React Flow는 노드를 CSS transform으로 스케일하므로 노드 내부 텍스트는 줌 아웃 시 자동으로 작아지지 않는다. 줌 레벨을 store에 두면 노드/Edge 컴포넌트 어디서든 props 드릴링 없이 참조할 수 있다.
+**Edge 두께 및 화살표 보정:** zoom < 0.9 구간에서 선 두께와 화살표 마커 크기를 동일한 공식으로 보정한다. `strokeWidth = max(2, 기본값 / zoom)`, `markerSize = max(8, 기본값 / zoom)`. 줌 아웃 시 선과 화살표가 함께 사라지듯 작아지는 현상을 방지한다.
+
+**임계값:** zoom < 0.9 (overview), 0.9–1.2 (normal), > 1.2 (detail). 구현 중 미세 조정 가능.
+
+**Rationale:** React Flow는 노드를 CSS transform으로 스케일하므로 노드 내부 텍스트는 줌 아웃 시 자동으로 작아진다. 단순 렌더링 분기만으로는 텍스트 가시성을 보장할 수 없어 역보정이 필요하다. 줌 레벨을 store에 두면 노드/Edge 컴포넌트 어디서든 props 드릴링 없이 참조할 수 있다.
 
 **Alternatives:**
 - React Flow `useViewport` hook 직접 사용: 노드 컴포넌트 내부에서 호출 가능하지만, 매 viewport 변경마다 모든 노드가 리렌더링되어 성능 부담. store에 debounce 적용으로 완화.
 - CSS zoom 기반: React Flow 내부 스케일과 충돌하여 좌표 계산 오류 발생.
+- `nodeOrigin` + `transform-origin` 조합: 노드 위치 계산과 얽혀 레이아웃 오류 발생 가능.
 
 ---
 
