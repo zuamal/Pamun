@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -244,8 +244,15 @@ function GraphCanvas({
     [onConnect],
   )
 
+  const lastVpUpdate = useRef(0)
   const handleViewportChange = useCallback(
-    ({ zoom }: Viewport) => setZoom(zoom),
+    ({ zoom }: Viewport) => {
+      const now = Date.now()
+      if (now - lastVpUpdate.current >= 16) {
+        lastVpUpdate.current = now
+        setZoom(zoom)
+      }
+    },
     [setZoom],
   )
 

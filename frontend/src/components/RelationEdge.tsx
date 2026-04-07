@@ -30,7 +30,7 @@ export default function RelationEdge({
   const { relationType, evidence, confidence } = (data ?? {}) as unknown as RelationEdgeData
 
   const zoom = useGraphStore((s) => s.zoom)
-  const isOverview = zoom < 0.6
+  const isLowZoom = zoom < 0.9
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -41,10 +41,14 @@ export default function RelationEdge({
     targetPosition,
   })
 
-  // Simplify edges at low zoom
-  const resolvedStyle: React.CSSProperties = isOverview
-    ? { ...style, strokeWidth: 1, strokeDasharray: undefined }
-    : style ?? {}
+  // strokeWidth correction: keep edges visible when zoomed out
+  const baseWidth = typeof style?.strokeWidth === 'number' ? style.strokeWidth : 2
+  const correctedWidth = isLowZoom ? Math.max(2, baseWidth / zoom) : baseWidth
+
+  const resolvedStyle: React.CSSProperties = {
+    ...(style ?? {}),
+    strokeWidth: correctedWidth,
+  }
 
   const onEnter = useCallback(() => setHovered(true), [])
   const onLeave = useCallback(() => setHovered(false), [])
@@ -69,7 +73,7 @@ export default function RelationEdge({
         onMouseLeave={onLeave}
         style={{ cursor: 'default' }}
       />
-      {hovered && !isOverview && (
+      {hovered && !isLowZoom && (
         <EdgeLabelRenderer>
           <div
             style={{

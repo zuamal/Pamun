@@ -38,12 +38,11 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
     )
   })
 
-  // Semantic zoom — derive tier from zoom so component only rerenders on tier change
-  const zoomTier = useGraphStore((s) => {
-    if (s.zoom < 0.6) return 'overview' as const
-    if (s.zoom > 1.2) return 'detail' as const
-    return 'normal' as const
-  })
+  // Semantic zoom — subscribe to raw zoom (throttled at source, so ≤60fps rerenders)
+  const zoom = useGraphStore((s) => s.zoom)
+  const zoomTier = zoom < 0.9 ? 'low' as const : zoom > 1.2 ? 'detail' as const : 'normal' as const
+  // Counter-scale: keep text legible when zoomed out (capped at 1.8× to avoid overflow)
+  const scale = zoom < 0.9 ? Math.min(1 / zoom, 1.8) : 1
 
   const impact = impactMode && impactStatus ? IMPACT_STYLES[impactStatus] : null
 
@@ -82,36 +81,46 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
         }}
       />
 
-      {/* Top row: dot + ID label + edge count badge */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        {/* Document color dot */}
-        <span
-          className="w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ background: docColor }}
-        />
-        {/* ID label */}
-        <span style={{ color: docColor }} className="text-[11px] font-semibold truncate flex-1">
-          {requirement.display_label}
-        </span>
-        {/* F17: Flag icon for changed nodes in impact mode */}
-        {impactMode && impactStatus === 'changed' && (
-          <span className="text-[10px] leading-none shrink-0" title="변경 예정">🚩</span>
-        )}
-        {/* APPROVED edge count badge — only at detail zoom */}
-        {zoomTier === 'detail' && edgeCount > 0 && (
-          <span className="text-[10px] text-slate-400 shrink-0">{edgeCount}↗</span>
+      {/* Inner wrapper — counter-scale when zoomed out so text stays readable */}
+      <div
+        style={{
+          transform: scale !== 1 ? `scale(${scale})` : undefined,
+          transformOrigin: 'top left',
+          width: scale !== 1 ? `${100 / scale}%` : undefined,
+        }}
+        className="flex flex-col justify-between h-full"
+      >
+        {/* Top row: dot + ID label + edge count badge */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Document color dot */}
+          <span
+            className="w-1.5 h-1.5 rounded-full shrink-0"
+            style={{ background: docColor }}
+          />
+          {/* ID label */}
+          <span style={{ color: docColor }} className="text-[11px] font-semibold truncate flex-1">
+            {requirement.display_label}
+          </span>
+          {/* F17: Flag icon for changed nodes in impact mode */}
+          {impactMode && impactStatus === 'changed' && (
+            <span className="text-[10px] leading-none shrink-0" title="변경 예정">🚩</span>
+          )}
+          {/* APPROVED edge count badge — only at detail zoom */}
+          {zoomTier === 'detail' && edgeCount > 0 && (
+            <span className="text-[10px] text-slate-400 shrink-0">{edgeCount}↗</span>
+          )}
+        </div>
+
+        {/* Title — hidden at low zoom; 1-line at normal, 2-line at detail */}
+        {zoomTier !== 'low' && (
+          <div className={[
+            'text-slate-900 text-sm leading-snug',
+            zoomTier === 'detail' ? 'line-clamp-2' : 'line-clamp-1',
+          ].join(' ')}>
+            {requirement.title}
+          </div>
         )}
       </div>
-
-      {/* Title — hidden at overview zoom; 1-line at normal, 2-line at detail */}
-      {zoomTier !== 'overview' && (
-        <div className={[
-          'text-slate-900 text-sm leading-snug',
-          zoomTier === 'detail' ? 'line-clamp-2' : 'line-clamp-1',
-        ].join(' ')}>
-          {requirement.title}
-        </div>
-      )}
 
       <Handle
         type="source"
