@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.demo import router as demo_router
 from app.api.documents import router as documents_router
 from app.api.dummy import router as dummy_router
 from app.api.edges import router as edges_router
@@ -48,6 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(demo_router)
 app.include_router(documents_router)
 app.include_router(dummy_router)
 app.include_router(parse_router)

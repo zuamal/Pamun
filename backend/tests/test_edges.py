@@ -1,6 +1,7 @@
 """Tests for edge inference and management endpoints."""
 from __future__ import annotations
 
+import json
 from datetime import datetime
 
 import pytest
@@ -59,6 +60,14 @@ def _make_edge(
     return e
 
 
+def _parse_sse(text: str) -> list[dict[str, object]]:
+    return [
+        json.loads(line[6:])
+        for line in text.split("\n")
+        if line.startswith("data: ")
+    ]
+
+
 MOCK_INFERRED_EDGES = [
     Edge(
         id="edge-inf-1",
@@ -84,10 +93,12 @@ def test_infer_success(client: TestClient) -> None:
     ):
         resp = client.post("/api/edges/infer", json={"requirement_ids": None})
 
-    assert resp.status_code == 201
-    edges = resp.json()
-    assert len(edges) == 1
-    assert edges[0]["status"] == "pending"
+    assert resp.status_code == 200
+    assert "text/event-stream" in resp.headers["content-type"]
+    events = _parse_sse(resp.text)
+    assert events[-1]["step"] == "done"
+    assert len(store.edges) == 1
+    assert store.edges["edge-inf-1"].status.value == "pending"
 
 
 def test_infer_stores_edges(client: TestClient) -> None:
@@ -117,14 +128,17 @@ def test_infer_skips_duplicates(client: TestClient) -> None:
     ):
         resp = client.post("/api/edges/infer", json={"requirement_ids": None})
 
-    assert resp.status_code == 201
-    assert resp.json() == []  # duplicate skipped
-    assert len(store.edges) == 1  # only the original
+    assert resp.status_code == 200
+    events = _parse_sse(resp.text)
+    assert events[-1]["step"] == "done"
+    assert len(store.edges) == 1  # duplicate skipped, only original
 
 
-def test_infer_no_requirements_returns_422(client: TestClient) -> None:
+def test_infer_no_requirements_returns_error_event(client: TestClient) -> None:
     resp = client.post("/api/edges/infer", json={"requirement_ids": None})
-    assert resp.status_code == 422
+    assert resp.status_code == 200
+    events = _parse_sse(resp.text)
+    assert any(e["step"] == "error" for e in events)
 
 
 def test_infer_filtered_by_ids(client: TestClient) -> None:

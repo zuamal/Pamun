@@ -1,6 +1,8 @@
 """Edge inference and management endpoints."""
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 
@@ -23,6 +25,11 @@ router = APIRouter(prefix="/api/edges", tags=["Edges"])
     response_class=StreamingResponse,
 )
 async def infer_edges_endpoint(body: EdgeInferRequest) -> StreamingResponse:
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="LLM 기능을 사용하려면 ANTHROPIC_API_KEY가 필요합니다.",
+        )
     return StreamingResponse(
         stream_run_inference(body.requirement_ids),
         media_type="text/event-stream",

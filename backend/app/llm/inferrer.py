@@ -12,7 +12,7 @@ from app.models.edge import Edge, EdgeStatus, RelationType
 from app.models.requirement import Requirement
 
 _MAX_RETRIES = 3
-_MAX_TOKENS = 4096
+_MAX_TOKENS = 8192
 _DEFAULT_MODEL = "claude-sonnet-4-5"
 
 _INFER_PROMPT = """\

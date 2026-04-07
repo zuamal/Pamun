@@ -97,6 +97,19 @@ class BundleInfo(BaseModel):
     files: list[str]
 
 
+# --- Demo bundles ---
+class DemoBundleInfo(BaseModel):
+    name: str
+    description: str
+    file_count: int
+
+
+class DemoLoadResponse(BaseModel):
+    bundle: str
+    requirements: int
+    edges: int
+
+
 # --- Session ---
 class SessionSaveResponse(BaseModel):
     filepath: str

@@ -1,0 +1,1675 @@
+{
+  "saved_at": "2026-04-07T00:34:14.023199+00:00",
+  "documents": {
+    "bb1218bb-e920-4ca1-acc5-76670dec0bc3": {
+      "id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+      "filename": "PRD.md",
+      "format": "markdown",
+      "raw_text": "# LearnHub — 사내 교육 LMS PRD\n\n## 1. 개요\n\nLearnHub는 사내 직원 교육을 위한 학습 관리 시스템(LMS)이다. 관리자가 교육 과정을 생성하고, 직원이 온라인으로 수강하며, 학습 진도와 평가 결과를 추적할 수 있다.\n\n## 2. 사용자 역할\n\n### 2.1 역할 정의\n\n시스템에는 세 가지 역할이 있다: 관리자(Admin), 강사(Instructor), 수강생(Learner). 관리자는 과정 생성, 사용자 관리, 통계 조회 권한을 가진다. 강사는 자신이 담당하는 과정의 콘텐츠 관리와 평가 출제 권한을 가진다. 수강생은 배정된 과정을 수강하고 평가에 응시할 수 있다.\n\n### 2.2 SSO 연동\n\n사내 시스템이므로 별도 회원가입 없이 기존 사내 SSO(SAML 2.0)를 통해 인증한다. SSO 로그인 시 사번, 이름, 부서, 직급 정보가 자동으로 동기화된다. 역할은 관리자가 수동으로 부여하며, 기본값은 수강생이다.\n\n## 3. 과정 관리\n\n### 3.1 과정 생성\n\n관리자 또는 강사가 교육 과정을 생성한다. 과정에는 제목, 설명, 카테고리, 수강 기간, 담당 강사를 설정한다. 과정은 공개(모든 직원 수강 가능)와 지정(특정 부서나 직원에게만 배정) 두 가지 유형이 있다.\n\n### 3.2 콘텐츠 구성\n\n과정은 여러 개의 모듈로 구성되고, 각 모듈은 여러 개의 레슨으로 구성된다. 레슨 유형: 동영상, 문서(PDF 업로드), 텍스트(리치 텍스트 에디터). 모듈 간 순서를 지정할 수 있으며, 이전 모듈을 완료해야 다음 모듈에 접근할 수 있는 순차적 학습 모드를 선택적으로 활성화할 수 있다.\n\n### 3.3 수강생 배정\n\n지정 과정의 경우 관리자가 개별 직원 또는 부서 단위로 수강생을 배정한다. 배정 시 수강 기한을 설정할 수 있다. 수강생에게 배정 알림 이메일이 발송된다. 배정 후 수강생이 기한 내에 미수강 시 리마인더 이메일이 발송된다.\n\n## 4. 학습 및 진도\n\n### 4.1 수강\n\n수강생은 배정된 과정의 레슨을 순서대로 학습한다. 동영상 레슨은 전체 재생 시간의 90% 이상을 시청해야 완료로 인정한다. 문서 레슨은 열람 후 완료 버튼을 클릭하면 완료로 인정한다. 학습 중단 시 마지막 시청/열람 위치를 기록하여 이어보기를 지원한다.\n\n### 4.2 진도 추적\n\n수강생별 과정 진도율(완료 레슨 수 / 전체 레슨 수)을 실시간으로 계산한다. 관리자와 강사는 과정별 전체 수강생의 진도 현황을 대시보드에서 조회할 수 있다. 진도율이 수강 기한 대비 뒤처지는 수강생에게 자동 리마인더를 발송한다.\n\n## 5. 평가\n\n### 5.1 퀴즈 출제\n\n강사는 과정 또는 모듈 단위로 퀴즈를 출제할 수 있다. 퀴즈 유형: 객관식(단일선택, 다중선택), 주관식(단답형). 각 문제에 배점을 설정하며, 합격 기준 점수를 과정 단위로 지정한다.\n\n### 5.2 응시 및 채점\n\n수강생은 해당 모듈 또는 과정의 학습을 완료한 후 퀴즈에 응시할 수 있다. 객관식은 자동 채점되며, 주관식은 강사가 수동 채점한다. 응시 횟수 제한을 설정할 수 있으며, 재응시 시 이전 점수는 보존된다. 합격 기준 미달 시 과정 이수가 불인정된다.\n\n### 5.3 수료증\n\n과정의 모든 모듈을 완료하고 퀴즈에서 합격 기준을 충족하면 수료증이 자동 발급된다. 수료증에는 수강생 이름, 과정명, 수료일, 고유 인증번호가 포함된다. 수료증은 PDF로 다운로드할 수 있다.\n\n## 6. 통계 및 리포트\n\n### 6.1 관리자 대시보드\n\n관리자는 전체 과정의 수강 현황, 완료율, 평균 퀴즈 점수를 조회할 수 있다. 부서별, 과정별, 기간별 필터를 제공한다. 미수강자 목록과 수강 기한 임박자 목록을 확인할 수 있다.\n\n### 6.2 수강생 학습 이력\n\n수강생은 자신의 학습 이력(수강한 과정, 진도율, 퀴즈 점수, 수료증)을 조회할 수 있다. 관리자는 특정 수강생의 전체 학습 이력을 조회할 수 있다.\n",
+      "file_size": 4186,
+      "uploaded_at": "2026-04-07T09:31:07.782327"
+    },
+    "82770671-d216-4fef-9741-7bea42a5b59d": {
+      "id": "82770671-d216-4fef-9741-7bea42a5b59d",
+      "filename": "API_명세서.docx",
+      "format": "docx",
+      "raw_text": "LearnHub API 명세서\n본 문서는 LearnHub PRD의 요구사항을 API 수준으로 명세한다. 데이터 모델은 데이터모델.md를 참조한다.\n1. 인증 API\n1.1 SSO 로그인\nPRD 2.2 SSO 연동 요구사항을 구현한다.\n엔드포인트: POST /api/auth/sso. SAML 2.0 assertion을 받아 사번, 이름, 부서, 직급을 동기화한다.\n첫 로그인 시 User 레코드를 자동 생성하고 role=LEARNER을 부여한다 (데이터모델 1.1 참조).\n2. 과정 관리 API\n2.1 과정 CRUD\nPRD 3.1 과정 생성 요구사항을 구현한다.\n과정 생성: POST /api/courses. 필수 필드: title, description, category, type (PUBLIC|ASSIGNED), instructor_id. 선택: sequential_mode, passing_score, enrollment_period_days.\n과정 목록: GET /api/courses. 권한별 필터: Admin은 전체, Instructor는 담당 과정, Learner는 배정/공개 과정만 반환.\n과정 상세: GET /api/courses/{id}. 모듈 및 레슨 목록 포함.\n과정 수정: PATCH /api/courses/{id}. PUBLISHED 상태에서는 콘텐츠 추가만 가능, 구조 변경 불가.\n2.2 모듈 및 레슨 관리\nPRD 3.2 콘텐츠 구성 요구사항을 구현한다.\n모듈 CRUD: POST/GET/PATCH/DELETE /api/courses/{course_id}/modules\n레슨 CRUD: POST/GET/PATCH/DELETE /api/courses/{course_id}/modules/{module_id}/lessons\n레슨 유형별 처리: VIDEO — content_url에 동영상 URL 저장, duration_seconds 필수. DOCUMENT — PDF 업로드 후 content_url에 저장. TEXT — text_content에 리치 텍스트 저장.\n순서 변경: PATCH /api/courses/{course_id}/modules/reorder { module_ids: [...] }. 레슨도 동일.\n2.3 수강생 배정\nPRD 3.3 수강생 배정 요구사항을 구현한다.\n개별 배정: POST /api/courses/{course_id}/enrollments { user_ids: [...] }. Enrollment 레코드 생성 (데이터모델 3.1 참조).\n부서 단위 배정: POST /api/courses/{course_id}/enrollments/department { department: string }. 해당 부서 전체 직원을 배정.\n배정 알림: 배정 시 수강생에게 이메일 발송. 미수강 리마인더: 기한 7일 전, 3일 전, 1일 전에 자동 발송.\n3. 학습 API\n3.1 레슨 수강\nPRD 4.1 수강 요구사항을 구현한다.\n레슨 접근: GET /api/courses/{course_id}/modules/{module_id}/lessons/{lesson_id}. sequential_mode가 true인 경우 이전 모듈 미완료 시 403 Forbidden.\n진도 기록: POST /api/progress/lessons/{lesson_id} { video_watched_percent, last_position_seconds }. 동영상 90% 이상 시청 시 is_completed=true 자동 설정 (데이터모델 3.2 참조).\n문서 완료: POST /api/progress/lessons/{lesson_id}/complete. DOCUMENT/TEXT 레슨용. 수동 완료 처리.\n3.2 진도 조회\nPRD 4.2 진도 추적 요구사항을 구현한다.\n개인 진도: GET /api/courses/{course_id}/progress. 응답: completed_lessons, total_lessons, progress_percent, is_behind_schedule (데이터모델 3.3 참조).\n과정 전체 진도 (관리자/강사): GET /api/courses/{course_id}/progress/all. 모든 수강생의 진도 목록.\n리마인더: 진도율이 기한 대비 뒤쳐지는 수강생에게 자동 이메일 발송 (배치 작업).\n4. 평가 API\n4.1 퀘즈 관리\nPRD 5.1 퀘즈 출제 요구사항을 구현한다.\n퀘즈 생성: POST /api/courses/{course_id}/quizzes. 필수: title, max_attempts. 선택: module_id (모듈 단위 퀘즈일 경우).\n문제 추가: POST /api/quizzes/{quiz_id}/questions { type, content, options, correct_answer, points } (데이터모델 4.2 참조).\n4.2 응시 및 채점\nPRD 5.2 응시 및 채점 요구사항을 구현한다.\n응시: POST /api/quizzes/{quiz_id}/attempts { answers: [...] }. 전제조건: 해당 모듈/과정 학습 완료. 응시 횟수 초과 시 403 Forbidden.\n자동 채점: 객관식은 제출 시 즐시 채점. auto_score 기록.\n수동 채점: PATCH /api/quiz-attempts/{attempt_id}/grade { question_scores: {...} }. 강사만 가능. manual_score 기록 후 total_score 및 passed 계산.\n4.3 수료증\nPRD 5.3 수료증 요구사항을 구현한다.\n수료증 발급: 과정 모든 모듈 완료 + 퀘즈 합격 시 자동 발급 (데이터모델 5.1 참조). POST /api/certificates/check — 발급 조건 확인 및 자동 생성.\n수료증 다운로드: GET /api/certificates/{id}/pdf. PDF 포함 필드: 수강생 이름, 과정명, 수료일, 고유 인증번호.\n5. 통계 API\n5.1 관리자 대시보드\nPRD 6.1 관리자 대시보드 요구사항을 구현한다.\n전체 통계: GET /api/admin/dashboard. 응답: total_courses, total_enrollments, overall_completion_rate, average_quiz_score.\n필터: ?department={dept}&course_id={id}&date_from={date}&date_to={date}\n미수강자 목록: GET /api/admin/dashboard/non-starters. 배정됐지만 아직 시작하지 않은 수강생 목록.\n기한 임박자: GET /api/admin/dashboard/deadline-approaching?days=7. 7일 이내 기한인 미완료 수강생.\n5.2 수강생 학습 이력\nPRD 6.2 수강생 학습 이력 요구사항을 구현한다.\n본인 이력: GET /api/learners/me/history. 응답: 수강 과정별 진도율, 퀘즈 점수, 수료증 정보.\n특정 수강생 이력 (관리자): GET /api/learners/{user_id}/history. 동일 구조.",
+      "file_size": 10430,
+      "uploaded_at": "2026-04-07T09:31:07.785333"
+    },
+    "0eb59248-f331-4f59-b1af-00c40300c103": {
+      "id": "0eb59248-f331-4f59-b1af-00c40300c103",
+      "filename": "데이터모델.md",
+      "format": "markdown",
+      "raw_text": "# LearnHub — Data Model Specification\n\nThis document defines the core data models for LearnHub LMS. All models correspond to PRD requirements and are referenced by the API specification and test plan.\n\n## 1. User Models\n\n### 1.1 User\n\nRepresents a registered employee in the system (PRD 2.1, 2.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| employee_id | string | Employee number from SSO (PRD 2.2) |\n| name | string | Full name (synced from SSO) |\n| department | string | Department name (synced from SSO) |\n| position | string | Job title (synced from SSO) |\n| role | enum | ADMIN, INSTRUCTOR, LEARNER (default: LEARNER, PRD 2.1) |\n| email | string | Corporate email |\n| created_at | datetime | First SSO login timestamp |\n\n### 1.2 Role Permissions\n\nRole-based access control mapping (PRD 2.1).\n\n| Permission | Admin | Instructor | Learner |\n|-----------|-------|-----------|---------|\n| Create/edit courses | Yes | Own courses only | No |\n| Assign learners | Yes | No | No |\n| Create quizzes | Yes | Own courses only | No |\n| Grade subjective answers | Yes | Own courses only | No |\n| View all learner progress | Yes | Own courses only | Own only |\n| Download reports | Yes | Own courses only | Own only |\n| Manage user roles | Yes | No | No |\n\n## 2. Course Models\n\n### 2.1 Course\n\nRepresents an educational course (PRD 3.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| title | string | Course title |\n| description | text | Course description |\n| category | string | Category (e.g., Compliance, Technical, Leadership) |\n| type | enum | PUBLIC (all employees), ASSIGNED (specific learners, PRD 3.1) |\n| instructor_id | UUID | FK to User (role=INSTRUCTOR) |\n| enrollment_period_days | int | Duration for completion after assignment (PRD 3.3) |\n| sequential_mode | boolean | If true, modules must be completed in order (PRD 3.2) |\n| passing_score | int | Minimum quiz score for certification (PRD 5.1) |\n| status | enum | DRAFT, PUBLISHED, ARCHIVED |\n| created_at | datetime | |\n| updated_at | datetime | |\n\n### 2.2 Module\n\nA section within a course (PRD 3.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| course_id | UUID | FK to Course |\n| title | string | Module title |\n| order_index | int | Display order within course |\n| created_at | datetime | |\n\n### 2.3 Lesson\n\nIndividual learning unit within a module (PRD 3.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| module_id | UUID | FK to Module |\n| title | string | Lesson title |\n| type | enum | VIDEO, DOCUMENT, TEXT |\n| content_url | string | URL for video or PDF (null for TEXT type) |\n| text_content | text | Rich text content (null for VIDEO/DOCUMENT type) |\n| duration_seconds | int | Video duration (null for non-video) |\n| order_index | int | Display order within module |\n\n## 3. Enrollment and Progress Models\n\n### 3.1 Enrollment\n\nLinks a learner to a course (PRD 3.3).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User (learner) |\n| course_id | UUID | FK to Course |\n| assigned_by | UUID | FK to User (admin who assigned, null for public enrollment) |\n| assigned_at | datetime | When the learner was assigned |\n| deadline | datetime | Enrollment period end (assigned_at + course.enrollment_period_days) |\n| completed_at | datetime | Null until all modules + quiz completed |\n| status | enum | ACTIVE, COMPLETED, EXPIRED |\n\n### 3.2 LessonProgress\n\nTracks individual lesson completion (PRD 4.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User |\n| lesson_id | UUID | FK to Lesson |\n| is_completed | boolean | Completion status |\n| video_watched_percent | float | For VIDEO lessons, must reach 90% (PRD 4.1) |\n| last_position_seconds | int | Resume position for video (PRD 4.1) |\n| completed_at | datetime | Null until completed |\n| last_accessed_at | datetime | For resume functionality |\n\n### 3.3 CourseProgress (Computed)\n\nNot stored directly but computed from LessonProgress (PRD 4.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| user_id | UUID | |\n| course_id | UUID | |\n| completed_lessons | int | Count of completed lessons |\n| total_lessons | int | Total lessons in course |\n| progress_percent | float | completed_lessons / total_lessons * 100 |\n| is_behind_schedule | boolean | Progress rate < expected rate based on deadline |\n\n## 4. Assessment Models\n\n### 4.1 Quiz\n\nAssessment for a module or course (PRD 5.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| course_id | UUID | FK to Course |\n| module_id | UUID | FK to Module (null if course-level quiz) |\n| title | string | Quiz title |\n| max_attempts | int | Maximum number of attempts (PRD 5.2), null for unlimited |\n| created_by | UUID | FK to User (instructor) |\n\n### 4.2 Question\n\nIndividual quiz question (PRD 5.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| quiz_id | UUID | FK to Quiz |\n| type | enum | SINGLE_CHOICE, MULTI_CHOICE, SHORT_ANSWER |\n| content | text | Question text |\n| options | json | Array of options (null for SHORT_ANSWER) |\n| correct_answer | json | Correct option(s) or expected answer |\n| points | int | Score for this question |\n| order_index | int | Display order |\n\n### 4.3 QuizAttempt\n\nRecords a learner's quiz submission (PRD 5.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User |\n| quiz_id | UUID | FK to Quiz |\n| attempt_number | int | Which attempt (1, 2, ...) |\n| answers | json | Submitted answers |\n| auto_score | int | Auto-graded score (objective questions) |\n| manual_score | int | Instructor-graded score (subjective, null until graded) |\n| total_score | int | auto_score + manual_score |\n| passed | boolean | total_score >= course.passing_score |\n| submitted_at | datetime | |\n| graded_at | datetime | Null until fully graded |\n\n## 5. Certificate Model\n\n### 5.1 Certificate\n\nAuto-issued upon course completion (PRD 5.3).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User |\n| course_id | UUID | FK to Course |\n| certificate_number | string | Unique verification code |\n| issued_at | datetime | |\n| pdf_url | string | Generated PDF download URL |\n\nCertificate issuance conditions (PRD 5.3): all modules completed AND quiz total_score >= course.passing_score. Certificate PDF includes: learner name, course title, completion date, certificate number.\n",
+      "file_size": 6723,
+      "uploaded_at": "2026-04-07T09:31:07.785558"
+    },
+    "50fdd8ee-543f-49af-8be2-953638b88867": {
+      "id": "50fdd8ee-543f-49af-8be2-953638b88867",
+      "filename": "알림명세서.md",
+      "format": "markdown",
+      "raw_text": "# LearnHub — Notification Specification\n\nThis document specifies all automated notifications in the LearnHub system. Each notification references the originating PRD requirement and the API endpoint that triggers it.\n\n## 1. Enrollment Notifications\n\n### 1.1 Course Assignment\n\n**Trigger:** Admin assigns learner to a course (PRD 3.3, API 2.3 POST /api/courses/{id}/enrollments).\n\n**Channel:** Email\n\n**Content:**\n- Subject: \"[LearnHub] You have been assigned to: {course_title}\"\n- Body: Course title, description, deadline (enrollment.deadline from Data Model 3.1), link to course page\n- Sent to: Each assigned learner\n\n### 1.2 Deadline Reminders\n\n**Trigger:** Scheduled batch job checks enrollment deadlines (PRD 3.3, API 2.3).\n\n**Channel:** Email\n\n**Schedule:**\n- 7 days before deadline\n- 3 days before deadline\n- 1 day before deadline (urgent tone)\n\n**Content:**\n- Subject: \"[LearnHub] Reminder: {course_title} deadline in {days} days\"\n- Body: Current progress_percent (computed from Data Model 3.3), remaining lessons count, deadline date, link to resume\n\n**Suppression:** Do not send if enrollment.status = COMPLETED.\n\n## 2. Progress Notifications\n\n### 2.1 Behind Schedule Alert\n\n**Trigger:** Batch job computes is_behind_schedule = true (Data Model 3.3, PRD 4.2).\n\n**Channel:** Email\n\n**Schedule:** Weekly (every Monday 9:00 AM), only if still behind.\n\n**Content:**\n- Subject: \"[LearnHub] You are falling behind on: {course_title}\"\n- Body: Expected progress vs actual progress, days remaining, link to course\n\n**Logic:** is_behind_schedule = true when (elapsed_time / total_time) > (completed_lessons / total_lessons) + 0.1 buffer. This formula ensures alerts are not overly aggressive and account for front-loaded or back-loaded study patterns.\n\n### 2.2 Module Completion\n\n**Trigger:** Learner completes last lesson in a module (all LessonProgress.is_completed = true for module, Data Model 3.2).\n\n**Channel:** In-app notification only (no email).\n\n**Content:** \"Module '{module_title}' completed! Next: {next_module_title}\" or \"All modules completed! Take the quiz to earn your certificate.\" if last module.\n\n## 3. Assessment Notifications\n\n### 3.1 Quiz Available\n\n**Trigger:** Learner completes module/course that has an associated quiz (PRD 5.2, API 4.2).\n\n**Channel:** Email + In-app\n\n**Content:**\n- Subject: \"[LearnHub] Quiz available: {quiz_title}\"\n- Body: Quiz title, associated course/module, max_attempts (from Data Model 4.1), link to quiz\n\n### 3.2 Grading Complete (Subjective)\n\n**Trigger:** Instructor completes manual grading (API 4.2 PATCH /api/quiz-attempts/{id}/grade, PRD 5.2).\n\n**Channel:** Email + In-app\n\n**Content:**\n- Subject: \"[LearnHub] Your quiz has been graded: {quiz_title}\"\n- Body: Total score, pass/fail status, link to results. If failed: \"You have {remaining_attempts} attempts remaining.\" (computed from max_attempts - attempt_number, Data Model 4.3).\n\n### 3.3 Certificate Issued\n\n**Trigger:** Certificate auto-generated upon course completion (PRD 5.3, API 4.3, Data Model 5.1).\n\n**Channel:** Email + In-app\n\n**Content:**\n- Subject: \"[LearnHub] Congratulations! Certificate earned: {course_title}\"\n- Body: Certificate number, link to download PDF, course completion summary\n\n## 4. Administrative Notifications\n\n### 4.1 Pending Grading Alert\n\n**Trigger:** Subjective quiz attempt submitted, grading not completed within 3 days (Data Model 4.3: submitted_at vs current time).\n\n**Channel:** Email to course instructor\n\n**Content:**\n- Subject: \"[LearnHub] Pending grading: {quiz_title} ({count} submissions)\"\n- Body: Number of ungraded submissions, learner names, link to grading page\n\n### 4.2 Low Completion Rate Alert\n\n**Trigger:** Course completion rate falls below 50% with less than 30% of enrollment period remaining (PRD 6.1).\n\n**Channel:** Email to course instructor + Admin\n\n**Content:**\n- Subject: \"[LearnHub] Low completion alert: {course_title}\"\n- Body: Current completion rate, number of non-starters (Data Model 3.1 where no LessonProgress exists), deadline distribution\n\n## 5. Notification Preferences\n\nLearners can configure notification preferences per channel:\n\n| Notification Type | Email | In-app | Can Disable? |\n|------------------|-------|--------|-------------|\n| Course Assignment | Yes | Yes | No (mandatory) |\n| Deadline Reminders | Yes | Yes | Yes |\n| Behind Schedule | Yes | No | Yes |\n| Module Completion | No | Yes | Yes |\n| Quiz Available | Yes | Yes | No (mandatory) |\n| Grading Complete | Yes | Yes | No (mandatory) |\n| Certificate Issued | Yes | Yes | No (mandatory) |\n\nMandatory notifications cannot be disabled as they are essential for the learning workflow. Preference settings are stored per user and accessed via GET/PATCH /api/users/me/notification-preferences.\n",
+      "file_size": 4742,
+      "uploaded_at": "2026-04-07T09:31:07.785745"
+    },
+    "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f": {
+      "id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+      "filename": "테스트계획서.pdf",
+      "format": "pdf",
+      "raw_text": "LearnHub Test Plan\nVersion 1.0 | Ref: PRD.md, Data Model, API Spec\n1. Authentication (PRD 2.2, API 1.1)\nID Test Case Precondition Expected Result P/F\nTC-01 SSO first login Valid SAML assertion User created with role=LEARNER.\nEmployee data synced (Data\nModel 1.1).\nTC-02 SSO returning user Existing user User data updated from SSO.\nSession created.\nTC-03 Role assignment Admin user Admin can change user role.\nDefault LEARNER preserved for\nnew users.\n2. Course Management (PRD 3.1-3.3, API 2.1-2.3)\n2.1 Course CRUD\nID Test Case Precondition Expected Result P/F\nTC-10 Create PUBLIC course Admin or Instructor Course created with\ntype=PUBLIC. All learners can see\nit.\nTC-11 Create ASSIGNED Admin Course created with\ncourse type=ASSIGNED. Only assigned\nlearners see it.\nTC-12 Edit published course Published course Only content additions allowed.\nStructure changes blocked (API\n2.1).\nTC-13 Learner cannot create Learner role 403 Forbidden. Only\nAdmin/Instructor can create\ncourses (PRD 2.1).\n2.2 Content Structure\nID Test Case Precondition Expected Result P/F\nTC-20 Add video lesson Course with module Lesson created with type=VIDEO,\ncontent_url, duration_seconds\nrequired (Data Model 2.3).\nTC-21 Add document lesson Course with module PDF uploaded. Lesson created\nwith type=DOCUMENT.\nTC-22 Module reorder Course with 3+ modules Module order updated.\norder_index reflects new\nsequence.\nID Test Case Precondition Expected Result P/F\nTC-23 Sequential mode sequential_mode=true Learner cannot access Module 2\nuntil Module 1 is completed.\n2.3 Enrollment\nID Test Case Precondition Expected Result P/F\nTC-30 Individual enrollment ASSIGNED course Enrollment created (Data Model\n3.1). Notification email sent (PRD\n3.3).\nTC-31 Department enrollment ASSIGNED course, 5 enrollments created. 5 emails\ndepartment with 5 users sent.\nTC-32 Reminder emails Enrollment with deadline Reminder email sent at 7d, 3d, 1d\nin 3 days before deadline (API 2.3).\n3. Learning & Progress (PRD 4.1-4.2, API 3.1-3.2)\nID Test Case Precondition Expected Result P/F\nTC-40 Video completion at 90% Video lesson, watched is_completed=true. Progress\n90% updated (Data Model 3.2, PRD\n4.1).\nTC-41 Video at 89% Video lesson, watched is_completed=false. Can resume\n89% from last position.\nTC-42 Document completion Document lesson opened Learner clicks 'Complete'.\nis_completed=true (PRD 4.1).\nTC-43 Resume playback Video paused at 5:30 Reopening lesson resumes at 5:30\n(last_position_seconds, PRD 4.1).\nTC-44 Progress calculation 3/10 lessons completed progress_percent=30%. Shown in\ndashboard (Data Model 3.3, PRD\n4.2).\nTC-45 Behind schedule alert 50% time elapsed, 20% is_behind_schedule=true.\nprogress Reminder email sent (PRD 4.2).\n4. Assessment (PRD 5.1-5.3, API 4.1-4.3)\n4.1 Quiz\nID Test Case Precondition Expected Result P/F\nTC-50 Create quiz Instructor, published Quiz created with questions (Data\ncourse Model 4.1, 4.2). Linked to module\nor course.\nTC-51 Attempt quiz Module completed Answers submitted. Objective\nauto-graded (PRD 5.2, API 4.2).\nTC-52 Max attempts exceeded max_attempts=2, already 403 Forbidden. Cannot attempt\n2 attempts again (PRD 5.2).\nTC-53 Subjective grading Quiz with Instructor grades. manual_score\nSHORT_ANSWER recorded. total_score recalculated\n(API 4.2).\nTC-54 Passing score check passing_score=80, passed=false. Course completion\ntotal_score=75 blocked (PRD 5.2).\n4.2 Certificate\nID Test Case Precondition Expected Result P/F\nTC-60 Certificate issued All modules done + quiz Certificate auto-created (Data\npassed Model 5.1). PDF downloadable\n(PRD 5.3).\nTC-61 Certificate blocked All modules done but quiz No certificate. Enrollment status\nfailed remains ACTIVE.\nID Test Case Precondition Expected Result P/F\nTC-62 Certificate PDF content Certificate issued PDF contains: name, course title,\ndate, unique certificate_number\n(PRD 5.3).\n5. Dashboard & Reports (PRD 6.1-6.2, API 5.1-5.2)\nID Test Case Precondition Expected Result P/F\nTC-70 Admin dashboard Admin role Shows total_courses, enrollments,\ncompletion_rate, avg_quiz_score\n(API 5.1).\nTC-71 Department filter Admin, filter by Stats scoped to Engineering\nEngineering department only.\nTC-72 Non-starters list 3 learners enrolled but All 3 appear in non-starters list\n0% progress (API 5.1).\nTC-73 Learner own history Learner with 2 completed Shows both courses with\ncourses progress, quiz scores, certificates\n(API 5.2).\nTC-74 Admin views learner Admin, specific learner Full history of target learner visible\n(PRD 6.2).",
+      "file_size": 9167,
+      "uploaded_at": "2026-04-07T09:31:07.848936"
+    }
+  },
+  "requirements": {
+    "6e12bd11-caea-4ee5-a0a8-ade55548ec07": {
+      "id": "6e12bd11-caea-4ee5-a0a8-ade55548ec07",
+      "title": "시스템 개요 및 목적",
+      "original_text": "LearnHub는 사내 직원 교육을 위한 학습 관리 시스템(LMS)이다. 관리자가 교육 과정을 생성하고, 직원이 온라인으로 수강하며, 학습 진도와 평가 결과를 추적할 수 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 38,
+        "char_end": 136
+      },
+      "display_label": "1. 개요",
+      "changed": false
+    },
+    "49b724dc-d1c0-4fc9-a848-682d79e3cf9b": {
+      "id": "49b724dc-d1c0-4fc9-a848-682d79e3cf9b",
+      "title": "사용자 역할 정의 및 권한",
+      "original_text": "시스템에는 세 가지 역할이 있다: 관리자(Admin), 강사(Instructor), 수강생(Learner). 관리자는 과정 생성, 사용자 관리, 통계 조회 권한을 가진다. 강사는 자신이 담당하는 과정의 콘텐츠 관리와 평가 출제 권한을 가진다. 수강생은 배정된 과정을 수강하고 평가에 응시할 수 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 167,
+        "char_end": 334
+      },
+      "display_label": "2.1 역할 정의",
+      "changed": false
+    },
+    "e285844b-c0b9-42f1-bb9c-a496d4d24e96": {
+      "id": "e285844b-c0b9-42f1-bb9c-a496d4d24e96",
+      "title": "SSO 인증 및 사용자 정보 동기화",
+      "original_text": "사내 시스템이므로 별도 회원가입 없이 기존 사내 SSO(SAML 2.0)를 통해 인증한다. SSO 로그인 시 사번, 이름, 부서, 직급 정보가 자동으로 동기화된다. 역할은 관리자가 수동으로 부여하며, 기본값은 수강생이다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 352,
+        "char_end": 475
+      },
+      "display_label": "2.2 SSO 연동",
+      "changed": false
+    },
+    "6cf88a1e-57b6-4cd6-aace-484a1e59f320": {
+      "id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "title": "교육 과정 생성 및 설정",
+      "original_text": "관리자 또는 강사가 교육 과정을 생성한다. 과정에는 제목, 설명, 카테고리, 수강 기간, 담당 강사를 설정한다. 과정은 공개(모든 직원 수강 가능)와 지정(특정 부서나 직원에게만 배정) 두 가지 유형이 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 505,
+        "char_end": 621
+      },
+      "display_label": "3.1 과정 생성",
+      "changed": false
+    },
+    "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc": {
+      "id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "title": "과정 콘텐츠 구조 및 순차 학습",
+      "original_text": "과정은 여러 개의 모듈로 구성되고, 각 모듈은 여러 개의 레슨으로 구성된다. 레슨 유형: 동영상, 문서(PDF 업로드), 텍스트(리치 텍스트 에디터). 모듈 간 순서를 지정할 수 있으며, 이전 모듈을 완료해야 다음 모듈에 접근할 수 있는 순차적 학습 모드를 선택적으로 활성화할 수 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 639,
+        "char_end": 799
+      },
+      "display_label": "3.2 콘텐츠 구성",
+      "changed": false
+    },
+    "54f3ef96-fdad-40e9-966d-c55f777f328c": {
+      "id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "title": "수강생 배정 및 알림",
+      "original_text": "지정 과정의 경우 관리자가 개별 직원 또는 부서 단위로 수강생을 배정한다. 배정 시 수강 기한을 설정할 수 있다. 수강생에게 배정 알림 이메일이 발송된다. 배정 후 수강생이 기한 내에 미수강 시 리마인더 이메일이 발송된다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 817,
+        "char_end": 941
+      },
+      "display_label": "3.3 수강생 배정",
+      "changed": false
+    },
+    "b1869ae6-e8be-47c7-9666-e426a85e1ab0": {
+      "id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "title": "레슨 수강 및 완료 조건",
+      "original_text": "수강생은 배정된 과정의 레슨을 순서대로 학습한다. 동영상 레슨은 전체 재생 시간의 90% 이상을 시청해야 완료로 인정한다. 문서 레슨은 열람 후 완료 버튼을 클릭하면 완료로 인정한다. 학습 중단 시 마지막 시청/열람 위치를 기록하여 이어보기를 지원한다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 970,
+        "char_end": 1111
+      },
+      "display_label": "4.1 수강",
+      "changed": false
+    },
+    "a9f32beb-9914-4162-8b90-5ad49a2e094d": {
+      "id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "title": "진도 추적 및 리마인더",
+      "original_text": "수강생별 과정 진도율(완료 레슨 수 / 전체 레슨 수)을 실시간으로 계산한다. 관리자와 강사는 과정별 전체 수강생의 진도 현황을 대시보드에서 조회할 수 있다. 진도율이 수강 기한 대비 뒤처지는 수강생에게 자동 리마인더를 발송한다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 1128,
+        "char_end": 1256
+      },
+      "display_label": "4.2 진도 추적",
+      "changed": false
+    },
+    "6427211f-b8a8-4bd0-a737-b8a000df11ed": {
+      "id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "title": "퀴즈 출제 및 합격 기준 설정",
+      "original_text": "강사는 과정 또는 모듈 단위로 퀴즈를 출제할 수 있다. 퀴즈 유형: 객관식(단일선택, 다중선택), 주관식(단답형). 각 문제에 배점을 설정하며, 합격 기준 점수를 과정 단위로 지정한다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 1283,
+        "char_end": 1386
+      },
+      "display_label": "5.1 퀴즈 출제",
+      "changed": false
+    },
+    "f134b6c0-41ab-4ca0-9af6-5d9f185304dd": {
+      "id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "title": "퀴즈 응시 채점 및 재응시",
+      "original_text": "수강생은 해당 모듈 또는 과정의 학습을 완료한 후 퀴즈에 응시할 수 있다. 객관식은 자동 채점되며, 주관식은 강사가 수동 채점한다. 응시 횟수 제한을 설정할 수 있으며, 재응시 시 이전 점수는 보존된다. 합격 기준 미달 시 과정 이수가 불인정된다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 1405,
+        "char_end": 1543
+      },
+      "display_label": "5.2 응시 및 채점",
+      "changed": false
+    },
+    "ef4bc920-160c-439a-b742-4df562ec9341": {
+      "id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "title": "수료증 발급 및 다운로드",
+      "original_text": "과정의 모든 모듈을 완료하고 퀴즈에서 합격 기준을 충족하면 수료증이 자동 발급된다. 수료증에는 수강생 이름, 과정명, 수료일, 고유 인증번호가 포함된다. 수료증은 PDF로 다운로드할 수 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 1558,
+        "char_end": 1665
+      },
+      "display_label": "5.3 수료증",
+      "changed": false
+    },
+    "19b4e330-8d37-4a11-bd40-c4cfe49dbeaf": {
+      "id": "19b4e330-8d37-4a11-bd40-c4cfe49dbeaf",
+      "title": "관리자 대시보드 및 통계 조회",
+      "original_text": "관리자는 전체 과정의 수강 현황, 완료율, 평균 퀴즈 점수를 조회할 수 있다. 부서별, 과정별, 기간별 필터를 제공한다. 미수강자 목록과 수강 기한 임박자 목록을 확인할 수 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 1701,
+        "char_end": 1801
+      },
+      "display_label": "6.1 관리자 대시보드",
+      "changed": false
+    },
+    "6c4d5e5d-8d06-4144-b3f4-0a9551062033": {
+      "id": "6c4d5e5d-8d06-4144-b3f4-0a9551062033",
+      "title": "수강생 학습 이력 조회",
+      "original_text": "수강생은 자신의 학습 이력(수강한 과정, 진도율, 퀴즈 점수, 수료증)을 조회할 수 있다. 관리자는 특정 수강생의 전체 학습 이력을 조회할 수 있다.",
+      "location": {
+        "document_id": "bb1218bb-e920-4ca1-acc5-76670dec0bc3",
+        "char_start": 1822,
+        "char_end": 1905
+      },
+      "display_label": "6.2 수강생 학습 이력",
+      "changed": false
+    },
+    "1863a2b6-9eb7-48a7-b1ed-d8d47f41b6bd": {
+      "id": "1863a2b6-9eb7-48a7-b1ed-d8d47f41b6bd",
+      "title": "SSO 로그인 인증 구현",
+      "original_text": "1.1 SSO 로그인\nPRD 2.2 SSO 연동 요구사항을 구현한다.\n엔드포인트: POST /api/auth/sso. SAML 2.0 assertion을 받아 사번, 이름, 부서, 직급을 동기화한다.\n첫 로그인 시 User 레코드를 자동 생성하고 role=LEARNER을 부여한다 (데이터모델 1.1 참조).",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 92,
+        "char_end": 264
+      },
+      "display_label": "1.1 SSO 로그인",
+      "changed": false
+    },
+    "46a1d02c-76af-497e-a2da-65a84dea8f68": {
+      "id": "46a1d02c-76af-497e-a2da-65a84dea8f68",
+      "title": "과정 CRUD 기능 구현",
+      "original_text": "2.1 과정 CRUD\nPRD 3.1 과정 생성 요구사항을 구현한다.\n과정 생성: POST /api/courses. 필수 필드: title, description, category, type (PUBLIC|ASSIGNED), instructor_id. 선택: sequential_mode, passing_score, enrollment_period_days.\n과정 목록: GET /api/courses. 권한별 필터: Admin은 전체, Instructor는 담당 과정, Learner는 배정/공개 과정만 반환.\n과정 상세: GET /api/courses/{id}. 모듈 및 레슨 목록 포함.\n과정 수정: PATCH /api/courses/{id}. PUBLISHED 상태에서는 콘텐츠 추가만 가능, 구조 변경 불가.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 278,
+        "char_end": 678
+      },
+      "display_label": "2.1 과정 CRUD",
+      "changed": false
+    },
+    "c535128f-9d7e-4a3f-88bb-67ef67b75764": {
+      "id": "c535128f-9d7e-4a3f-88bb-67ef67b75764",
+      "title": "모듈 및 레슨 관리 구현",
+      "original_text": "2.2 모듈 및 레슨 관리\nPRD 3.2 콘텐츠 구성 요구사항을 구현한다.\n모듈 CRUD: POST/GET/PATCH/DELETE /api/courses/{course_id}/modules\n레슨 CRUD: POST/GET/PATCH/DELETE /api/courses/{course_id}/modules/{module_id}/lessons\n레슨 유형별 처리: VIDEO — content_url에 동영상 URL 저장, duration_seconds 필수. DOCUMENT — PDF 업로드 후 content_url에 저장. TEXT — text_content에 리치 텍스트 저장.\n순서 변경: PATCH /api/courses/{course_id}/modules/reorder { module_ids: [...] }. 레슨도 동일.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 679,
+        "char_end": 1088
+      },
+      "display_label": "2.2 모듈 및 레슨 관리",
+      "changed": false
+    },
+    "a9c0e30a-2ba4-4c4a-8783-9a8ad178908e": {
+      "id": "a9c0e30a-2ba4-4c4a-8783-9a8ad178908e",
+      "title": "수강생 배정 및 알림 구현",
+      "original_text": "2.3 수강생 배정\nPRD 3.3 수강생 배정 요구사항을 구현한다.\n개별 배정: POST /api/courses/{course_id}/enrollments { user_ids: [...] }. Enrollment 레코드 생성 (데이터모델 3.1 참조).\n부서 단위 배정: POST /api/courses/{course_id}/enrollments/department { department: string }. 해당 부서 전체 직원을 배정.\n배정 알림: 배정 시 수강생에게 이메일 발송. 미수강 리마인더: 기한 7일 전, 3일 전, 1일 전에 자동 발송.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 1089,
+        "char_end": 1398
+      },
+      "display_label": "2.3 수강생 배정",
+      "changed": false
+    },
+    "34b466d2-3cd7-45db-8b41-ca57d0ced7a7": {
+      "id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "title": "레슨 수강 및 진도 기록 구현",
+      "original_text": "3.1 레슨 수강\nPRD 4.1 수강 요구사항을 구현한다.\n레슨 접근: GET /api/courses/{course_id}/modules/{module_id}/lessons/{lesson_id}. sequential_mode가 true인 경우 이전 모듈 미완료 시 403 Forbidden.\n진도 기록: POST /api/progress/lessons/{lesson_id} { video_watched_percent, last_position_seconds }. 동영상 90% 이상 시청 시 is_completed=true 자동 설정 (데이터모델 3.2 참조).\n문서 완료: POST /api/progress/lessons/{lesson_id}/complete. DOCUMENT/TEXT 레슨용. 수동 완료 처리.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 1409,
+        "char_end": 1808
+      },
+      "display_label": "3.1 레슨 수강",
+      "changed": false
+    },
+    "91c046f7-bae6-40af-934c-472eb27689b1": {
+      "id": "91c046f7-bae6-40af-934c-472eb27689b1",
+      "title": "진도 조회 및 리마인더 구현",
+      "original_text": "3.2 진도 조회\nPRD 4.2 진도 추적 요구사항을 구현한다.\n개인 진도: GET /api/courses/{course_id}/progress. 응답: completed_lessons, total_lessons, progress_percent, is_behind_schedule (데이터모델 3.3 참조).\n과정 전체 진도 (관리자/강사): GET /api/courses/{course_id}/progress/all. 모든 수강생의 진도 목록.\n리마인더: 진도율이 기한 대비 뒤쳐지는 수강생에게 자동 이메일 발송 (배치 작업).",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 1809,
+        "char_end": 2105
+      },
+      "display_label": "3.2 진도 조회",
+      "changed": false
+    },
+    "83393f81-a15b-43a3-a547-63a3c974d33d": {
+      "id": "83393f81-a15b-43a3-a547-63a3c974d33d",
+      "title": "퀘즈 관리 및 문제 추가 구현",
+      "original_text": "4.1 퀘즈 관리\nPRD 5.1 퀘즈 출제 요구사항을 구현한다.\n퀘즈 생성: POST /api/courses/{course_id}/quizzes. 필수: title, max_attempts. 선택: module_id (모듈 단위 퀘즈일 경우).\n문제 추가: POST /api/quizzes/{quiz_id}/questions { type, content, options, correct_answer, points } (데이터모델 4.2 참조).",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 2116,
+        "char_end": 2364
+      },
+      "display_label": "4.1 퀘즈 관리",
+      "changed": false
+    },
+    "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1": {
+      "id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "title": "퀘즈 응시 및 채점 구현",
+      "original_text": "4.2 응시 및 채점\nPRD 5.2 응시 및 채점 요구사항을 구현한다.\n응시: POST /api/quizzes/{quiz_id}/attempts { answers: [...] }. 전제조건: 해당 모듈/과정 학습 완료. 응시 횟수 초과 시 403 Forbidden.\n자동 채점: 객관식은 제출 시 즐시 채점. auto_score 기록.\n수동 채점: PATCH /api/quiz-attempts/{attempt_id}/grade { question_scores: {...} }. 강사만 가능. manual_score 기록 후 total_score 및 passed 계산.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 2365,
+        "char_end": 2682
+      },
+      "display_label": "4.2 응시 및 채점",
+      "changed": false
+    },
+    "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed": {
+      "id": "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed",
+      "title": "수료증 발급 및 다운로드 구현",
+      "original_text": "4.3 수료증\nPRD 5.3 수료증 요구사항을 구현한다.\n수료증 발급: 과정 모든 모듈 완료 + 퀘즈 합격 시 자동 발급 (데이터모델 5.1 참조). POST /api/certificates/check — 발급 조건 확인 및 자동 생성.\n수료증 다운로드: GET /api/certificates/{id}/pdf. PDF 포함 필드: 수강생 이름, 과정명, 수료일, 고유 인증번호.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 2683,
+        "char_end": 2895
+      },
+      "display_label": "4.3 수료증",
+      "changed": false
+    },
+    "fc5c92ae-f989-401a-a8c5-59cd512a7312": {
+      "id": "fc5c92ae-f989-401a-a8c5-59cd512a7312",
+      "title": "관리자 대시보드 통계 구현",
+      "original_text": "5.1 관리자 대시보드\nPRD 6.1 관리자 대시보드 요구사항을 구현한다.\n전체 통계: GET /api/admin/dashboard. 응답: total_courses, total_enrollments, overall_completion_rate, average_quiz_score.\n필터: ?department={dept}&course_id={id}&date_from={date}&date_to={date}\n미수강자 목록: GET /api/admin/dashboard/non-starters. 배정됐지만 아직 시작하지 않은 수강생 목록.\n기한 임박자: GET /api/admin/dashboard/deadline-approaching?days=7. 7일 이내 기한인 미완료 수강생.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 2906,
+        "char_end": 3287
+      },
+      "display_label": "5.1 관리자 대시보드",
+      "changed": false
+    },
+    "b895c03d-5f76-4e20-8975-9a998b5ef018": {
+      "id": "b895c03d-5f76-4e20-8975-9a998b5ef018",
+      "title": "수강생 학습 이력 조회 구현",
+      "original_text": "5.2 수강생 학습 이력\nPRD 6.2 수강생 학습 이력 요구사항을 구현한다.\n본인 이력: GET /api/learners/me/history. 응답: 수강 과정별 진도율, 퀴즈 점수, 수료증 정보.\n특정 수강생 이력 (관리자): GET /api/learners/{user_id}/history. 동일 구조.",
+      "location": {
+        "document_id": "82770671-d216-4fef-9741-7bea42a5b59d",
+        "char_start": 3460,
+        "char_end": 3460
+      },
+      "display_label": "5.2 수강생 학습 이력",
+      "changed": false
+    },
+    "4ca0a8f2-df23-40f0-b2f8-89f5940e1675": {
+      "id": "4ca0a8f2-df23-40f0-b2f8-89f5940e1675",
+      "title": "Document Purpose and Scope",
+      "original_text": "This document defines the core data models for LearnHub LMS. All models correspond to PRD requirements and are referenced by the API specification and test plan.",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 39,
+        "char_end": 200
+      },
+      "display_label": "Introduction",
+      "changed": false
+    },
+    "a34b6c10-4c2f-47e2-bb5a-5698d3b06462": {
+      "id": "a34b6c10-4c2f-47e2-bb5a-5698d3b06462",
+      "title": "User Model",
+      "original_text": "### 1.1 User\n\nRepresents a registered employee in the system (PRD 2.1, 2.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| employee_id | string | Employee number from SSO (PRD 2.2) |\n| name | string | Full name (synced from SSO) |\n| department | string | Department name (synced from SSO) |\n| position | string | Job title (synced from SSO) |\n| role | enum | ADMIN, INSTRUCTOR, LEARNER (default: LEARNER, PRD 2.1) |\n| email | string | Corporate email |\n| created_at | datetime | First SSO login timestamp |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 221,
+        "char_end": 774
+      },
+      "display_label": "Section 1.1 User",
+      "changed": false
+    },
+    "770e53f7-c2ea-468a-9f70-bec1f6ebbfb6": {
+      "id": "770e53f7-c2ea-468a-9f70-bec1f6ebbfb6",
+      "title": "Role Permissions",
+      "original_text": "### 1.2 Role Permissions\n\nRole-based access control mapping (PRD 2.1).\n\n| Permission | Admin | Instructor | Learner |\n|-----------|-------|-----------|---------|-------|\n| Create/edit courses | Yes | Own courses only | No |\n| Assign learners | Yes | No | No |\n| Create quizzes | Yes | Own courses only | No |\n| Grade subjective answers | Yes | Own courses only | No |\n| View all learner progress | Yes | Own courses only | Own only |\n| Download reports | Yes | Own courses only | Own only |\n| Manage user roles | Yes | No | No |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 766,
+        "char_end": 1318
+      },
+      "display_label": "Section 1.2 Role Permissions",
+      "changed": false
+    },
+    "ed8e256a-a417-4f58-80db-2862f9c0fc7a": {
+      "id": "ed8e256a-a417-4f58-80db-2862f9c0fc7a",
+      "title": "Course Model",
+      "original_text": "### 2.1 Course\n\nRepresents an educational course (PRD 3.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| title | string | Course title |\n| description | text | Course description |\n| category | string | Category (e.g., Compliance, Technical, Leadership) |\n| type | enum | PUBLIC (all employees), ASSIGNED (specific learners, PRD 3.1) |\n| instructor_id | UUID | FK to User (role=INSTRUCTOR) |\n| enrollment_period_days | int | Duration for completion after assignment (PRD 3.3) |\n| sequential_mode | boolean | If true, modules must be completed in order (PRD 3.2) |\n| passing_score | int | Minimum quiz score for certification (PRD 5.1) |\n| status | enum | DRAFT, PUBLISHED, ARCHIVED |\n| created_at | datetime | |\n| updated_at | datetime | |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 1319,
+        "char_end": 2106
+      },
+      "display_label": "Section 2.1 Course",
+      "changed": false
+    },
+    "8a23fe59-5377-42e8-af6f-3d00fe96e340": {
+      "id": "8a23fe59-5377-42e8-af6f-3d00fe96e340",
+      "title": "Module Model",
+      "original_text": "### 2.2 Module\n\nA section within a course (PRD 3.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| course_id | UUID | FK to Course |\n| title | string | Module title |\n| order_index | int | Display order within course |\n| created_at | datetime | |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 2108,
+        "char_end": 2401
+      },
+      "display_label": "Section 2.2 Module",
+      "changed": false
+    },
+    "92ff0d5a-c6e3-4028-bada-e0db6eff3533": {
+      "id": "92ff0d5a-c6e3-4028-bada-e0db6eff3533",
+      "title": "Lesson Model",
+      "original_text": "### 2.3 Lesson\n\nIndividual learning unit within a module (PRD 3.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| module_id | UUID | FK to Module |\n| title | string | Lesson title |\n| type | enum | VIDEO, DOCUMENT, TEXT |\n| content_url | string | URL for video or PDF (null for TEXT type) |\n| text_content | text | Rich text content (null for VIDEO/DOCUMENT type) |\n| duration_seconds | int | Video duration (null for non-video) |\n| order_index | int | Display order within module |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 2403,
+        "char_end": 2932
+      },
+      "display_label": "Section 2.3 Lesson",
+      "changed": false
+    },
+    "acf9e5ae-bc44-48c7-a03e-3dad8bc460d3": {
+      "id": "acf9e5ae-bc44-48c7-a03e-3dad8bc460d3",
+      "title": "Enrollment Model",
+      "original_text": "### 3.1 Enrollment\n\nLinks a learner to a course (PRD 3.3).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User (learner) |\n| course_id | UUID | FK to Course |\n| assigned_by | UUID | FK to User (admin who assigned, null for public enrollment) |\n| assigned_at | datetime | When the learner was assigned |\n| deadline | datetime | Enrollment period end (assigned_at + course.enrollment_period_days) |\n| completed_at | datetime | Null until all modules + quiz completed |\n| status | enum | ACTIVE, COMPLETED, EXPIRED |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 2972,
+        "char_end": 3554
+      },
+      "display_label": "Section 3.1 Enrollment",
+      "changed": false
+    },
+    "faf733a7-8bec-475d-8dc8-9a8e7b6ddd11": {
+      "id": "faf733a7-8bec-475d-8dc8-9a8e7b6ddd11",
+      "title": "Lesson Progress Model",
+      "original_text": "### 3.2 LessonProgress\n\nTracks individual lesson completion (PRD 4.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User |\n| lesson_id | UUID | FK to Lesson |\n| is_completed | boolean | Completion status |\n| video_watched_percent | float | For VIDEO lessons, must reach 90% (PRD 4.1) |\n| last_position_seconds | int | Resume position for video (PRD 4.1) |\n| completed_at | datetime | Null until completed |\n| last_accessed_at | datetime | For resume functionality |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 3556,
+        "char_end": 4092
+      },
+      "display_label": "Section 3.2 LessonProgress",
+      "changed": false
+    },
+    "8b2f6c7c-518c-4c1b-8d47-8ee060218968": {
+      "id": "8b2f6c7c-518c-4c1b-8d47-8ee060218968",
+      "title": "Course Progress Computed Model",
+      "original_text": "### 3.3 CourseProgress (Computed)\n\nNot stored directly but computed from LessonProgress (PRD 4.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| user_id | UUID | |\n| course_id | UUID | |\n| completed_lessons | int | Count of completed lessons |\n| total_lessons | int | Total lessons in course |\n| progress_percent | float | completed_lessons / total_lessons * 100 |\n| is_behind_schedule | boolean | Progress rate < expected rate based on deadline |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 4094,
+        "char_end": 4560
+      },
+      "display_label": "Section 3.3 CourseProgress (Computed)",
+      "changed": false
+    },
+    "a5c7f9c2-8eac-4b85-9daf-b00f7259b6ed": {
+      "id": "a5c7f9c2-8eac-4b85-9daf-b00f7259b6ed",
+      "title": "Quiz Model",
+      "original_text": "### 4.1 Quiz\n\nAssessment for a module or course (PRD 5.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| course_id | UUID | FK to Course |\n| module_id | UUID | FK to Module (null if course-level quiz) |\n| title | string | Quiz title |\n| max_attempts | int | Maximum number of attempts (PRD 5.2), null for unlimited |\n| created_by | UUID | FK to User (instructor) |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 4587,
+        "char_end": 4998
+      },
+      "display_label": "Section 4.1 Quiz",
+      "changed": false
+    },
+    "d4a944f0-8044-45fd-bd26-c219c3091cdb": {
+      "id": "d4a944f0-8044-45fd-bd26-c219c3091cdb",
+      "title": "Question Model",
+      "original_text": "### 4.2 Question\n\nIndividual quiz question (PRD 5.1).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| quiz_id | UUID | FK to Quiz |\n| type | enum | SINGLE_CHOICE, MULTI_CHOICE, SHORT_ANSWER |\n| content | text | Question text |\n| options | json | Array of options (null for SHORT_ANSWER) |\n| correct_answer | json | Correct option(s) or expected answer |\n| points | int | Score for this question |\n| order_index | int | Display order |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 5000,
+        "char_end": 5479
+      },
+      "display_label": "Section 4.2 Question",
+      "changed": false
+    },
+    "da41428b-1b40-44f0-aeb1-801921a37ee9": {
+      "id": "da41428b-1b40-44f0-aeb1-801921a37ee9",
+      "title": "Quiz Attempt Model",
+      "original_text": "### 4.3 QuizAttempt\n\nRecords a learner's quiz submission (PRD 5.2).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User |\n| quiz_id | UUID | FK to Quiz |\n| attempt_number | int | Which attempt (1, 2, ...) |\n| answers | json | Submitted answers |\n| auto_score | int | Auto-graded score (objective questions) |\n| manual_score | int | Instructor-graded score (subjective, null until graded) |\n| total_score | int | auto_score + manual_score |\n| passed | boolean | total_score >= course.passing_score |\n| submitted_at | datetime | |\n| graded_at | datetime | Null until fully graded |",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 5481,
+        "char_end": 6129
+      },
+      "display_label": "Section 4.3 QuizAttempt",
+      "changed": false
+    },
+    "47dee3cc-b9c5-43b9-93f7-d118217d2c17": {
+      "id": "47dee3cc-b9c5-43b9-93f7-d118217d2c17",
+      "title": "Certificate Model and Issuance Rules",
+      "original_text": "### 5.1 Certificate\n\nAuto-issued upon course completion (PRD 5.3).\n\n| Field | Type | Description |\n|-------|------|-------------|\n| id | UUID | Primary key |\n| user_id | UUID | FK to User |\n| course_id | UUID | FK to Course |\n| certificate_number | string | Unique verification code |\n| issued_at | datetime | |\n| pdf_url | string | Generated PDF download URL |\n\nCertificate issuance conditions (PRD 5.3): all modules completed AND quiz total_score >= course.passing_score. Certificate PDF includes: learner name, course title, completion date, certificate number.",
+      "location": {
+        "document_id": "0eb59248-f331-4f59-b1af-00c40300c103",
+        "char_start": 6156,
+        "char_end": 6720
+      },
+      "display_label": "Section 5.1 Certificate",
+      "changed": false
+    },
+    "fb9c79fd-01f7-49e2-a0ac-3b5e7f5c3ddd": {
+      "id": "fb9c79fd-01f7-49e2-a0ac-3b5e7f5c3ddd",
+      "title": "Introduction and Overview of Notification Specification",
+      "original_text": "# LearnHub — Notification Specification\n\nThis document specifies all automated notifications in the LearnHub system. Each notification references the originating PRD requirement and the API endpoint that triggers it.",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 0,
+        "char_end": 216
+      },
+      "display_label": "# LearnHub — Notification Specification",
+      "changed": false
+    },
+    "cb643ffc-5f94-462e-901a-d09e25c453e7": {
+      "id": "cb643ffc-5f94-462e-901a-d09e25c453e7",
+      "title": "Course Assignment Notification",
+      "original_text": "### 1.1 Course Assignment\n\n**Trigger:** Admin assigns learner to a course (PRD 3.3, API 2.3 POST /api/courses/{id}/enrollments).\n\n**Channel:** Email\n\n**Content:**\n- Subject: \"[LearnHub] You have been assigned to: {course_title}\"\n- Body: Course title, description, deadline (enrollment.deadline from Data Model 3.1), link to course page\n- Sent to: Each assigned learner",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 250,
+        "char_end": 618
+      },
+      "display_label": "Section 1.1 Course Assignment",
+      "changed": false
+    },
+    "026baf4c-1293-4004-81d0-ae3613145791": {
+      "id": "026baf4c-1293-4004-81d0-ae3613145791",
+      "title": "Deadline Reminders Notification",
+      "original_text": "### 1.2 Deadline Reminders\n\n**Trigger:** Scheduled batch job checks enrollment deadlines (PRD 3.3, API 2.3).\n\n**Channel:** Email\n\n**Schedule:**\n- 7 days before deadline\n- 3 days before deadline\n- 1 day before deadline (urgent tone)\n\n**Content:**\n- Subject: \"[LearnHub] Reminder: {course_title} deadline in {days} days\"\n- Body: Current progress_percent (computed from Data Model 3.3), remaining lessons count, deadline date, link to resume\n\n**Suppression:** Do not send if enrollment.status = COMPLETED.",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 620,
+        "char_end": 1122
+      },
+      "display_label": "Section 1.2 Deadline Reminders",
+      "changed": false
+    },
+    "55ab3b64-a62f-4ef2-9f2d-c587e52cf93d": {
+      "id": "55ab3b64-a62f-4ef2-9f2d-c587e52cf93d",
+      "title": "Behind Schedule Alert Notification",
+      "original_text": "### 2.1 Behind Schedule Alert\n\n**Trigger:** Batch job computes is_behind_schedule = true (Data Model 3.3, PRD 4.2).\n\n**Channel:** Email\n\n**Schedule:** Weekly (every Monday 9:00 AM), only if still behind.\n\n**Content:**\n- Subject: \"[LearnHub] You are falling behind on: {course_title}\"\n- Body: Expected progress vs actual progress, days remaining, link to course\n\n**Logic:** is_behind_schedule = true when (elapsed_time / total_time) > (completed_lessons / total_lessons) + 0.1 buffer. This formula ensures alerts are not overly aggressive and account for front-loaded or back-loaded study patterns.",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 1154,
+        "char_end": 1751
+      },
+      "display_label": "Section 2.1 Behind Schedule Alert",
+      "changed": false
+    },
+    "26d8dada-a6cd-4d49-bff2-efe188245d08": {
+      "id": "26d8dada-a6cd-4d49-bff2-efe188245d08",
+      "title": "Module Completion Notification",
+      "original_text": "### 2.2 Module Completion\n\n**Trigger:** Learner completes last lesson in a module (all LessonProgress.is_completed = true for module, Data Model 3.2).\n\n**Channel:** In-app notification only (no email).\n\n**Content:** \"Module '{module_title}' completed! Next: {next_module_title}\" or \"All modules completed! Take the quiz to earn your certificate.\" if last module.",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 1753,
+        "char_end": 2115
+      },
+      "display_label": "Section 2.2 Module Completion",
+      "changed": false
+    },
+    "5ef346ee-b647-4959-8240-b745c622bd3e": {
+      "id": "5ef346ee-b647-4959-8240-b745c622bd3e",
+      "title": "Quiz Available Notification",
+      "original_text": "### 3.1 Quiz Available\n\n**Trigger:** Learner completes module/course that has an associated quiz (PRD 5.2, API 4.2).\n\n**Channel:** Email + In-app\n\n**Content:**\n- Subject: \"[LearnHub] Quiz available: {quiz_title}\"\n- Body: Quiz title, associated course/module, max_attempts (from Data Model 4.1), link to quiz",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 2149,
+        "char_end": 2456
+      },
+      "display_label": "Section 3.1 Quiz Available",
+      "changed": false
+    },
+    "db21df4b-ddf2-46cb-8cc6-5c9bfb68be33": {
+      "id": "db21df4b-ddf2-46cb-8cc6-5c9bfb68be33",
+      "title": "Grading Complete Subjective Notification",
+      "original_text": "### 3.2 Grading Complete (Subjective)\n\n**Trigger:** Instructor completes manual grading (API 4.2 PATCH /api/quiz-attempts/{id}/grade, PRD 5.2).\n\n**Channel:** Email + In-app\n\n**Content:**\n- Subject: \"[LearnHub] Your quiz has been graded: {quiz_title}\"\n- Body: Total score, pass/fail status, link to results. If failed: \"You have {remaining_attempts} attempts remaining.\" (computed from max_attempts - attempt_number, Data Model 4.3).",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 2458,
+        "char_end": 2890
+      },
+      "display_label": "Section 3.2 Grading Complete (Subjective)",
+      "changed": false
+    },
+    "ff32ef4c-5f78-4240-9202-5e039fe8a6d6": {
+      "id": "ff32ef4c-5f78-4240-9202-5e039fe8a6d6",
+      "title": "Certificate Issued Notification",
+      "original_text": "### 3.3 Certificate Issued\n\n**Trigger:** Certificate auto-generated upon course completion (PRD 5.3, API 4.3, Data Model 5.1).\n\n**Channel:** Email + In-app\n\n**Content:**\n- Subject: \"[LearnHub] Congratulations! Certificate earned: {course_title}\"\n- Body: Certificate number, link to download PDF, course completion summary",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 2892,
+        "char_end": 3213
+      },
+      "display_label": "Section 3.3 Certificate Issued",
+      "changed": false
+    },
+    "2f5d7b9d-1020-4052-bb59-cf979c74e654": {
+      "id": "2f5d7b9d-1020-4052-bb59-cf979c74e654",
+      "title": "Pending Grading Alert to Instructors",
+      "original_text": "### 4.1 Pending Grading Alert\n\n**Trigger:** Subjective quiz attempt submitted, grading not completed within 3 days (Data Model 4.3: submitted_at vs current time).\n\n**Channel:** Email to course instructor\n\n**Content:**\n- Subject: \"[LearnHub] Pending grading: {quiz_title} ({count} submissions)\"\n- Body: Number of ungraded submissions, learner names, link to grading page",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 3251,
+        "char_end": 3620
+      },
+      "display_label": "Section 4.1 Pending Grading Alert",
+      "changed": false
+    },
+    "3e4e19e8-221f-4d16-9c95-1414e3f7000b": {
+      "id": "3e4e19e8-221f-4d16-9c95-1414e3f7000b",
+      "title": "Low Completion Rate Alert to Instructors",
+      "original_text": "### 4.2 Low Completion Rate Alert\n\n**Trigger:** Course completion rate falls below 50% with less than 30% of enrollment period remaining (PRD 6.1).\n\n**Channel:** Email to course instructor + Admin\n\n**Content:**\n- Subject: \"[LearnHub] Low completion alert: {course_title}\"\n- Body: Current completion rate, number of non-starters (Data Model 3.1 where no LessonProgress exists), deadline distribution",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 3622,
+        "char_end": 4020
+      },
+      "display_label": "Section 4.2 Low Completion Rate Alert",
+      "changed": false
+    },
+    "a524e2e5-f89b-4cf7-bec0-092cd809761e": {
+      "id": "a524e2e5-f89b-4cf7-bec0-092cd809761e",
+      "title": "Notification Preferences Configuration",
+      "original_text": "## 5. Notification Preferences\n\nLearners can configure notification preferences per channel:\n\n| Notification Type | Email | In-app | Can Disable? |\n|------------------|-------|--------|-------------|\n| Course Assignment | Yes | Yes | No (mandatory) |\n| Deadline Reminders | Yes | Yes | Yes |\n| Behind Schedule | Yes | No | Yes |\n| Module Completion | No | Yes | Yes |\n| Quiz Available | Yes | Yes | No (mandatory) |\n| Grading Complete | Yes | Yes | No (mandatory) |\n| Certificate Issued | Yes | Yes | No (mandatory) |\n\nMandatory notifications cannot be disabled as they are essential for the learning workflow. Preference settings are stored per user and accessed via GET/PATCH /api/users/me/notification-preferences.",
+      "location": {
+        "document_id": "50fdd8ee-543f-49af-8be2-953638b88867",
+        "char_start": 4022,
+        "char_end": 4739
+      },
+      "display_label": "Section 5. Notification Preferences",
+      "changed": false
+    },
+    "3ff5e281-cef1-40e8-812c-39c989c0ea39": {
+      "id": "3ff5e281-cef1-40e8-812c-39c989c0ea39",
+      "title": "Authentication Test Cases",
+      "original_text": "1. Authentication (PRD 2.2, API 1.1)\nID Test Case Precondition Expected Result P/F\nTC-01 SSO first login Valid SAML assertion User created with role=LEARNER.\nEmployee data synced (Data\nModel 1.1).\nTC-02 SSO returning user Existing user User data updated from SSO.\nSession created.\nTC-03 Role assignment Admin user Admin can change user role.\nDefault LEARNER preserved for\nnew users.",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 67,
+        "char_end": 449
+      },
+      "display_label": "Section 1: Authentication",
+      "changed": false
+    },
+    "47851789-e652-4503-aab0-504710ce9583": {
+      "id": "47851789-e652-4503-aab0-504710ce9583",
+      "title": "Course CRUD Operations Test Cases",
+      "original_text": "2.1 Course CRUD\nID Test Case Precondition Expected Result P/F\nTC-10 Create PUBLIC course Admin or Instructor Course created with\ntype=PUBLIC. All learners can see\nit.\nTC-11 Create ASSIGNED Admin Course created with\ncourse type=ASSIGNED. Only assigned\nlearners see it.\nTC-12 Edit published course Published course Only content additions allowed.\nStructure changes blocked (API\n2.1).\nTC-13 Learner cannot create Learner role 403 Forbidden. Only\nAdmin/Instructor can create\ncourses (PRD 2.1).",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 498,
+        "char_end": 987
+      },
+      "display_label": "Section 2.1: Course CRUD",
+      "changed": false
+    },
+    "af5df189-a2c3-4076-84ab-b0e22e8a4b18": {
+      "id": "af5df189-a2c3-4076-84ab-b0e22e8a4b18",
+      "title": "Content Structure Test Cases",
+      "original_text": "2.2 Content Structure\nID Test Case Precondition Expected Result P/F\nTC-20 Add video lesson Course with module Lesson created with type=VIDEO,\ncontent_url, duration_seconds\nrequired (Data Model 2.3).\nTC-21 Add document lesson Course with module PDF uploaded. Lesson created\nwith type=DOCUMENT.\nTC-22 Module reorder Course with 3+ modules Module order updated.\norder_index reflects new\nsequence.\nID Test Case Precondition Expected Result P/F\nTC-23 Sequential mode sequential_mode=true Learner cannot access Module 2\nuntil Module 1 is completed.",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 988,
+        "char_end": 1530
+      },
+      "display_label": "Section 2.2: Content Structure",
+      "changed": false
+    },
+    "e4f17590-fcfc-4614-855f-326c6d26ca6f": {
+      "id": "e4f17590-fcfc-4614-855f-326c6d26ca6f",
+      "title": "Enrollment Test Cases",
+      "original_text": "2.3 Enrollment\nID Test Case Precondition Expected Result P/F\nTC-30 Individual enrollment ASSIGNED course Enrollment created (Data Model\n3.1). Notification email sent (PRD\n3.3).\nTC-31 Department enrollment ASSIGNED course, 5 enrollments created. 5 emails\ndepartment with 5 users sent.\nTC-32 Reminder emails Enrollment with deadline Reminder email sent at 7d, 3d, 1d\nin 3 days before deadline (API 2.3).",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 1531,
+        "char_end": 1932
+      },
+      "display_label": "Section 2.3: Enrollment",
+      "changed": false
+    },
+    "7d758fe6-9267-4841-971d-f3f467c16c66": {
+      "id": "7d758fe6-9267-4841-971d-f3f467c16c66",
+      "title": "Learning and Progress Tracking Test Cases",
+      "original_text": "3. Learning & Progress (PRD 4.1-4.2, API 3.1-3.2)\nID Test Case Precondition Expected Result P/F\nTC-40 Video completion at 90% Video lesson, watched is_completed=true. Progress\n90% updated (Data Model 3.2, PRD\n4.1).\nTC-41 Video at 89% Video lesson, watched is_completed=false. Can resume\n89% from last position.\nTC-42 Document completion Document lesson opened Learner clicks 'Complete'.\nis_completed=true (PRD 4.1).\nTC-43 Resume playback Video paused at 5:30 Reopening lesson resumes at 5:30\n(last_position_seconds, PRD 4.1).\nTC-44 Progress calculation 3/10 lessons completed progress_percent=30%. Shown in\ndashboard (Data Model 3.3, PRD\n4.2).\nTC-45 Behind schedule alert 50% time elapsed, 20% is_behind_schedule=true.\nprogress Reminder email sent (PRD 4.2).",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 1933,
+        "char_end": 2691
+      },
+      "display_label": "Section 3: Learning & Progress",
+      "changed": false
+    },
+    "3bd858fb-d9f7-44c5-b305-fb09988ab9b2": {
+      "id": "3bd858fb-d9f7-44c5-b305-fb09988ab9b2",
+      "title": "Quiz Assessment Test Cases",
+      "original_text": "4.1 Quiz\nID Test Case Precondition Expected Result P/F\nTC-50 Create quiz Instructor, published Quiz created with questions (Data\ncourse Model 4.1, 4.2). Linked to module\nor course.\nTC-51 Attempt quiz Module completed Answers submitted. Objective\nauto-graded (PRD 5.2, API 4.2).\nTC-52 Max attempts exceeded max_attempts=2, already 403 Forbidden. Cannot attempt\n2 attempts again (PRD 5.2).\nTC-53 Subjective grading Quiz with Instructor grades. manual_score\nSHORT_ANSWER recorded. total_score recalculated\n(API 4.2).\nTC-54 Passing score check passing_score=80, passed=false. Course completion\ntotal_score=75 blocked (PRD 5.2).",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 2733,
+        "char_end": 3356
+      },
+      "display_label": "Section 4.1: Quiz",
+      "changed": false
+    },
+    "735817c0-af7a-4fe9-9485-1ceff02914e7": {
+      "id": "735817c0-af7a-4fe9-9485-1ceff02914e7",
+      "title": "Certificate Issuance Test Cases",
+      "original_text": "4.2 Certificate\nID Test Case Precondition Expected Result P/F\nTC-60 Certificate issued All modules done + quiz Certificate auto-created (Data\npassed Model 5.1). PDF downloadable\n(PRD 5.3).\nTC-61 Certificate blocked All modules done but quiz No certificate. Enrollment status\nfailed remains ACTIVE.\nID Test Case Precondition Expected Result P/F\nTC-62 Certificate PDF content Certificate issued PDF contains: name, course title,\ndate, unique certificate_number\n(PRD 5.3).",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 3357,
+        "char_end": 3826
+      },
+      "display_label": "Section 4.2: Certificate",
+      "changed": false
+    },
+    "751c038a-33cf-47c3-824d-5e4a93e7b8e5": {
+      "id": "751c038a-33cf-47c3-824d-5e4a93e7b8e5",
+      "title": "Dashboard and Reporting Test Cases",
+      "original_text": "5. Dashboard & Reports (PRD 6.1-6.2, API 5.1-5.2)\nID Test Case Precondition Expected Result P/F\nTC-70 Admin dashboard Admin role Shows total_courses, enrollments,\ncompletion_rate, avg_quiz_score\n(API 5.1).\nTC-71 Department filter Admin, filter by Stats scoped to Engineering\nEngineering department only.\nTC-72 Non-starters list 3 learners enrolled but All 3 appear in non-starters list\n0% progress (API 5.1).\nTC-73 Learner own history Learner with 2 completed Shows both courses with\ncourses progress, quiz scores, certificates\n(API 5.2).\nTC-74 Admin views learner Admin, specific learner Full history of target learner visible\n(PRD 6.2).",
+      "location": {
+        "document_id": "ceb92170-eeb2-4f8c-b13f-8d8f1510e45f",
+        "char_start": 3827,
+        "char_end": 4465
+      },
+      "display_label": "Section 5: Dashboard & Reports",
+      "changed": false
+    }
+  },
+  "edges": {
+    "ec8fc462-965c-4d85-8704-570b4d19daa8": {
+      "id": "ec8fc462-965c-4d85-8704-570b4d19daa8",
+      "source_id": "49b724dc-d1c0-4fc9-a848-682d79e3cf9b",
+      "target_id": "6e12bd11-caea-4ee5-a0a8-ade55548ec07",
+      "relation_type": "depends_on",
+      "evidence": "시스템에는 세 가지 역할이 있다: 관리자(Admin), 강사(Instructor), 수강생(Learner)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "84a86b1c-b256-4b37-971f-0dfec19c08b0": {
+      "id": "84a86b1c-b256-4b37-971f-0dfec19c08b0",
+      "source_id": "e285844b-c0b9-42f1-bb9c-a496d4d24e96",
+      "target_id": "49b724dc-d1c0-4fc9-a848-682d79e3cf9b",
+      "relation_type": "depends_on",
+      "evidence": "역할은 관리자가 수동으로 부여하며, 기본값은 수강생",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "7c72cf1d-c5f7-4cc9-8e61-3b6bb4219a32": {
+      "id": "7c72cf1d-c5f7-4cc9-8e61-3b6bb4219a32",
+      "source_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "target_id": "49b724dc-d1c0-4fc9-a848-682d79e3cf9b",
+      "relation_type": "depends_on",
+      "evidence": "관리자 또는 강사가 교육 과정을 생성한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "e3e58362-2037-4a69-a941-cd3c92c685d5": {
+      "id": "e3e58362-2037-4a69-a941-cd3c92c685d5",
+      "source_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "target_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "relation_type": "depends_on",
+      "evidence": "과정은 여러 개의 모듈로 구성되고",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "abbf86a2-a139-4f33-921c-db50037cf323": {
+      "id": "abbf86a2-a139-4f33-921c-db50037cf323",
+      "source_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "target_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "relation_type": "depends_on",
+      "evidence": "지정 과정의 경우 관리자가 개별 직원 또는 부서 단위로 수강생을 배정한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "009ab737-6312-4fed-93b1-b6076d8df5f4": {
+      "id": "009ab737-6312-4fed-93b1-b6076d8df5f4",
+      "source_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "target_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "relation_type": "depends_on",
+      "evidence": "수강생은 배정된 과정의 레슨을 순서대로 학습한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "049b1b36-518c-4125-996b-74f6277267d6": {
+      "id": "049b1b36-518c-4125-996b-74f6277267d6",
+      "source_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "depends_on",
+      "evidence": "수강생은 배정된 과정의 레슨을 순서대로 학습한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "dee1577b-26ff-43bc-9270-31d7844ec260": {
+      "id": "dee1577b-26ff-43bc-9270-31d7844ec260",
+      "source_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "수강생별 과정 진도율(완료 레슨 수 / 전체 레슨 수)을 실시간으로 계산한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "478ef39b-095b-4781-82d5-049115ab477f": {
+      "id": "478ef39b-095b-4781-82d5-049115ab477f",
+      "source_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "related_to",
+      "evidence": "진도율이 수강 기한 대비 뒤처지는 수강생에게 자동 리마인",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "4e2ffc10-dfe3-4e5a-9532-b92fb1b6870d": {
+      "id": "4e2ffc10-dfe3-4e5a-9532-b92fb1b6870d",
+      "source_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "target_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "relation_type": "depends_on",
+      "evidence": "강사는 과정 또는 모듈 단위로 퀴즈를 출제할 수 있다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "624f283b-1a30-4508-9f19-65e4a028df34": {
+      "id": "624f283b-1a30-4508-9f19-65e4a028df34",
+      "source_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "target_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "relation_type": "depends_on",
+      "evidence": "강사는 과정 또는 모듈 단위로 퀴즈를 출제할 수 있다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "3ccc840c-3276-4dce-954c-e8445c4bd42a": {
+      "id": "3ccc840c-3276-4dce-954c-e8445c4bd42a",
+      "source_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "target_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "relation_type": "depends_on",
+      "evidence": "수강생은 해당 모듈 또는 과정의 학습을 완료한 후 퀴즈에 응시할 수 있다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "91829c09-6f69-4e0a-bee5-ff585d78cff4": {
+      "id": "91829c09-6f69-4e0a-bee5-ff585d78cff4",
+      "source_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "수강생은 해당 모듈 또는 과정의 학습을 완료한 후 퀴즈에 응시할 수 있다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "470a14e1-92dd-43d9-902b-faedfa6b50a1": {
+      "id": "470a14e1-92dd-43d9-902b-faedfa6b50a1",
+      "source_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "과정의 모든 모듈을 완료하고 퀴즈에서 합격 기준을 충족하면 수료증이 자동 발급된다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "4e05ff64-5108-4247-9e95-39570b44635b": {
+      "id": "4e05ff64-5108-4247-9e95-39570b44635b",
+      "source_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "과정의 모든 모듈을 완료하고 퀴즈에서 합격 기준을 충족하면 수료증이 자동 발급된다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "835bc9a5-7f01-4c90-936f-b7c5c86f5b7f": {
+      "id": "835bc9a5-7f01-4c90-936f-b7c5c86f5b7f",
+      "source_id": "19b4e330-8d37-4a11-bd40-c4cfe49dbeaf",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "관리자는 전체 과정의 수강 현황, 완료율, 평균 퀴즈 점수를 조회할 수 있다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "dd90a811-99dd-4adf-93ea-1ad6d6358802": {
+      "id": "dd90a811-99dd-4adf-93ea-1ad6d6358802",
+      "source_id": "19b4e330-8d37-4a11-bd40-c4cfe49dbeaf",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "관리자는 전체 과정의 수강 현황, 완료율, 평균 퀴즈 점수를 조회할 수 있다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "063eb473-6e96-4b17-9ee9-596dcb6b76a5": {
+      "id": "063eb473-6e96-4b17-9ee9-596dcb6b76a5",
+      "source_id": "6c4d5e5d-8d06-4144-b3f4-0a9551062033",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "수강생은 자신의 학습 이력(수강한 과정, 진도율, 퀴즈 점수, 수료증)을 조회할 수 있다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "d200db56-53eb-4686-bf3c-651812b75b4b": {
+      "id": "d200db56-53eb-4686-bf3c-651812b75b4b",
+      "source_id": "6c4d5e5d-8d06-4144-b3f4-0a9551062033",
+      "target_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "relation_type": "depends_on",
+      "evidence": "수강생은 자신의 학습 이력(수강한 과정, 진도율, 퀴즈 점수, 수료증)을 조회할 수 있다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "ed6dfc2e-fa40-426d-bd97-5568309195a3": {
+      "id": "ed6dfc2e-fa40-426d-bd97-5568309195a3",
+      "source_id": "1863a2b6-9eb7-48a7-b1ed-d8d47f41b6bd",
+      "target_id": "e285844b-c0b9-42f1-bb9c-a496d4d24e96",
+      "relation_type": "depends_on",
+      "evidence": "1.1 SSO 로그인 PRD 2.2 SSO 연동 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "81cf2985-a7f1-485e-9a1a-8c7aa9dbeae0": {
+      "id": "81cf2985-a7f1-485e-9a1a-8c7aa9dbeae0",
+      "source_id": "46a1d02c-76af-497e-a2da-65a84dea8f68",
+      "target_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "relation_type": "depends_on",
+      "evidence": "2.1 과정 CRUD PRD 3.1 과정 생성 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "1c2c59c9-e1e1-4e14-a062-3745b4844315": {
+      "id": "1c2c59c9-e1e1-4e14-a062-3745b4844315",
+      "source_id": "c535128f-9d7e-4a3f-88bb-67ef67b75764",
+      "target_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "relation_type": "depends_on",
+      "evidence": "2.2 모듈 및 레슨 관리 PRD 3.2 콘텐츠 구성 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "35cff255-b28a-48a0-8cea-8119ad0273db": {
+      "id": "35cff255-b28a-48a0-8cea-8119ad0273db",
+      "source_id": "c535128f-9d7e-4a3f-88bb-67ef67b75764",
+      "target_id": "46a1d02c-76af-497e-a2da-65a84dea8f68",
+      "relation_type": "depends_on",
+      "evidence": "POST/GET/PATCH/DELETE /api/courses/{course_id}/modules",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "04535fd0-5df3-428e-b7a9-fb7ae2e96a85": {
+      "id": "04535fd0-5df3-428e-b7a9-fb7ae2e96a85",
+      "source_id": "a9c0e30a-2ba4-4c4a-8783-9a8ad178908e",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "depends_on",
+      "evidence": "2.3 수강생 배정 PRD 3.3 수강생 배정 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "4fcc9844-0811-4df3-a95e-e0e33482b9aa": {
+      "id": "4fcc9844-0811-4df3-a95e-e0e33482b9aa",
+      "source_id": "a9c0e30a-2ba4-4c4a-8783-9a8ad178908e",
+      "target_id": "46a1d02c-76af-497e-a2da-65a84dea8f68",
+      "relation_type": "depends_on",
+      "evidence": "POST /api/courses/{course_id}/enrollments",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "61f5bc7d-0774-4e79-95cb-6bd0bd490ba3": {
+      "id": "61f5bc7d-0774-4e79-95cb-6bd0bd490ba3",
+      "source_id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "3.1 레슨 수강 PRD 4.1 수강 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "cc214c09-bf65-4f92-a485-8895a89d1ec6": {
+      "id": "cc214c09-bf65-4f92-a485-8895a89d1ec6",
+      "source_id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "target_id": "c535128f-9d7e-4a3f-88bb-67ef67b75764",
+      "relation_type": "depends_on",
+      "evidence": "GET /api/courses/{course_id}/modules/{module_id}/lessons/{lesson_id}",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "b7309212-98bc-4d92-abb8-34c36db27a93": {
+      "id": "b7309212-98bc-4d92-abb8-34c36db27a93",
+      "source_id": "91c046f7-bae6-40af-934c-472eb27689b1",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "3.2 진도 조회 PRD 4.2 진도 추적 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "9102b6c4-541b-4b8d-8c28-5c1ff53a3037": {
+      "id": "9102b6c4-541b-4b8d-8c28-5c1ff53a3037",
+      "source_id": "91c046f7-bae6-40af-934c-472eb27689b1",
+      "target_id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "relation_type": "depends_on",
+      "evidence": "개인 진도: GET /api/courses/{course_id}/progress",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "e43680ab-8102-4a6a-9b79-d3221dbfd02f": {
+      "id": "e43680ab-8102-4a6a-9b79-d3221dbfd02f",
+      "source_id": "83393f81-a15b-43a3-a547-63a3c974d33d",
+      "target_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "relation_type": "depends_on",
+      "evidence": "4.1 퀘즈 관리 PRD 5.1 퀘즈 출제 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "9003b63e-8ac1-4f00-a4b7-45a10f57644f": {
+      "id": "9003b63e-8ac1-4f00-a4b7-45a10f57644f",
+      "source_id": "83393f81-a15b-43a3-a547-63a3c974d33d",
+      "target_id": "46a1d02c-76af-497e-a2da-65a84dea8f68",
+      "relation_type": "depends_on",
+      "evidence": "POST /api/courses/{course_id}/quizzes",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "0eca1370-ee91-4c2f-9715-63eb86da7e0d": {
+      "id": "0eca1370-ee91-4c2f-9715-63eb86da7e0d",
+      "source_id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "4.2 응시 및 채점 PRD 5.2 응시 및 채점 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "a4edcfac-9e1d-4ee0-8f7f-7e07c6bcf3d9": {
+      "id": "a4edcfac-9e1d-4ee0-8f7f-7e07c6bcf3d9",
+      "source_id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "target_id": "83393f81-a15b-43a3-a547-63a3c974d33d",
+      "relation_type": "depends_on",
+      "evidence": "POST /api/quizzes/{quiz_id}/attempts",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "ff36feea-78d3-448e-91bc-574cd78e1702": {
+      "id": "ff36feea-78d3-448e-91bc-574cd78e1702",
+      "source_id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "target_id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "relation_type": "depends_on",
+      "evidence": "전제조건: 해당 모듈/과정 학습 완",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "ad28e69d-d09e-43bf-8c73-9505277bfe98": {
+      "id": "ad28e69d-d09e-43bf-8c73-9505277bfe98",
+      "source_id": "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed",
+      "target_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "relation_type": "depends_on",
+      "evidence": "4.3 수료증 PRD 5.3 수료증 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "5eadba9e-2356-41c1-91ab-0b52c62fabf6": {
+      "id": "5eadba9e-2356-41c1-91ab-0b52c62fabf6",
+      "source_id": "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed",
+      "target_id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "relation_type": "depends_on",
+      "evidence": "수료증 발급: 과정 모든 모듈 완료 + 퀘즈 합격 시 자동 발급",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "f08f9041-0f3f-450e-9229-8959de506788": {
+      "id": "f08f9041-0f3f-450e-9229-8959de506788",
+      "source_id": "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed",
+      "target_id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "relation_type": "depends_on",
+      "evidence": "수료증 발급: 과정 모든 모듈 완료 + 퀘즈 합격 시 자동 발급",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "dd98ce0a-0e25-4777-b199-7f14e38d1943": {
+      "id": "dd98ce0a-0e25-4777-b199-7f14e38d1943",
+      "source_id": "fc5c92ae-f989-401a-a8c5-59cd512a7312",
+      "target_id": "19b4e330-8d37-4a11-bd40-c4cfe49dbeaf",
+      "relation_type": "depends_on",
+      "evidence": "5.1 관리자 대시보드 PRD 6.1 관리자 대시보드 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "932c1e14-fd46-4f55-99a0-d13644aaf904": {
+      "id": "932c1e14-fd46-4f55-99a0-d13644aaf904",
+      "source_id": "fc5c92ae-f989-401a-a8c5-59cd512a7312",
+      "target_id": "91c046f7-bae6-40af-934c-472eb27689b1",
+      "relation_type": "depends_on",
+      "evidence": "전체 통계: GET /api/admin/dashboard",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "40785346-8d9c-48bf-96b5-f6b9cfcb2d0c": {
+      "id": "40785346-8d9c-48bf-96b5-f6b9cfcb2d0c",
+      "source_id": "b895c03d-5f76-4e20-8975-9a998b5ef018",
+      "target_id": "6c4d5e5d-8d06-4144-b3f4-0a9551062033",
+      "relation_type": "depends_on",
+      "evidence": "5.2 수강생 학습 이력 PRD 6.2 수강생 학습 이력 요구사항을 구현한다",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "aeab4b54-1d60-4e34-b3f8-a9ab26f856ee": {
+      "id": "aeab4b54-1d60-4e34-b3f8-a9ab26f856ee",
+      "source_id": "b895c03d-5f76-4e20-8975-9a998b5ef018",
+      "target_id": "91c046f7-bae6-40af-934c-472eb27689b1",
+      "relation_type": "depends_on",
+      "evidence": "본인 이력: GET /api/learners/me/history",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "ea7ebd96-81ce-44d7-844b-28cb0158960c": {
+      "id": "ea7ebd96-81ce-44d7-844b-28cb0158960c",
+      "source_id": "a34b6c10-4c2f-47e2-bb5a-5698d3b06462",
+      "target_id": "e285844b-c0b9-42f1-bb9c-a496d4d24e96",
+      "relation_type": "depends_on",
+      "evidence": "Represents a registered employee in the system (PRD 2.1, 2.2)",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "02988aec-0d34-41a5-a426-b61c60173cba": {
+      "id": "02988aec-0d34-41a5-a426-b61c60173cba",
+      "source_id": "770e53f7-c2ea-468a-9f70-bec1f6ebbfb6",
+      "target_id": "49b724dc-d1c0-4fc9-a848-682d79e3cf9b",
+      "relation_type": "depends_on",
+      "evidence": "Role-based access control mapping (PRD 2.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "89772917-ce91-4c47-84b1-bef73056da8c": {
+      "id": "89772917-ce91-4c47-84b1-bef73056da8c",
+      "source_id": "770e53f7-c2ea-468a-9f70-bec1f6ebbfb6",
+      "target_id": "a34b6c10-4c2f-47e2-bb5a-5698d3b06462",
+      "relation_type": "depends_on",
+      "evidence": "Role-based access control mapping",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "a112d4d2-f407-4f51-9c95-e3f06c672886": {
+      "id": "a112d4d2-f407-4f51-9c95-e3f06c672886",
+      "source_id": "ed8e256a-a417-4f58-80db-2862f9c0fc7a",
+      "target_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "relation_type": "depends_on",
+      "evidence": "Represents an educational course (PRD 3.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "0a4e0913-c846-4e89-bd47-dab4328fbc08": {
+      "id": "0a4e0913-c846-4e89-bd47-dab4328fbc08",
+      "source_id": "8a23fe59-5377-42e8-af6f-3d00fe96e340",
+      "target_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "relation_type": "depends_on",
+      "evidence": "A section within a course (PRD 3.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "2f1cd288-0242-42dc-a1f3-a6dfedfbe518": {
+      "id": "2f1cd288-0242-42dc-a1f3-a6dfedfbe518",
+      "source_id": "8a23fe59-5377-42e8-af6f-3d00fe96e340",
+      "target_id": "ed8e256a-a417-4f58-80db-2862f9c0fc7a",
+      "relation_type": "depends_on",
+      "evidence": "A section within a course",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "f3fa3321-6d4c-4836-bc7b-a398529aa44e": {
+      "id": "f3fa3321-6d4c-4836-bc7b-a398529aa44e",
+      "source_id": "92ff0d5a-c6e3-4028-bada-e0db6eff3533",
+      "target_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "relation_type": "depends_on",
+      "evidence": "Individual learning unit within a module (PRD 3.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "97445dea-01bb-4261-ae7b-94b47a1c2536": {
+      "id": "97445dea-01bb-4261-ae7b-94b47a1c2536",
+      "source_id": "92ff0d5a-c6e3-4028-bada-e0db6eff3533",
+      "target_id": "8a23fe59-5377-42e8-af6f-3d00fe96e340",
+      "relation_type": "depends_on",
+      "evidence": "Individual learning unit within a module",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "abe122e9-e4d3-433a-8de8-9491b65de6f9": {
+      "id": "abe122e9-e4d3-433a-8de8-9491b65de6f9",
+      "source_id": "acf9e5ae-bc44-48c7-a03e-3dad8bc460d3",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "depends_on",
+      "evidence": "Links a learner to a course (PRD 3.3)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "a5767a32-e64d-416f-86b8-9c0890d0ad1c": {
+      "id": "a5767a32-e64d-416f-86b8-9c0890d0ad1c",
+      "source_id": "acf9e5ae-bc44-48c7-a03e-3dad8bc460d3",
+      "target_id": "ed8e256a-a417-4f58-80db-2862f9c0fc7a",
+      "relation_type": "depends_on",
+      "evidence": "Links a learner to a course",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "cabefc3e-138d-4f12-bf26-43f787b96007": {
+      "id": "cabefc3e-138d-4f12-bf26-43f787b96007",
+      "source_id": "acf9e5ae-bc44-48c7-a03e-3dad8bc460d3",
+      "target_id": "a34b6c10-4c2f-47e2-bb5a-5698d3b06462",
+      "relation_type": "depends_on",
+      "evidence": "Links a learner to a course",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "3d9397a1-061e-4ba2-98f9-5462b9babc76": {
+      "id": "3d9397a1-061e-4ba2-98f9-5462b9babc76",
+      "source_id": "faf733a7-8bec-475d-8dc8-9a8e7b6ddd11",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "Tracks individual lesson completion (PRD 4.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "dc0212b8-4934-480e-8cc0-0f31fb7d9d62": {
+      "id": "dc0212b8-4934-480e-8cc0-0f31fb7d9d62",
+      "source_id": "faf733a7-8bec-475d-8dc8-9a8e7b6ddd11",
+      "target_id": "92ff0d5a-c6e3-4028-bada-e0db6eff3533",
+      "relation_type": "depends_on",
+      "evidence": "Tracks individual lesson completion",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "3d4d163f-8f7a-40e5-858c-bc724dbff692": {
+      "id": "3d4d163f-8f7a-40e5-858c-bc724dbff692",
+      "source_id": "8b2f6c7c-518c-4c1b-8d47-8ee060218968",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "Not stored directly but computed from LessonProgress (PRD 4.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "cc8dc612-55df-4f12-bfd3-016994fd9821": {
+      "id": "cc8dc612-55df-4f12-bfd3-016994fd9821",
+      "source_id": "8b2f6c7c-518c-4c1b-8d47-8ee060218968",
+      "target_id": "faf733a7-8bec-475d-8dc8-9a8e7b6ddd11",
+      "relation_type": "depends_on",
+      "evidence": "Not stored directly but computed from LessonProgress",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "e59dd747-498e-44df-8eed-da84a929ae8d": {
+      "id": "e59dd747-498e-44df-8eed-da84a929ae8d",
+      "source_id": "a5c7f9c2-8eac-4b85-9daf-b00f7259b6ed",
+      "target_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "relation_type": "depends_on",
+      "evidence": "Assessment for a module or course (PRD 5.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "596cacd6-0791-48e7-a5cb-f4282bb827b5": {
+      "id": "596cacd6-0791-48e7-a5cb-f4282bb827b5",
+      "source_id": "a5c7f9c2-8eac-4b85-9daf-b00f7259b6ed",
+      "target_id": "ed8e256a-a417-4f58-80db-2862f9c0fc7a",
+      "relation_type": "depends_on",
+      "evidence": "Assessment for a module or course",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "1f12ebb5-e258-4339-98c8-27fae19136bf": {
+      "id": "1f12ebb5-e258-4339-98c8-27fae19136bf",
+      "source_id": "d4a944f0-8044-45fd-bd26-c219c3091cdb",
+      "target_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "relation_type": "depends_on",
+      "evidence": "Individual quiz question (PRD 5.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "efbbba43-c477-4059-aab6-a81015a1b026": {
+      "id": "efbbba43-c477-4059-aab6-a81015a1b026",
+      "source_id": "d4a944f0-8044-45fd-bd26-c219c3091cdb",
+      "target_id": "a5c7f9c2-8eac-4b85-9daf-b00f7259b6ed",
+      "relation_type": "depends_on",
+      "evidence": "Individual quiz question",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "234e2047-ed37-4b9b-b59c-9fa93e74ed05": {
+      "id": "234e2047-ed37-4b9b-b59c-9fa93e74ed05",
+      "source_id": "da41428b-1b40-44f0-aeb1-801921a37ee9",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "Records a learner's quiz submission (PRD 5.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "b2fe9b9a-2d96-49d3-9627-cfdeacd2dbfc": {
+      "id": "b2fe9b9a-2d96-49d3-9627-cfdeacd2dbfc",
+      "source_id": "da41428b-1b40-44f0-aeb1-801921a37ee9",
+      "target_id": "a5c7f9c2-8eac-4b85-9daf-b00f7259b6ed",
+      "relation_type": "depends_on",
+      "evidence": "Records a learner's quiz submission",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "71ed12f9-244d-4bff-9332-b6e12b5daf00": {
+      "id": "71ed12f9-244d-4bff-9332-b6e12b5daf00",
+      "source_id": "47dee3cc-b9c5-43b9-93f7-d118217d2c17",
+      "target_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "relation_type": "depends_on",
+      "evidence": "Auto-issued upon course completion (PRD 5.3)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "293e4663-5476-40bb-a521-7e6526cbb802": {
+      "id": "293e4663-5476-40bb-a521-7e6526cbb802",
+      "source_id": "47dee3cc-b9c5-43b9-93f7-d118217d2c17",
+      "target_id": "ed8e256a-a417-4f58-80db-2862f9c0fc7a",
+      "relation_type": "depends_on",
+      "evidence": "Auto-issued upon course completion",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "7deb6729-72b7-4b9b-8c99-f948be2d9837": {
+      "id": "7deb6729-72b7-4b9b-8c99-f948be2d9837",
+      "source_id": "47dee3cc-b9c5-43b9-93f7-d118217d2c17",
+      "target_id": "a34b6c10-4c2f-47e2-bb5a-5698d3b06462",
+      "relation_type": "depends_on",
+      "evidence": "Auto-issued upon course completion",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "7f9e817b-4084-480b-a6c9-815221bd72e8": {
+      "id": "7f9e817b-4084-480b-a6c9-815221bd72e8",
+      "source_id": "cb643ffc-5f94-462e-901a-d09e25c453e7",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Admin assigns learner to a course (PRD 3.3, API 2.3 POST /api/courses/{id}/enrol",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "7efb90cc-85f6-4458-8b79-22f92725a547": {
+      "id": "7efb90cc-85f6-4458-8b79-22f92725a547",
+      "source_id": "cb643ffc-5f94-462e-901a-d09e25c453e7",
+      "target_id": "a9c0e30a-2ba4-4c4a-8783-9a8ad178908e",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Admin assigns learner to a course (PRD 3.3, API 2.3 POST /api/courses/{id}/enrol",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "9cc99daa-2d81-4218-a56f-ff23279a1d5b": {
+      "id": "9cc99daa-2d81-4218-a56f-ff23279a1d5b",
+      "source_id": "026baf4c-1293-4004-81d0-ae3613145791",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Scheduled batch job checks enrollment deadlines (PRD 3.3, API 2.3)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "ccf8b0d6-17d1-479f-b258-61d8b6b81dd2": {
+      "id": "ccf8b0d6-17d1-479f-b258-61d8b6b81dd2",
+      "source_id": "026baf4c-1293-4004-81d0-ae3613145791",
+      "target_id": "acf9e5ae-bc44-48c7-a03e-3dad8bc460d3",
+      "relation_type": "depends_on",
+      "evidence": "Scheduled batch job checks enrollment deadlines",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "5571b948-66cc-4d09-9963-2ce891618928": {
+      "id": "5571b948-66cc-4d09-9963-2ce891618928",
+      "source_id": "55ab3b64-a62f-4ef2-9f2d-c587e52cf93d",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Batch job computes is_behind_schedule = true (Data Model 3.3, PRD 4.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "d4286fc0-bc83-43a5-b9a2-6a0f606b2a51": {
+      "id": "d4286fc0-bc83-43a5-b9a2-6a0f606b2a51",
+      "source_id": "55ab3b64-a62f-4ef2-9f2d-c587e52cf93d",
+      "target_id": "8b2f6c7c-518c-4c1b-8d47-8ee060218968",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Batch job computes is_behind_schedule = true (Data Model 3.3, PRD 4.2)",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "30d0e53e-b449-4dc9-8b1b-b55dc6d45048": {
+      "id": "30d0e53e-b449-4dc9-8b1b-b55dc6d45048",
+      "source_id": "26d8dada-a6cd-4d49-bff2-efe188245d08",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Learner completes last lesson in a module (all LessonProgress.is_completed = tru",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "a72f294f-c40b-4eec-87e6-4fc994ebd208": {
+      "id": "a72f294f-c40b-4eec-87e6-4fc994ebd208",
+      "source_id": "26d8dada-a6cd-4d49-bff2-efe188245d08",
+      "target_id": "faf733a7-8bec-475d-8dc8-9a8e7b6ddd11",
+      "relation_type": "depends_on",
+      "evidence": "Learner completes last lesson in a module (all LessonProgress.is_completed = tru",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "c6f72a9f-08c3-474b-a931-af0f9bd03817": {
+      "id": "c6f72a9f-08c3-474b-a931-af0f9bd03817",
+      "source_id": "5ef346ee-b647-4959-8240-b745c622bd3e",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Learner completes module/course that has an associated quiz (PRD 5.2, API 4.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "12356c00-b29d-4803-b514-533c8938f6f6": {
+      "id": "12356c00-b29d-4803-b514-533c8938f6f6",
+      "source_id": "5ef346ee-b647-4959-8240-b745c622bd3e",
+      "target_id": "26d8dada-a6cd-4d49-bff2-efe188245d08",
+      "relation_type": "depends_on",
+      "evidence": "Learner completes module/course that has an associated quiz",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "1d420623-75b4-47e0-87c6-387680b1d02c": {
+      "id": "1d420623-75b4-47e0-87c6-387680b1d02c",
+      "source_id": "db21df4b-ddf2-46cb-8cc6-5c9bfb68be33",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Instructor completes manual grading (API 4.2 PATCH /api/quiz-attempt",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "f1a1c3c2-ed4a-41d2-b6b8-0c9248785344": {
+      "id": "f1a1c3c2-ed4a-41d2-b6b8-0c9248785344",
+      "source_id": "db21df4b-ddf2-46cb-8cc6-5c9bfb68be33",
+      "target_id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "relation_type": "depends_on",
+      "evidence": "Instructor completes manual grading (API 4.2 PATCH /api/quiz-attempt",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "c007406a-b90c-4589-9672-72aadc36809a": {
+      "id": "c007406a-b90c-4589-9672-72aadc36809a",
+      "source_id": "ff32ef4c-5f78-4240-9202-5e039fe8a6d6",
+      "target_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Certificate auto-generated upon course completion (PRD 5.3, API 4.3, Data Model",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "8a310c09-6cda-4156-8ecd-010c198378a3": {
+      "id": "8a310c09-6cda-4156-8ecd-010c198378a3",
+      "source_id": "ff32ef4c-5f78-4240-9202-5e039fe8a6d6",
+      "target_id": "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed",
+      "relation_type": "depends_on",
+      "evidence": "Certificate auto-generated upon course completion (PRD 5.3, API 4.3",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "de8b3ae4-b6b0-4a45-b6db-f64368a25c2e": {
+      "id": "de8b3ae4-b6b0-4a45-b6db-f64368a25c2e",
+      "source_id": "ff32ef4c-5f78-4240-9202-5e039fe8a6d6",
+      "target_id": "47dee3cc-b9c5-43b9-93f7-d118217d2c17",
+      "relation_type": "depends_on",
+      "evidence": "Certificate auto-generated upon course completion (PRD 5.3, API 4.3, Data Model",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "102bd622-3b06-4177-807f-e18d25303d31": {
+      "id": "102bd622-3b06-4177-807f-e18d25303d31",
+      "source_id": "2f5d7b9d-1020-4052-bb59-cf979c74e654",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Subjective quiz attempt submitted, grading not completed within 3 days",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "e448e684-f996-4007-b34f-e523a338e271": {
+      "id": "e448e684-f996-4007-b34f-e523a338e271",
+      "source_id": "2f5d7b9d-1020-4052-bb59-cf979c74e654",
+      "target_id": "da41428b-1b40-44f0-aeb1-801921a37ee9",
+      "relation_type": "depends_on",
+      "evidence": "Subjective quiz attempt submitted, grading not completed within 3 days (Data",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "696440fe-726b-4a6c-89a2-67999e194f44": {
+      "id": "696440fe-726b-4a6c-89a2-67999e194f44",
+      "source_id": "3e4e19e8-221f-4d16-9c95-1414e3f7000b",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "Trigger: Course completion rate falls below 50%",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "4898787c-d78a-4982-90b3-cf284e6e1b90": {
+      "id": "4898787c-d78a-4982-90b3-cf284e6e1b90",
+      "source_id": "3e4e19e8-221f-4d16-9c95-1414e3f7000b",
+      "target_id": "8b2f6c7c-518c-4c1b-8d47-8ee060218968",
+      "relation_type": "depends_on",
+      "evidence": "Course completion rate falls below 50%",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "be1500e8-06f9-47c6-bee8-e810eb4a3184": {
+      "id": "be1500e8-06f9-47c6-bee8-e810eb4a3184",
+      "source_id": "3ff5e281-cef1-40e8-812c-39c989c0ea39",
+      "target_id": "e285844b-c0b9-42f1-bb9c-a496d4d24e96",
+      "relation_type": "depends_on",
+      "evidence": "1. Authentication (PRD 2.2, API 1.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "fb276bd8-193f-4767-a24b-266559ab4322": {
+      "id": "fb276bd8-193f-4767-a24b-266559ab4322",
+      "source_id": "3ff5e281-cef1-40e8-812c-39c989c0ea39",
+      "target_id": "1863a2b6-9eb7-48a7-b1ed-d8d47f41b6bd",
+      "relation_type": "depends_on",
+      "evidence": "Authentication (PRD 2.2, API 1.1)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "6b2c6283-b416-4457-ac93-2f0cd59c0653": {
+      "id": "6b2c6283-b416-4457-ac93-2f0cd59c0653",
+      "source_id": "47851789-e652-4503-aab0-504710ce9583",
+      "target_id": "6cf88a1e-57b6-4cd6-aace-484a1e59f320",
+      "relation_type": "depends_on",
+      "evidence": "2.1 Course CRUD",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "28383633-6144-4ed0-ae7e-fccc0d9ba5b2": {
+      "id": "28383633-6144-4ed0-ae7e-fccc0d9ba5b2",
+      "source_id": "47851789-e652-4503-aab0-504710ce9583",
+      "target_id": "46a1d02c-76af-497e-a2da-65a84dea8f68",
+      "relation_type": "depends_on",
+      "evidence": "2.1 Course CRUD",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "24218777-e581-4dc3-b04f-a9a845e7911c": {
+      "id": "24218777-e581-4dc3-b04f-a9a845e7911c",
+      "source_id": "af5df189-a2c3-4076-84ab-b0e22e8a4b18",
+      "target_id": "1f066ee7-5a56-46e1-8f1e-7e5bd5f2dccc",
+      "relation_type": "depends_on",
+      "evidence": "2.2 Content Structure",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "fc54aa32-540c-4565-ad7b-17731d87fe5b": {
+      "id": "fc54aa32-540c-4565-ad7b-17731d87fe5b",
+      "source_id": "af5df189-a2c3-4076-84ab-b0e22e8a4b18",
+      "target_id": "c535128f-9d7e-4a3f-88bb-67ef67b75764",
+      "relation_type": "depends_on",
+      "evidence": "2.2 Content Structure",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "503fc856-e235-4eb5-9224-45b08186ad15": {
+      "id": "503fc856-e235-4eb5-9224-45b08186ad15",
+      "source_id": "e4f17590-fcfc-4614-855f-326c6d26ca6f",
+      "target_id": "54f3ef96-fdad-40e9-966d-c55f777f328c",
+      "relation_type": "depends_on",
+      "evidence": "2.3 Enrollment",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "ab889197-0bd8-4234-9ad4-cf2acef840a8": {
+      "id": "ab889197-0bd8-4234-9ad4-cf2acef840a8",
+      "source_id": "e4f17590-fcfc-4614-855f-326c6d26ca6f",
+      "target_id": "a9c0e30a-2ba4-4c4a-8783-9a8ad178908e",
+      "relation_type": "depends_on",
+      "evidence": "2.3 Enrollment",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "5c40aeeb-f921-4c6c-a281-6166458d2e50": {
+      "id": "5c40aeeb-f921-4c6c-a281-6166458d2e50",
+      "source_id": "7d758fe6-9267-4841-971d-f3f467c16c66",
+      "target_id": "b1869ae6-e8be-47c7-9666-e426a85e1ab0",
+      "relation_type": "depends_on",
+      "evidence": "3. Learning & Progress (PRD 4.1-4.2, API 3.1-3.2)",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "41abfbf9-5b43-4ba0-98fa-36a734accd1d": {
+      "id": "41abfbf9-5b43-4ba0-98fa-36a734accd1d",
+      "source_id": "7d758fe6-9267-4841-971d-f3f467c16c66",
+      "target_id": "a9f32beb-9914-4162-8b90-5ad49a2e094d",
+      "relation_type": "depends_on",
+      "evidence": "Learning & Progress (PRD 4.1-4.2, API 3.1-3.2)",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "dd79c5c5-fd13-4855-8da0-d4118304cb3d": {
+      "id": "dd79c5c5-fd13-4855-8da0-d4118304cb3d",
+      "source_id": "7d758fe6-9267-4841-971d-f3f467c16c66",
+      "target_id": "34b466d2-3cd7-45db-8b41-ca57d0ced7a7",
+      "relation_type": "depends_on",
+      "evidence": "Learning & Progress (PRD 4.1-4.2, API 3.1-3.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "da71f20f-769d-44b1-8f8e-d62f7fd5a039": {
+      "id": "da71f20f-769d-44b1-8f8e-d62f7fd5a039",
+      "source_id": "7d758fe6-9267-4841-971d-f3f467c16c66",
+      "target_id": "91c046f7-bae6-40af-934c-472eb27689b1",
+      "relation_type": "depends_on",
+      "evidence": "Learning & Progress (PRD 4.1-4.2, API 3.1-3.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "087bf766-a400-4e5d-825f-975e97b91b41": {
+      "id": "087bf766-a400-4e5d-825f-975e97b91b41",
+      "source_id": "3bd858fb-d9f7-44c5-b305-fb09988ab9b2",
+      "target_id": "6427211f-b8a8-4bd0-a737-b8a000df11ed",
+      "relation_type": "depends_on",
+      "evidence": "4.1 Quiz",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "8e958933-7854-4cfd-af2c-559ce4fb0ea4": {
+      "id": "8e958933-7854-4cfd-af2c-559ce4fb0ea4",
+      "source_id": "3bd858fb-d9f7-44c5-b305-fb09988ab9b2",
+      "target_id": "f134b6c0-41ab-4ca0-9af6-5d9f185304dd",
+      "relation_type": "depends_on",
+      "evidence": "4.1 Quiz",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "6561e361-99c6-45db-87ae-f1c8629f72b0": {
+      "id": "6561e361-99c6-45db-87ae-f1c8629f72b0",
+      "source_id": "3bd858fb-d9f7-44c5-b305-fb09988ab9b2",
+      "target_id": "83393f81-a15b-43a3-a547-63a3c974d33d",
+      "relation_type": "depends_on",
+      "evidence": "4.1 Quiz",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "c77e50fc-019a-417f-a722-0243d5c4e9a5": {
+      "id": "c77e50fc-019a-417f-a722-0243d5c4e9a5",
+      "source_id": "3bd858fb-d9f7-44c5-b305-fb09988ab9b2",
+      "target_id": "37d916c2-13f1-4888-94cc-5f6f9fc0c9e1",
+      "relation_type": "depends_on",
+      "evidence": "4.1 Quiz",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "1b4ee46e-5f42-4de6-a806-05ad5aa1c78c": {
+      "id": "1b4ee46e-5f42-4de6-a806-05ad5aa1c78c",
+      "source_id": "735817c0-af7a-4fe9-9485-1ceff02914e7",
+      "target_id": "ef4bc920-160c-439a-b742-4df562ec9341",
+      "relation_type": "depends_on",
+      "evidence": "4.2 Certificate",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "4c152dee-598f-4d19-8c2d-f1e5f257b87c": {
+      "id": "4c152dee-598f-4d19-8c2d-f1e5f257b87c",
+      "source_id": "735817c0-af7a-4fe9-9485-1ceff02914e7",
+      "target_id": "bbbe66e5-0f4c-48af-b8ad-2ba5415c50ed",
+      "relation_type": "depends_on",
+      "evidence": "4.2 Certificate",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "b2153d04-2915-43cb-988b-b7fccd967938": {
+      "id": "b2153d04-2915-43cb-988b-b7fccd967938",
+      "source_id": "751c038a-33cf-47c3-824d-5e4a93e7b8e5",
+      "target_id": "19b4e330-8d37-4a11-bd40-c4cfe49dbeaf",
+      "relation_type": "depends_on",
+      "evidence": "5. Dashboard & Reports (PRD 6.1-6.2, API 5.1-5.2)",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "04930a43-9db9-47f5-b685-43f878efe722": {
+      "id": "04930a43-9db9-47f5-b685-43f878efe722",
+      "source_id": "751c038a-33cf-47c3-824d-5e4a93e7b8e5",
+      "target_id": "6c4d5e5d-8d06-4144-b3f4-0a9551062033",
+      "relation_type": "depends_on",
+      "evidence": "Dashboard & Reports (PRD 6.1-6.2, API 5.1-5.2)",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "cf978716-3de1-4f1f-a9b1-1a31f2fa1322": {
+      "id": "cf978716-3de1-4f1f-a9b1-1a31f2fa1322",
+      "source_id": "751c038a-33cf-47c3-824d-5e4a93e7b8e5",
+      "target_id": "fc5c92ae-f989-401a-a8c5-59cd512a7312",
+      "relation_type": "depends_on",
+      "evidence": "Dashboard & Reports (PRD 6.1-6.2, API 5.1-5.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "a1b4d127-3404-4dd0-9ffa-ab71c8d078d3": {
+      "id": "a1b4d127-3404-4dd0-9ffa-ab71c8d078d3",
+      "source_id": "751c038a-33cf-47c3-824d-5e4a93e7b8e5",
+      "target_id": "b895c03d-5f76-4e20-8975-9a998b5ef018",
+      "relation_type": "depends_on",
+      "evidence": "Dashboard & Reports (PRD 6.1-6.2, API 5.1-5.2)",
+      "confidence": 0.95,
+      "status": "approved"
+    }
+  }
+}

@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, status
 from app.models.document import Document
 from app.models.api import DocumentListResponse
 from app.services.document_service import detect_format, extract_text
+from app.services.requirement_service import delete_requirement
 from app.storage.store import store
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
@@ -53,6 +54,7 @@ async def upload_documents(files: list[UploadFile]) -> list[Document]:
             filename=filename,
             format=fmt,
             raw_text=raw_text,
+            file_size=len(content),
             uploaded_at=datetime.now(),
         )
         store.documents[doc.id] = doc
@@ -90,4 +92,14 @@ async def get_document(doc_id: str) -> Document:
 async def delete_document(doc_id: str) -> None:
     if doc_id not in store.documents:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="문서를 찾을 수 없습니다.")
+
+    # Cascade: delete all requirements (and their edges) belonging to this document
+    req_ids = [
+        rid
+        for rid, req in store.requirements.items()
+        if req.location.document_id == doc_id
+    ]
+    for rid in req_ids:
+        delete_requirement(rid)
+
     del store.documents[doc_id]

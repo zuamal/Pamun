@@ -1,6 +1,8 @@
 """Parse and requirements endpoints."""
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
 
@@ -22,6 +24,12 @@ async def parse(request: ParseRequest) -> StreamingResponse:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="document_ids는 비어 있을 수 없습니다.",
+        )
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="LLM 기능을 사용하려면 ANTHROPIC_API_KEY가 필요합니다.",
         )
 
     missing = [did for did in request.document_ids if did not in store.documents]

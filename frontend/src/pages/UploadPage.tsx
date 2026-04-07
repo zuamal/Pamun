@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { deleteDocument, uploadDocuments } from '../api/documents'
 import { listBundles, loadBundle } from '../api/dummy'
+import { listDemoBundles, loadDemoBundle } from '../api/demo'
 import { parseDocumentsSSE, listRequirements } from '../api/requirements'
+import { listEdges } from '../api/edges'
 import DocumentList from '../components/DocumentList'
 import FileDropzone from '../components/FileDropzone'
 import ProgressModal from '../components/ProgressModal'
 import EmptyState from '../components/EmptyState'
+import DemoBundleModal from '../components/DemoBundleModal'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
 import { toastError, toastSuccess } from '../lib/toast'
@@ -14,11 +17,12 @@ import type { ProgressEvent } from '../api/sseTypes'
 import type { components } from '../api/types.generated'
 
 type BundleInfo = components['schemas']['BundleInfo']
+type DemoBundleInfo = components['schemas']['DemoBundleInfo']
 
 export default function UploadPage() {
   const navigate = useNavigate()
   const { documents, setDocuments } = useDocumentStore()
-  const { setRequirements } = useGraphStore()
+  const { setRequirements, setEdges } = useGraphStore()
   const [uploading, setUploading] = useState(false)
   const [parsing, setParsing] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -31,8 +35,14 @@ export default function UploadPage() {
   const [confirmBundle, setConfirmBundle] = useState<BundleInfo | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  // Demo mode state
+  const [demoBundles, setDemoBundles] = useState<DemoBundleInfo[]>([])
+  const [showDemoModal, setShowDemoModal] = useState(false)
+  const [loadingDemo, setLoadingDemo] = useState(false)
+
   useEffect(() => {
     listBundles().then(setBundles).catch(() => {})
+    listDemoBundles().then(setDemoBundles).catch(() => {})
   }, [])
 
   // Close menu on outside click
@@ -109,11 +119,50 @@ export default function UploadPage() {
     }
   }
 
-  const busy = uploading || parsing || loadingBundle
+  async function handleLoadDemo(bundle: DemoBundleInfo) {
+    setLoadingDemo(true)
+    try {
+      const result = await loadDemoBundle(bundle.name)
+      const [reqs, edgesResp, docs] = await Promise.all([
+        listRequirements(),
+        listEdges(),
+        fetch('/api/documents').then((r) => r.json()) as Promise<{ documents: components['schemas']['Document'][] }>,
+      ])
+      setDocuments(docs.documents)
+      setRequirements(reqs)
+      setEdges(edgesResp.edges)
+      setShowDemoModal(false)
+      toastSuccess(`${result.bundle} 데모를 불러왔습니다`)
+      navigate('/graph')
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : '데모 적재 실패')
+    } finally {
+      setLoadingDemo(false)
+    }
+  }
+
+  const busy = uploading || parsing || loadingBundle || loadingDemo
 
   return (
     <div className="flex-1 overflow-y-auto">
     <div className="max-w-2xl mx-auto py-8 px-4">
+      {/* Demo section */}
+      <section className="mb-6 p-4 rounded-xl border border-blue-100 bg-blue-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-blue-800">API 키 없이 바로 체험</p>
+            <p className="text-xs text-blue-600 mt-0.5">파싱·추론이 완료된 샘플 세션을 즉시 불러옵니다</p>
+          </div>
+          <button
+            onClick={() => setShowDemoModal(true)}
+            disabled={busy}
+            className="px-4 py-2 rounded-lg border border-blue-300 bg-white text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          >
+            데모 체험
+          </button>
+        </div>
+      </section>
+
       <section className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-slate-700">문서 업로드</h2>
@@ -213,6 +262,15 @@ export default function UploadPage() {
           </div>
         </div>
       </div>
+    )}
+
+    {showDemoModal && (
+      <DemoBundleModal
+        bundles={demoBundles}
+        loading={loadingDemo}
+        onSelect={(bundle) => void handleLoadDemo(bundle)}
+        onClose={() => setShowDemoModal(false)}
+      />
     )}
     </div>
   )

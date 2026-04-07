@@ -35,7 +35,8 @@
 | F15 · Sample Bundle Loader | [F15.md](F15.md) | [ ] | F1, F2, F7, F8, F13 |
 | F16 · Premium Motion & Interaction | [F16.md](F16.md) | [ ] | F12, F13, F14 |
 | F17 · Impact Mode on GraphPage | [F17.md](F17.md) | [ ] | F10, F11, F13 |
-| F18 · Key-free Demo Mode | [F18.md](F18.md) | [ ] | F1, F7, F15, F8, F13 |
+| F18 · Key-free Demo Mode (backend-side) | [F18.md](F18.md) | [x] | F1, F7, F15, F8, F13 |
+| F19 · Frontend-only Demo + GitHub Pages 배포 | [F19.md](F19.md) | [ ] | F18, F13, F17 |
 
 ---
 

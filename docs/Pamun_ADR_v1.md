@@ -32,6 +32,8 @@
 | ADR-16 | 프론트엔드 스타일링 | Tailwind CSS. 인라인 style 전면 제거. |
 | ADR-17 | App Shell 레이아웃 | 좌측 고정 Sidebar + 4단계 Stepper |
 | ADR-18 | Toast 라이브러리 | sonner |
+| ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions (CI/CD) |
+| ADR-20 | 데모 모드 API 처리 | 프론트엔드 mock 레이어. LLM 기능은 비활성화 안내. |
 
 ---
 
@@ -426,6 +428,56 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 **Alternatives:**
 - react-hot-toast: 유사한 API이나 Tailwind 스타일 커스터마이징이 sonner보다 번거롭다.
 - 자체 구현: Tailwind만으로 가능하지만 접근성(aria) 처리와 애니메이션 직접 구현 비용이 높다.
+
+---
+
+## ADR-19. 데모 배포 아키텍처: GitHub Pages + GitHub Actions
+
+**Context:** 포트폴리오 목적의 라이브 데모를 비용 없이 안정적으로 제공해야 한다. 데모는 백엔드 없이 동작하는 프론트엔드 전용 모드다.
+
+**Decision:** GitHub Pages(`{user}.github.io/pamun`)로 정적 SPA를 호스팅하고, GitHub Actions로 main 브랜치 push 시 자동 빌드·배포한다.
+
+**사용자 구분:**
+
+| 사용자 유형 | 경로 | 필요한 것 |
+|-------------|------|-----------|
+| 구경 (데모) | GitHub Pages URL 접속 | 없음 |
+| 실사용 | 리포 포크 → 셀프호스팅 | LLM API 키 + 로컬/서버 환경 |
+
+**Rationale:** 비용 0, 인프라 관리 0. 데모 세션 JSON을 정적 자산으로 빌드에 포함하므로 서버 없이 충분하다. GitHub Actions는 이미 레포에 통합되어 있어 별도 CI 설정 불필요. 커스텀 도메인은 DNS 관리 비용이 발생하므로 기본 서브도메인으로 충분하다.
+
+**Vite 설정:** `base: '/pamun/'`으로 설정하여 서브패스에서 정적 자산 경로가 올바르게 resolve되도록 한다. 로컬 개발 시에는 `base: '/'`를 유지하므로 환경 변수 분기가 필요하다.
+
+**Alternatives:**
+- Vercel/Netlify: 설정이 더 간단하지만 GitHub 생태계 외부. GitHub Pages로 충분한 규모.
+- 커스텀 도메인: 브랜딩에 유리하나 DNS 구매·관리 비용 발생.
+- 수동 배포: push 시 자동이 더 일관성 있고 실수 방지.
+
+---
+
+## ADR-20. 데모 모드 API 처리: 프론트엔드 mock 레이어
+
+**Context:** GitHub Pages 데모는 백엔드 없이 동작해야 한다. 동시에 Edge 승인·거부, changed 토글, 영향 분석 등 핵심 인터랙션은 완전히 작동해야 한다.
+
+**Decision:** 프론트엔드에 `src/lib/demoApi.ts` mock 레이어를 두어, 데모 모드(`isDemoMode === true`)에서 모든 write 작업이 백엔드 대신 Zustand store를 직접 조작한다. 영향 분석(`GET /api/impact`)은 `src/lib/impactCompute.ts`에서 1-hop 로직을 클라이언트 사이드로 재구현한다. LLM 기능(파싱·추론)은 비활성화하고 셀프호스팅 안내 메시지를 표시한다.
+
+**isDemoMode 감지:** 데모 번들 로드 시 `demoStore.isDemoMode = true`로 설정. `VITE_DEMO_MODE=true` 빌드 시에는 앱 초기화 시점에 자동으로 true로 설정하여 업로드 UI를 숨긴다.
+
+**mock 대상 API:**
+
+| 실제 API | mock 동작 |
+|----------|-----------|
+| `PATCH /api/requirements/{id}` | `graphStore`의 해당 requirement 직접 업데이트 |
+| `PATCH /api/edges/{id}` | `graphStore`의 해당 edge 직접 업데이트 |
+| `GET /api/impact` | `impactCompute.ts`로 store에서 1-hop 계산 |
+| `GET /api/documents/{id}` | store의 document 데이터 반환 |
+| `POST /api/parse`, `POST /api/edges/infer` | 비활성화. 안내 토스트 표시. |
+
+**Rationale:** 진짜 API 호출 구조를 유지하면서 mock만 교체하므로 셀프호스팅 모드와 코드 공유가 최대화된다. 영향 분석 로직은 1-hop traversal로 단순하여 프론트에서 재구현 비용이 낮다.
+
+**Alternatives:**
+- MSW(Mock Service Worker): fetch 인터셉트 레이어로 더 투명하지만, 번들 크기 증가 및 Service Worker 설정 복잡도.
+- 읽기 전용 데모: 구현은 단순하지만 인터랙티브 체험을 포기하게 되어 포트폴리오 가치 저하.
 
 ---
 

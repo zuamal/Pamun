@@ -151,13 +151,25 @@ MVP의 전체 사용 흐름을 단계별로 정리한다.
 
 ### 3.9 키-프리 데모 모드
 
+데모 모드는 백엔드 없이 프론트엔드만으로 동작한다. GitHub Pages 정적 호스팅으로 라이브 데모를 제공한다.
+
 | ID | Requirement |
 |----|-------------|
-| FR-9.1 | `ANTHROPIC_API_KEY` 없이 서버를 기동할 수 있다. API 키 미설정 시 LLM 관련 엔드포인트(`/api/parse`, `/api/edges/infer`)만 비활성화되고 나머지 API는 정상 동작한다. |
+| FR-9.1 | 데모 모드는 백엔드 서버 없이 프론트엔드 단독으로 동작한다. 모든 상태는 프론트엔드 Zustand store에서 관리하며, API 호출은 mock 레이어를 통해 store를 직접 조작한다. |
 | FR-9.2 | UploadPage에 "데모 체험" 버튼을 제공한다. 클릭 시 BookFlow / LearnHub / MediBook 3개 번들 중 하나를 선택할 수 있는 UI가 표시된다. |
-| FR-9.3 | 번들 선택 시 pre-parsed + pre-inferred 상태의 세션 JSON을 서버에서 즉시 적재하여 그래프 페이지로 이동한다. LLM 호출 없이 그래프·영향 분석까지 즉시 체험 가능하다. |
-| FR-9.4 | 데모 로드 후 모든 인터랙션(Edge 승인·거부·수정, `changed` 플래그 토글, 영향 분석 실행)이 정상 동작한다. |
-| FR-9.5 | 데모 세션 JSON은 `docs/dummy/{BundleName}/demo_session.json`에 저장하며 레포에 커밋된다. |
+| FR-9.3 | 번들 선택 시 `frontend/public/demo/{BundleName}.json`(정적 자산)을 fetch하여 store를 즉시 초기화하고 그래프 페이지로 이동한다. LLM 호출 없이 그래프·영향 분석까지 즉시 체험 가능하다. |
+| FR-9.4 | 데모 모드에서 Edge 승인·거부·수정, `changed` 플래그 토글, 1-hop 영향 분석 실행이 정상 동작한다. 영향 분석은 store 데이터 기반으로 프론트엔드에서 직접 계산한다. |
+| FR-9.5 | LLM 의존 기능(파싱, 의존관계 추론)은 데모 모드에서 비활성화된다. 해당 버튼에 "LLM API 키가 필요합니다. 셀프호스팅으로 이용하세요" 안내를 표시한다. |
+| FR-9.6 | 데모 세션 JSON은 `frontend/public/demo/{BundleName}.json`에 위치하며 레포에 커밋된다. |
+| FR-9.7 | `VITE_DEMO_MODE=true` 빌드 시 앱은 데모 전용 모드로 동작한다. 실제 파일 업로드 UI는 숨기고 "데모 체험" 진입만 노출한다. |
+
+### 3.11 배포 아키텍처
+
+| ID | Requirement |
+|----|-------------|
+| FR-11.1 | 데모는 GitHub Pages(`{user}.github.io/pamun`)에서 정적 SPA로 호스팅된다. 백엔드 서버 불필요. |
+| FR-11.2 | main 브랜치 push 시 GitHub Actions가 `npm run build`를 실행하고 `dist/`를 GitHub Pages에 자동 배포한다. 빌드 실패 시 배포하지 않는다. |
+| FR-11.3 | 셀프호스팅 사용자(실사용)는 리포를 포크하여 백엔드와 프론트엔드를 직접 실행한다. README에 셀프호스팅 가이드를 제공한다. |
 
 ### 3.10 프리미엄 모션 & 인터랙션
 
