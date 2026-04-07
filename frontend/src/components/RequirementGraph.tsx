@@ -43,7 +43,6 @@ function buildLayout(
   affectedIds: Set<string>,
   reviewIds: Set<string>,
   hoveredEdgeId: string | null,
-  zoom: number,
 ): { nodes: Node[]; edges: FlowEdge[] } {
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
@@ -100,10 +99,6 @@ function buildLayout(
     for (const id of reviewIds) impactNodeIds.add(id)
   }
 
-  // Arrow marker size correction when zoomed out
-  const BASE_MARKER = 8
-  const markerSize = zoom < 0.9 ? Math.max(BASE_MARKER, BASE_MARKER / zoom) : BASE_MARKER
-
   const visibleEdges = edges.filter((e) => e.status === 'approved' || e.status === 'pending')
   const flowEdges: FlowEdge[] = visibleEdges.map((edge) => {
     const isRelatedTo = edge.relation_type === 'related_to'
@@ -129,8 +124,8 @@ function buildLayout(
       source: edge.source_id,
       target: edge.target_id,
       type: 'relation',
-      markerEnd: { type: MarkerType.ArrowClosed, width: markerSize, height: markerSize },
-      markerStart: isRelatedTo ? { type: MarkerType.ArrowClosed, width: markerSize, height: markerSize } : undefined,
+      markerEnd: { type: MarkerType.ArrowClosed },
+      markerStart: isRelatedTo ? { type: MarkerType.ArrowClosed } : undefined,
       style: {
         stroke: isHovered ? '#f97316' : strokeColor,
         strokeWidth: isHovered ? 4 : isImpactEdge ? 3 : 2,
@@ -174,7 +169,7 @@ function GraphCanvas({
   hoveredEdgeId = null,
 }: RequirementGraphProps) {
   const { fitView } = useReactFlow()
-  const { hiddenDocIds, showPending, setZoom, zoom } = useGraphStore()
+  const { hiddenDocIds, showPending, setZoom } = useGraphStore()
 
   const docColorMap = useMemo(() => {
     const ids = [...new Set(requirements.map((r) => r.location.document_id))]
@@ -205,8 +200,8 @@ function GraphCanvas({
   }, [edges, filteredRequirements, showPending])
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => buildLayout(filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds, hoveredEdgeId, zoom),
-    [filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds, hoveredEdgeId, zoom],
+    () => buildLayout(filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds, hoveredEdgeId),
+    [filteredRequirements, filteredEdges, selectedNodeId, docColorMap, impactMode, affectedIds, reviewIds, hoveredEdgeId],
   )
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
