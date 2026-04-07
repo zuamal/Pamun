@@ -1,0 +1,1556 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pamun API",
+    "description": "Requirements Dependency Tracker & Change Impact Analyzer",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/demo/bundles": {
+      "get": {
+        "tags": [
+          "Demo"
+        ],
+        "summary": "List available demo bundles",
+        "operationId": "get_demo_bundles_api_demo_bundles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DemoBundleInfo"
+                  },
+                  "type": "array",
+                  "title": "Response Get Demo Bundles Api Demo Bundles Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demo/load/{bundle_name}": {
+      "post": {
+        "tags": [
+          "Demo"
+        ],
+        "summary": "Reset state and load a pre-parsed demo bundle",
+        "operationId": "load_demo_api_demo_load__bundle_name__post",
+        "parameters": [
+          {
+            "name": "bundle_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Bundle Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoLoadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents/upload": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Upload documents (max 5)",
+        "operationId": "upload_documents_api_documents_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_documents_api_documents_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Document"
+                  },
+                  "type": "array",
+                  "title": "Response Upload Documents Api Documents Upload Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "List all uploaded documents",
+        "operationId": "list_documents_api_documents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents/{doc_id}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get document by ID (includes raw_text)",
+        "operationId": "get_document_api_documents__doc_id__get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Delete document by ID",
+        "operationId": "delete_document_api_documents__doc_id__delete",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dummy/bundles": {
+      "get": {
+        "tags": [
+          "Dummy"
+        ],
+        "summary": "List available sample bundles",
+        "operationId": "get_bundles_api_dummy_bundles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BundleInfo"
+                  },
+                  "type": "array",
+                  "title": "Response Get Bundles Api Dummy Bundles Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dummy/load/{bundle_name}": {
+      "post": {
+        "tags": [
+          "Dummy"
+        ],
+        "summary": "Reset state and load a sample bundle",
+        "operationId": "load_api_dummy_load__bundle_name__post",
+        "parameters": [
+          {
+            "name": "bundle_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Bundle Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Document"
+                  },
+                  "title": "Response Load Api Dummy Load  Bundle Name  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/parse": {
+      "post": {
+        "tags": [
+          "Parse & Requirements"
+        ],
+        "summary": "Parse documents via LLM to extract requirements (SSE stream)",
+        "operationId": "parse_api_parse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requirements": {
+      "get": {
+        "tags": [
+          "Parse & Requirements"
+        ],
+        "summary": "List all parsed requirements",
+        "operationId": "list_requirements_api_requirements_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Requirement"
+                  },
+                  "type": "array",
+                  "title": "Response List Requirements Api Requirements Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requirements/{req_id}": {
+      "patch": {
+        "tags": [
+          "Requirements"
+        ],
+        "summary": "Update requirement title or changed flag",
+        "operationId": "patch_requirement_api_requirements__req_id__patch",
+        "parameters": [
+          {
+            "name": "req_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Req Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Requirements"
+        ],
+        "summary": "Delete requirement and its connected edges",
+        "operationId": "delete_requirement_endpoint_api_requirements__req_id__delete",
+        "parameters": [
+          {
+            "name": "req_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Req Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requirements/merge": {
+      "post": {
+        "tags": [
+          "Requirements"
+        ],
+        "summary": "Merge adjacent requirements from the same document",
+        "operationId": "merge_requirements_endpoint_api_requirements_merge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementMergeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requirements/split": {
+      "post": {
+        "tags": [
+          "Requirements"
+        ],
+        "summary": "Split a requirement at a given offset",
+        "operationId": "split_requirement_endpoint_api_requirements_split_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementSplitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Requirement"
+                  },
+                  "type": "array",
+                  "title": "Response Split Requirement Endpoint Api Requirements Split Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/edges/infer": {
+      "post": {
+        "tags": [
+          "Edges"
+        ],
+        "summary": "Infer dependency edges via LLM (SSE stream)",
+        "operationId": "infer_edges_endpoint_api_edges_infer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EdgeInferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/edges": {
+      "get": {
+        "tags": [
+          "Edges"
+        ],
+        "summary": "List edges (optional ?status= filter)",
+        "operationId": "list_edges_api_edges_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EdgeStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EdgeListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Edges"
+        ],
+        "summary": "Manually add an approved edge",
+        "operationId": "create_edge_endpoint_api_edges_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EdgeCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Edge"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/edges/{edge_id}": {
+      "patch": {
+        "tags": [
+          "Edges"
+        ],
+        "summary": "Update edge status, relation_type, or evidence",
+        "operationId": "patch_edge_api_edges__edge_id__patch",
+        "parameters": [
+          {
+            "name": "edge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Edge Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EdgeUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Edge"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Edges"
+        ],
+        "summary": "Delete an edge",
+        "operationId": "delete_edge_endpoint_api_edges__edge_id__delete",
+        "parameters": [
+          {
+            "name": "edge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Edge Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/impact": {
+      "get": {
+        "tags": [
+          "Impact"
+        ],
+        "summary": "1-hop impact analysis based on changed requirements",
+        "operationId": "get_impact_api_impact_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImpactResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/save": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "summary": "Save current state to a timestamped JSON file",
+        "operationId": "save_api_session_save_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSaveResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/load": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "summary": "Restore state from a session JSON file",
+        "operationId": "load_api_session_load_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionLoadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/reset": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "summary": "Clear all in-memory state",
+        "operationId": "reset_api_session_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_upload_documents_api_documents_upload_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_upload_documents_api_documents_upload_post"
+      },
+      "BundleInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "files"
+        ],
+        "title": "BundleInfo"
+      },
+      "DemoBundleInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "file_count": {
+            "type": "integer",
+            "title": "File Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "file_count"
+        ],
+        "title": "DemoBundleInfo"
+      },
+      "DemoLoadResponse": {
+        "properties": {
+          "bundle": {
+            "type": "string",
+            "title": "Bundle"
+          },
+          "requirements": {
+            "type": "integer",
+            "title": "Requirements"
+          },
+          "edges": {
+            "type": "integer",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bundle",
+          "requirements",
+          "edges"
+        ],
+        "title": "DemoLoadResponse"
+      },
+      "Document": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique document ID (auto-generated)"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename",
+            "description": "Original filename"
+          },
+          "format": {
+            "$ref": "#/components/schemas/DocumentFormat"
+          },
+          "raw_text": {
+            "type": "string",
+            "title": "Raw Text",
+            "description": "Plain text extracted from document"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size",
+            "description": "Original file size in bytes"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "format",
+          "raw_text",
+          "file_size"
+        ],
+        "title": "Document"
+      },
+      "DocumentFormat": {
+        "type": "string",
+        "enum": [
+          "markdown",
+          "docx",
+          "pdf"
+        ],
+        "title": "DocumentFormat"
+      },
+      "DocumentListResponse": {
+        "properties": {
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "type": "array",
+            "title": "Documents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "documents"
+        ],
+        "title": "DocumentListResponse"
+      },
+      "Edge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique edge ID (auto-generated)"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id",
+            "description": "Source requirement ID"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id",
+            "description": "Target requirement ID"
+          },
+          "relation_type": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "evidence": {
+            "type": "string",
+            "title": "Evidence",
+            "description": "Evidence sentence from source docs"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "LLM confidence score (for review prioritization)"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EdgeStatus",
+            "default": "pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_id",
+          "target_id",
+          "relation_type",
+          "evidence",
+          "confidence"
+        ],
+        "title": "Edge"
+      },
+      "EdgeCreateRequest": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id"
+          },
+          "relation_type": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "evidence": {
+            "type": "string",
+            "title": "Evidence",
+            "default": "Manually added by PM"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "target_id",
+          "relation_type"
+        ],
+        "title": "EdgeCreateRequest",
+        "description": "Manual edge creation by PM. Status is auto-set to APPROVED."
+      },
+      "EdgeInferRequest": {
+        "properties": {
+          "requirement_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Ids",
+            "description": "Specific requirements to infer edges for. None = all."
+          }
+        },
+        "type": "object",
+        "title": "EdgeInferRequest"
+      },
+      "EdgeListResponse": {
+        "properties": {
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "edges"
+        ],
+        "title": "EdgeListResponse"
+      },
+      "EdgeStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ],
+        "title": "EdgeStatus"
+      },
+      "EdgeUpdateRequest": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EdgeStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "relation_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RelationType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          }
+        },
+        "type": "object",
+        "title": "EdgeUpdateRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImpactItem": {
+        "properties": {
+          "requirement_id": {
+            "type": "string",
+            "title": "Requirement Id"
+          },
+          "requirement_title": {
+            "type": "string",
+            "title": "Requirement Title"
+          },
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "document_filename": {
+            "type": "string",
+            "title": "Document Filename"
+          },
+          "char_start": {
+            "type": "integer",
+            "title": "Char Start"
+          },
+          "char_end": {
+            "type": "integer",
+            "title": "Char End"
+          },
+          "display_label": {
+            "type": "string",
+            "title": "Display Label"
+          },
+          "edge_id": {
+            "type": "string",
+            "title": "Edge Id",
+            "description": "The edge that connects to changed node"
+          },
+          "relation_type": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "evidence": {
+            "type": "string",
+            "title": "Evidence"
+          },
+          "impact_level": {
+            "$ref": "#/components/schemas/ImpactLevel",
+            "description": "'affected' for confirmed impact, 'review_recommended' for forward depends_on"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requirement_id",
+          "requirement_title",
+          "document_id",
+          "document_filename",
+          "char_start",
+          "char_end",
+          "display_label",
+          "edge_id",
+          "relation_type",
+          "evidence",
+          "impact_level"
+        ],
+        "title": "ImpactItem",
+        "description": "A single affected requirement in impact analysis."
+      },
+      "ImpactLevel": {
+        "type": "string",
+        "enum": [
+          "affected",
+          "review_recommended"
+        ],
+        "title": "ImpactLevel"
+      },
+      "ImpactResponse": {
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ImpactResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "ImpactResponse"
+      },
+      "ImpactResult": {
+        "properties": {
+          "changed_requirement_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Requirement Ids"
+          },
+          "affected_items": {
+            "items": {
+              "$ref": "#/components/schemas/ImpactItem"
+            },
+            "type": "array",
+            "title": "Affected Items",
+            "description": "Items with impact_level='affected'"
+          },
+          "review_items": {
+            "items": {
+              "$ref": "#/components/schemas/ImpactItem"
+            },
+            "type": "array",
+            "title": "Review Items",
+            "description": "Items with impact_level='review_recommended'"
+          },
+          "total_affected": {
+            "type": "integer",
+            "title": "Total Affected"
+          },
+          "total_review": {
+            "type": "integer",
+            "title": "Total Review"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changed_requirement_ids",
+          "affected_items",
+          "review_items",
+          "total_affected",
+          "total_review"
+        ],
+        "title": "ImpactResult",
+        "description": "Result of change impact analysis (1-hop)."
+      },
+      "ParseRequest": {
+        "properties": {
+          "document_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Document Ids",
+            "description": "IDs of documents to parse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_ids"
+        ],
+        "title": "ParseRequest"
+      },
+      "RelationType": {
+        "type": "string",
+        "enum": [
+          "depends_on",
+          "related_to"
+        ],
+        "title": "RelationType"
+      },
+      "Requirement": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique requirement ID (auto-generated)"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Summary title (LLM-generated, PM-editable)"
+          },
+          "original_text": {
+            "type": "string",
+            "title": "Original Text",
+            "description": "Verbatim text from source document"
+          },
+          "location": {
+            "$ref": "#/components/schemas/RequirementLocation"
+          },
+          "display_label": {
+            "type": "string",
+            "title": "Display Label",
+            "description": "Human-readable location label for UI display (e.g., '2.1 \ub85c\uadf8\uc778 \uae30\ub2a5', '3\ubc88\uc9f8 \ubb38\ub2e8')"
+          },
+          "changed": {
+            "type": "boolean",
+            "title": "Changed",
+            "description": "PM change flag",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "original_text",
+          "location",
+          "display_label"
+        ],
+        "title": "Requirement"
+      },
+      "RequirementLocation": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "char_start": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Char Start",
+            "description": "Start offset in plain text"
+          },
+          "char_end": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Char End",
+            "description": "End offset in plain text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "char_start",
+          "char_end"
+        ],
+        "title": "RequirementLocation",
+        "description": "Where this requirement exists in the source document."
+      },
+      "RequirementMergeRequest": {
+        "properties": {
+          "requirement_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Requirement Ids",
+            "description": "IDs of requirements to merge (same document, adjacent spans only)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requirement_ids"
+        ],
+        "title": "RequirementMergeRequest"
+      },
+      "RequirementSplitRequest": {
+        "properties": {
+          "requirement_id": {
+            "type": "string",
+            "title": "Requirement Id",
+            "description": "ID of requirement to split"
+          },
+          "split_offset": {
+            "type": "integer",
+            "title": "Split Offset",
+            "description": "Character offset within the requirement text where the split occurs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requirement_id",
+          "split_offset"
+        ],
+        "title": "RequirementSplitRequest"
+      },
+      "RequirementUpdateRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "changed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changed"
+          }
+        },
+        "type": "object",
+        "title": "RequirementUpdateRequest"
+      },
+      "SessionLoadRequest": {
+        "properties": {
+          "filepath": {
+            "type": "string",
+            "title": "Filepath",
+            "description": "Absolute or relative path to the session JSON file"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filepath"
+        ],
+        "title": "SessionLoadRequest"
+      },
+      "SessionResetResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "SessionResetResponse"
+      },
+      "SessionSaveResponse": {
+        "properties": {
+          "filepath": {
+            "type": "string",
+            "title": "Filepath"
+          },
+          "saved_at": {
+            "type": "string",
+            "title": "Saved At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filepath",
+          "saved_at"
+        ],
+        "title": "SessionSaveResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
