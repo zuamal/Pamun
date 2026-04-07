@@ -12,12 +12,12 @@ from app.models.document import Document
 from app.models.requirement import Requirement, RequirementLocation
 
 _MAX_RETRIES = 3
-_MAX_TOKENS = 4096
+_MAX_TOKENS = 8192
 _DEFAULT_MODEL = "claude-sonnet-4-5"
 
 _PARSE_PROMPT = """\
 You are analyzing a software requirements document. \
-Extract all distinct functional and non-functional requirements from the text.
+Extract requirements at the SECTION level, not at the individual sentence level.
 
 For EACH requirement provide:
 - title: a short descriptive title (max 10 words)
@@ -25,12 +25,17 @@ For EACH requirement provide:
 - char_start: the character index in the document where the requirement text begins (0-based)
 - char_end: the character index where the requirement text ends (exclusive)
 - display_label: a human-readable location hint for the UI \
-  (e.g., the enclosing section heading, "paragraph 3", or a short phrase)
+  (e.g., the enclosing section heading or "paragraph N")
 
 Rules:
-- Extract up to 50 requirements maximum.
-- Use section headings as natural boundaries when present; \
-  otherwise group by semantic meaning.
+- Use section headings (e.g., ##, ###, or equivalent) as the PRIMARY boundary \
+  for splitting requirements. One heading = one requirement.
+- If a section has no headings, group by coherent topic (one paragraph or \
+  a small cluster of related paragraphs = one requirement).
+- Do NOT split a single section into multiple requirements based on individual \
+  sentences or conditions within that section.
+- Aim for 5–20 requirements per document. If you find more than 20, \
+  you are likely splitting too finely.
 - char_start and char_end must be exact positions in the original document text \
   such that document_text[char_start:char_end] == original_text.
 - Do not overlap requirements.
@@ -40,7 +45,6 @@ Document text (use character positions from this exact string):
 {raw_text}
 ---
 """
-
 
 def _get_client() -> instructor.Instructor:
     api_key = os.getenv("ANTHROPIC_API_KEY")

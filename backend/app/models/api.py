@@ -1,8 +1,27 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
 from .requirement import Requirement
 from .edge import Edge, EdgeStatus, RelationType
 from .impact import ImpactResult
 from .document import Document
+
+
+# --- SSE Progress ---
+
+class ProgressStep(str, Enum):
+    PREPARING = "preparing"
+    PARSING = "parsing"
+    INFERRING = "inferring"
+    SAVING = "saving"
+    DONE = "done"
+    ERROR = "error"
+
+
+class ProgressEvent(BaseModel):
+    step: ProgressStep
+    message: str
+    progress: int
 
 
 # --- Document ---
@@ -72,7 +91,34 @@ class ImpactResponse(BaseModel):
     result: ImpactResult
 
 
+# --- Dummy bundles ---
+class BundleInfo(BaseModel):
+    name: str
+    files: list[str]
+
+
+# --- Demo bundles ---
+class DemoBundleInfo(BaseModel):
+    name: str
+    description: str
+    file_count: int
+
+
+class DemoLoadResponse(BaseModel):
+    bundle: str
+    requirements: int
+    edges: int
+
+
 # --- Session ---
 class SessionSaveResponse(BaseModel):
     filepath: str
     saved_at: str
+
+
+class SessionLoadRequest(BaseModel):
+    filepath: str = Field(description="Absolute or relative path to the session JSON file")
+
+
+class SessionResetResponse(BaseModel):
+    status: str

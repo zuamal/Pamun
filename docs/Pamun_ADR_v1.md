@@ -26,9 +26,14 @@
 | ADR-10 | LLM Structured Output | Instructor 라이브러리 (Pydantic 스키마 직접 사용) |
 | ADR-11 | LLM 공급자 | Anthropic Claude (claude-sonnet-4-5) |
 | ADR-12 | 문서 텍스트 추출 | python-docx + pdfplumber + markdown 파싱. Scanned PDF 미지원. |
-| ADR-13 | LLM 장시간 작업 처리 | 동기 HTTP + 타임아웃 120초. 프론트엔드 로딩 상태로 처리. |
+| ADR-13 | LLM 장시간 작업 처리 | SSE(Server-Sent Events). 파이프라인 단계별 진행상황 스트리밍. |
 | ADR-14 | 그래프 시각화 라이브러리 | React Flow |
 | ADR-15 | 원문 뷰어 | plain text 렌더링 + char offset 기반 하이라이트 |
+| ADR-16 | 프론트엔드 스타일링 | Tailwind CSS. 인라인 style 전면 제거. |
+| ADR-17 | App Shell 레이아웃 | 좌측 고정 Sidebar + 4단계 Stepper |
+| ADR-18 | Toast 라이브러리 | sonner |
+| ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions (CI/CD) |
+| ADR-20 | 데모 모드 API 처리 | 프론트엔드 mock 레이어. LLM 기능은 비활성화 안내. |
 
 ---
 
@@ -241,9 +246,9 @@ echo "Types generated successfully"
 
 **Context:** Instructor를 통해 structured output을 받을 LLM 공급자와 모델을 선택해야 한다.
 
-**Decision:** Anthropic Claude (`claude-sonnet-4-5`)를 사용한다. API 키는 `backend/.env`의 `ANTHROPIC_API_KEY`로 관리한다.
+**Decision:** Anthropic Claude (`claude-sonnet-4-5`)를 사용한다. API 키는 `backend/.env`의 `ANTHROPIC_API_KEY`로 관리한다. **`ANTHROPIC_API_KEY`는 선택적(optional)이다.** 미설정 시 서버는 정상 기동되며, LLM을 실제 호출하는 시점(`/api/parse`, `/api/edges/infer`)에만 503을 반환하고 나머지 API는 동작한다.
 
-**Rationale:** 포트폴리오 프로젝트로서 이 툴 자체가 Claude Code로 개발되고 있으므로 Anthropic 생태계와의 일관성이 높다. claude-sonnet-4-5는 structured output 품질과 속도의 균형이 적합하며, Instructor의 Anthropic 지원이 안정적이다.
+**Rationale:** 포트폴리오 프로젝트로서 이 툴 자체가 Claude Code로 개발되고 있으므로 Anthropic 생태계와의 일관성이 높다. claude-sonnet-4-5는 structured output 품질과 속도의 균형이 적합하며, Instructor의 Anthropic 지원이 안정적이다. API 키를 선택적으로 만드는 것은 키-프리 데모 모드(FR-9.1) 지원을 위해 필요하다.
 
 **Alternatives:**
 - OpenAI GPT-4o: Instructor 지원이 가장 성숙하지만 공급자 다변화 이점이 없음.
@@ -276,15 +281,55 @@ LLM_MODEL=claude-sonnet-4-5
 
 ## ADR-13. LLM 장시간 작업 처리
 
-**Context:** `/api/parse`와 `/api/edges/infer`는 LLM 호출로 수십 초가 걸릴 수 있다. 이를 어떻게 처리할지 결정해야 한다.
+**Context:** `/api/parse`와 `/api/edges/infer`는 LLM 호출로 수십 초가 걸릴 수 있다. 사용자가 진행 중임을 인지할 수 있도록 진행상황을 실시간으로 전달해야 한다 (PRD FR-5.1).
 
-**Decision:** 동기 HTTP 요청으로 처리한다. FastAPI의 `async def`와 `httpx`로 비동기 LLM 호출을 수행하되, HTTP 응답은 작업 완료 시 한 번에 반환한다. 클라이언트 타임아웃은 120초로 설정한다. 프론트엔드는 로딩 스피너로 처리한다.
+**Decision:** SSE(Server-Sent Events)를 사용한다. 두 엔드포인트는 `Content-Type: text/event-stream`으로 파이프라인 단계별 `ProgressEvent`를 스트리밍한다. 프론트엔드는 `fetch` + `ReadableStream`으로 수신한다 (`EventSource`는 POST를 지원하지 않으므로 사용하지 않는다).
 
-**Rationale:** 포트폴리오 데모 시나리오(문서 3–5개, 요구사항 최대 50개)에서 실제 소요 시간은 10–30초 수준으로 예상된다. SSE/polling은 구현 복잡도를 크게 높이는 반면 데모 UX 개선 효과가 제한적이다. 동기 방식이 코드 이해도가 높아 포트폴리오로서도 적합하다.
+**Rationale:** LLM 호출이 10–30초 걸리는 구간에서 스피너만 보여주면 사용자가 작업이 진행 중인지 알 수 없다. 단계명과 진행률을 실시간으로 보여주면 UX가 크게 개선된다. SSE는 단방향 서버→클라이언트 스트리밍에 최적이며, WebSocket 대비 구현이 단순하다. Polling은 백그라운드 작업 큐가 필요해 복잡도가 더 높다.
+
+**SSE 이벤트 스키마:**
+
+```python
+# backend/app/models/api.py 추가
+
+class ProgressStep(str, Enum):
+    PREPARING = "preparing"
+    PARSING   = "parsing"    # parse 전용
+    INFERRING = "inferring"  # infer 전용
+    SAVING    = "saving"
+    DONE      = "done"
+    ERROR     = "error"
+
+class ProgressEvent(BaseModel):
+    step: ProgressStep
+    message: str             # 사용자에게 표시할 한국어 메시지
+    progress: int            # 0–100
+```
+
+**이벤트 흐름 (parse):**
+
+```
+data: {"step":"preparing","message":"파싱 준비 중...","progress":0}
+data: {"step":"parsing","message":"문서 파싱 중 (1/3): sample.md","progress":30}
+data: {"step":"parsing","message":"문서 파싱 중 (2/3): spec.docx","progress":60}
+data: {"step":"saving","message":"요구사항 저장 중...","progress":90}
+data: {"step":"done","message":"파싱 완료 — 요구사항 12개 추출","progress":100}
+```
+
+**이벤트 흐름 (infer):**
+
+```
+data: {"step":"preparing","message":"추론 준비 중...","progress":0}
+data: {"step":"inferring","message":"의존관계 추론 중... (요구사항 12개)","progress":50}
+data: {"step":"saving","message":"Edge 생성 중...","progress":90}
+data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":100}
+```
+
+**`done` 수신 후:** 프론트엔드가 기존 REST 엔드포인트(`GET /api/requirements`, `GET /api/edges`)를 호출해 결과를 가져온다. SSE 스트림에 결과를 포함하지 않는다 (페이로드 분리 원칙).
 
 **Alternatives:**
-- SSE (Server-Sent Events): 실시간 진행 상황 표시 가능하지만 프론트-백 양측 구현 복잡도 증가.
-- Polling (`/api/jobs/{id}`): 백그라운드 작업 큐 필요. MVP 범위 초과.
+- 동기 HTTP: 구현이 단순하지만 사용자가 진행 중임을 알 수 없고 브라우저 타임아웃 위험.
+- Polling (`/api/jobs/{id}`): 백그라운드 작업 큐 필요. 구현 복잡도 더 높음.
 - WebSocket: 양방향 통신이 필요 없는 이 케이스에 과도한 복잡성.
 
 ---
@@ -317,6 +362,122 @@ LLM_MODEL=claude-sonnet-4-5
 **Alternatives:**
 - Markdown 렌더링 (`react-markdown`): Markdown 문서에서는 가독성이 높지만 DOCX/PDF와 처리 방식이 달라져 일관성이 깨짐.
 - 원본 파일 직접 렌더링: 포맷별 뷰어 라이브러리 필요. MVP 범위 초과.
+
+---
+
+## ADR-16. 프론트엔드 스타일링: Tailwind CSS
+
+**Context:** 기존 인라인 `style={{...}}`은 hover/focus/active 상태 스타일을 표현할 수 없고, 유지보수 시 스타일 탐색이 어렵다.
+
+**Decision:** Tailwind CSS를 유일한 스타일링 시스템으로 사용한다. 인라인 `style` prop은 전면 제거하고 Tailwind 유틸리티 클래스로 대체한다. CSS 파일은 `@layer` 지시어 외에는 작성하지 않는다.
+
+**Rationale:** Tailwind는 빌드 시 사용된 클래스만 번들에 포함하므로 파일 크기가 최소화된다. hover/focus/active 상태를 추가 JS 없이 클래스로 표현할 수 있다. Vite 프로젝트에 설정이 간단하다.
+
+**공통 컴포넌트 추상화 원칙:** 버튼, 모달 등 공통 UI를 섣불리 추출하지 않는다. 2–3개 페이지에서 동일 패턴이 확인된 시점에 점진적으로 컴포넌트로 분리한다.
+
+**Alternatives:**
+- CSS Modules: 스코프 보장되지만 hover 상태 JS 처리 필요. 파일 수 증가.
+- styled-components: CSS-in-JS로 강력하지만 런타임 오버헤드와 설정 복잡도.
+
+---
+
+## ADR-17. App Shell 레이아웃: 좌측 고정 Sidebar + Stepper
+
+**Context:** 4단계 선형 워크플로우에서 사용자가 현재 어느 단계에 있는지 항상 인지해야 하고, 단계 간 자유로운 이동을 지원해야 한다.
+
+**Decision:** 좌측 고정 Sidebar에 3단계 Stepper를 배치한다. 콘텐츠 영역은 Sidebar 우측에 렌더링된다. 영향 분석은 Step 3(GraphPage)의 "영향 분석 모드" 내에서 수행하므로 별도 Step 4가 없다.
+
+**Stepper 활성화 조건:**
+
+| 단계 | 조건 |
+|------|------|
+| 1. 문서 업로드 | 항상 활성 |
+| 2. 요구사항 검토 | `requirements.length > 0` (파싱 완료) |
+| 3. 그래프 & 영향 분석 | `edges.filter(APPROVED).length > 0` |
+
+조건 미충족 단계 클릭 시 다음 행동을 안내하는 툴팁을 표시한다. 비활성 단계로 라우터 직접 접근 시, 아래의 hydration 이후 조건을 재평가하여 여전히 미충족이면 Step 1로 리디렉션한다.
+
+**페이지 새로고침 시 Store Hydration:**
+
+새로고침 시 Zustand store는 초기화된다. 이 상태에서 조건을 평가하면 항상 Step 1로 리디렉션되는 문제가 발생한다. 따라서 앱 최초 마운트 시 백엔드에서 현재 상태를 읽어 store를 복원한 뒤 Stepper 조건을 재평가한다.
+
+**Hydration 동작:**
+1. 앱 마운트 시 `useHydrate` 훅이 `GET /api/documents`, `GET /api/requirements`, `GET /api/edges` 를 병렬 호출
+2. Hydration 완료 전까지 전체 화면에 로딩 스피너 표시 (라우트 렌더링 차단)
+3. Hydration 완료 후 store가 채워진 상태에서 ProtectedRoute가 조건을 평가
+4. 결과에 따라 요청한 경로 유지 또는 Step 1 리디렉션
+
+이 방식은 인메모리 저장소(ADR-3)의 특성상 서버가 재시작되지 않는 한 백엔드 상태가 유지된다는 전제에서 동작한다. 서버 재시작 후에는 세션 로드(F7)로 복원한다.
+
+**Rationale:** 좌측 Sidebar는 그래프처럼 화면을 넓게 사용하는 페이지에서 상단 헤더보다 콘텐츠 수직 공간 손실이 없다. 선형 4단계 플로우는 Sidebar Stepper가 진행 상태를 항상 시야에 두기에 적합하다.
+
+**Alternatives:**
+- 상단 Header Stepper: 일반적이지만 그래프 등 시각화 페이지에서 수직 공간을 잡아먹음.
+- 페이지별 독립 내비게이션: 현재 단계 인지가 어려워 사용성 저하.
+
+---
+
+## ADR-18. Toast 라이브러리: sonner
+
+**Context:** API 성공/실패, 저장 완료 등의 피드백을 전역 Toast로 표시해야 한다.
+
+**Decision:** `sonner` 라이브러리를 사용한다.
+
+**Rationale:** Tailwind CSS와 자연스럽게 통합된다. `<Toaster />` 컴포넌트 한 줄과 `toast()` 함수 호출만으로 동작한다. 번들 크기가 작고(~3KB) 애니메이션이 내장되어 있다. React 19 호환.
+
+**Alternatives:**
+- react-hot-toast: 유사한 API이나 Tailwind 스타일 커스터마이징이 sonner보다 번거롭다.
+- 자체 구현: Tailwind만으로 가능하지만 접근성(aria) 처리와 애니메이션 직접 구현 비용이 높다.
+
+---
+
+## ADR-19. 데모 배포 아키텍처: GitHub Pages + GitHub Actions
+
+**Context:** 포트폴리오 목적의 라이브 데모를 비용 없이 안정적으로 제공해야 한다. 데모는 백엔드 없이 동작하는 프론트엔드 전용 모드다.
+
+**Decision:** GitHub Pages(`{user}.github.io/pamun`)로 정적 SPA를 호스팅하고, GitHub Actions로 main 브랜치 push 시 자동 빌드·배포한다.
+
+**사용자 구분:**
+
+| 사용자 유형 | 경로 | 필요한 것 |
+|-------------|------|-----------|
+| 구경 (데모) | GitHub Pages URL 접속 | 없음 |
+| 실사용 | 리포 포크 → 셀프호스팅 | LLM API 키 + 로컬/서버 환경 |
+
+**Rationale:** 비용 0, 인프라 관리 0. 데모 세션 JSON을 정적 자산으로 빌드에 포함하므로 서버 없이 충분하다. GitHub Actions는 이미 레포에 통합되어 있어 별도 CI 설정 불필요. 커스텀 도메인은 DNS 관리 비용이 발생하므로 기본 서브도메인으로 충분하다.
+
+**Vite 설정:** `base: '/pamun/'`으로 설정하여 서브패스에서 정적 자산 경로가 올바르게 resolve되도록 한다. 로컬 개발 시에는 `base: '/'`를 유지하므로 환경 변수 분기가 필요하다.
+
+**Alternatives:**
+- Vercel/Netlify: 설정이 더 간단하지만 GitHub 생태계 외부. GitHub Pages로 충분한 규모.
+- 커스텀 도메인: 브랜딩에 유리하나 DNS 구매·관리 비용 발생.
+- 수동 배포: push 시 자동이 더 일관성 있고 실수 방지.
+
+---
+
+## ADR-20. 데모 모드 API 처리: 프론트엔드 mock 레이어
+
+**Context:** GitHub Pages 데모는 백엔드 없이 동작해야 한다. 동시에 Edge 승인·거부, changed 토글, 영향 분석 등 핵심 인터랙션은 완전히 작동해야 한다.
+
+**Decision:** 프론트엔드에 `src/lib/demoApi.ts` mock 레이어를 두어, 데모 모드(`isDemoMode === true`)에서 모든 write 작업이 백엔드 대신 Zustand store를 직접 조작한다. 영향 분석(`GET /api/impact`)은 `src/lib/impactCompute.ts`에서 1-hop 로직을 클라이언트 사이드로 재구현한다. LLM 기능(파싱·추론)은 비활성화하고 셀프호스팅 안내 메시지를 표시한다.
+
+**isDemoMode 감지:** 데모 번들 로드 시 `demoStore.isDemoMode = true`로 설정. `VITE_DEMO_MODE=true` 빌드 시에는 앱 초기화 시점에 자동으로 true로 설정하여 업로드 UI를 숨긴다.
+
+**mock 대상 API:**
+
+| 실제 API | mock 동작 |
+|----------|-----------|
+| `PATCH /api/requirements/{id}` | `graphStore`의 해당 requirement 직접 업데이트 |
+| `PATCH /api/edges/{id}` | `graphStore`의 해당 edge 직접 업데이트 |
+| `GET /api/impact` | `impactCompute.ts`로 store에서 1-hop 계산 |
+| `GET /api/documents/{id}` | store의 document 데이터 반환 |
+| `POST /api/parse`, `POST /api/edges/infer` | 비활성화. 안내 토스트 표시. |
+
+**Rationale:** 진짜 API 호출 구조를 유지하면서 mock만 교체하므로 셀프호스팅 모드와 코드 공유가 최대화된다. 영향 분석 로직은 1-hop traversal로 단순하여 프론트에서 재구현 비용이 낮다.
+
+**Alternatives:**
+- MSW(Mock Service Worker): fetch 인터셉트 레이어로 더 투명하지만, 번들 크기 증가 및 Service Worker 설정 복잡도.
+- 읽기 전용 데모: 구현은 단순하지만 인터랙티브 체험을 포기하게 되어 포트폴리오 가치 저하.
 
 ---
 

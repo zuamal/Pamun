@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, status
 from app.models.document import Document
 from app.models.api import DocumentListResponse
 from app.services.document_service import detect_format, extract_text
+from app.services.requirement_service import delete_requirement
 from app.storage.store import store
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
@@ -25,7 +26,7 @@ _MAX_FILES = 5
 async def upload_documents(files: list[UploadFile]) -> list[Document]:
     if len(files) > _MAX_FILES:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"최대 {_MAX_FILES}개까지 업로드할 수 있습니다.",
         )
 
@@ -35,7 +36,7 @@ async def upload_documents(files: list[UploadFile]) -> list[Document]:
         fmt = detect_format(filename)
         if fmt is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"지원하지 않는 파일 형식입니다: {filename}. (.md, .docx, .pdf만 허용)",
             )
 
@@ -44,7 +45,7 @@ async def upload_documents(files: list[UploadFile]) -> list[Document]:
             raw_text = extract_text(content, fmt)
         except ValueError as exc:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=str(exc),
             ) from exc
 
@@ -53,6 +54,7 @@ async def upload_documents(files: list[UploadFile]) -> list[Document]:
             filename=filename,
             format=fmt,
             raw_text=raw_text,
+            file_size=len(content),
             uploaded_at=datetime.now(),
         )
         store.documents[doc.id] = doc
@@ -90,4 +92,14 @@ async def get_document(doc_id: str) -> Document:
 async def delete_document(doc_id: str) -> None:
     if doc_id not in store.documents:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="문서를 찾을 수 없습니다.")
+
+    # Cascade: delete all requirements (and their edges) belonging to this document
+    req_ids = [
+        rid
+        for rid, req in store.requirements.items()
+        if req.location.document_id == doc_id
+    ]
+    for rid in req_ids:
+        delete_requirement(rid)
+
     del store.documents[doc_id]

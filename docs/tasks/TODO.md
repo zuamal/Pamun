@@ -23,7 +23,20 @@
 | F8 · Frontend Foundation | [F8.md](F8.md) | [ ] | F1 |
 | F9 · Document Upload & Requirement Review UI | [F9.md](F9.md) | [ ] | F8, F2, F3, F4, F5 |
 | F10 · Graph Visualization & Edge Review UI | [F10.md](F10.md) | [ ] | F8, F5 |
-| F11 · Impact Analysis UI | [F11.md](F11.md) | [ ] | F8, F4, F6, F7 |
+| F11 · Impact Analysis UI | [F11.md](F11.md) | [ ] | F8, F4, F6, F7 | ⚠️ F17로 대체됨. ImpactItem·DocumentViewer 컴포넌트만 재사용 |
+
+## Cross-cutting & Frontend 고도화
+
+| Feature | 파일 | 상태 | 의존 |
+|---------|------|------|------|
+| F12 · Real-time Progress Streaming (SSE) | [F12.md](F12.md) | [ ] | F3, F5, F9, F10 |
+| F13 · Global Architecture (Tailwind + AppShell + Toast + Skeleton) | [F13.md](F13.md) | [ ] | F9, F10, F11 |
+| F14 · Page-level UX 고도화 (4개 페이지) | [F14.md](F14.md) | [ ] | F13 |
+| F15 · Sample Bundle Loader | [F15.md](F15.md) | [ ] | F1, F2, F7, F8, F13 |
+| F16 · Premium Motion & Interaction | [F16.md](F16.md) | [ ] | F12, F13, F14 |
+| F17 · Impact Mode on GraphPage | [F17.md](F17.md) | [ ] | F10, F11, F13 |
+| F18 · Key-free Demo Mode (backend-side) | [F18.md](F18.md) | [x] | F1, F7, F15, F8, F13 |
+| F19 · Frontend-only Demo + GitHub Pages 배포 | [F19.md](F19.md) | [ ] | F18, F13, F17 |
 
 ---
 
@@ -36,12 +49,15 @@ F1
 │                         │
 └── F7                    │
                           │
-F1 ── F8 ─┬── F9 (F2+F3+F4+F5 필요)
-           ├── F10 (F5 필요)
-           └── F11 (F4+F6+F7 필요)
+F1 ── F8 ─┬── F9 ──┐
+           ├── F10 ─┼── F12 (SSE 전환)
+           └── F11 ─┤
+                    │
+                    └── F13 (Tailwind + AppShell + Toast + Skeleton)
+                              └── F14 (4개 페이지 UX 고도화)
 ```
 
-**권장 구현 순서:** F1 → F2 → F3 → F4 + F5 (병렬 가능) → F6 + F7 + F8 (병렬 가능) → F9 + F10 (병렬 가능) → F11
+**권장 구현 순서:** F1 → F2 → F3 → F4 + F5 (병렬) → F6 + F7 + F8 (병렬) → F9 + F10 (병렬) → F11 → F12 → F13 → F14
 
 ---
 

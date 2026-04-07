@@ -15,3 +15,6 @@ frontend/src/api/types.generated.ts
 
 # Session
 *.session.json
+!docs/dummy/**/demo_session.json
+!frontend/public/demo/*.json
+.gstack/

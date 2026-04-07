@@ -7,8 +7,15 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.demo import router as demo_router
 from app.api.documents import router as documents_router
+from app.api.dummy import router as dummy_router
+from app.api.edges import router as edges_router
+from app.api.impact import router as impact_router
 from app.api.parse import router as parse_router
+from app.api.requirements import router as requirements_router
+from app.api.session import router as session_router
+from app.services.session_service import ensure_sessions_dir
 
 load_dotenv()
 
@@ -17,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    ensure_sessions_dir()
     if not os.getenv("ANTHROPIC_API_KEY"):
         logger.warning(
             "⚠️  ANTHROPIC_API_KEY가 설정되지 않았습니다. "
@@ -41,8 +49,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(demo_router)
 app.include_router(documents_router)
+app.include_router(dummy_router)
 app.include_router(parse_router)
+app.include_router(requirements_router)
+app.include_router(edges_router)
+app.include_router(impact_router)
+app.include_router(session_router)
 
 
 @app.get("/health", tags=["Health"])

@@ -1,0 +1,1131 @@
+{
+  "saved_at": "2026-04-07T00:31:07.755341+00:00",
+  "documents": {
+    "2e4398a0-9262-41f7-bc00-09873c7848d0": {
+      "id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+      "filename": "PRD.md",
+      "format": "markdown",
+      "raw_text": "# BookFlow — 온라인 서점 플랫폼 PRD\n\n## 1. 개요\n\nBookFlow는 도서 검색, 주문, 리뷰를 통합 제공하는 온라인 서점 플랫폼이다. 사용자는 도서를 탐색하고 장바구니에 담아 결제할 수 있으며, 구매한 도서에 대해 리뷰를 작성할 수 있다.\n\n## 2. 사용자 인증\n\n### 2.1 회원가입\n\n사용자는 이메일과 비밀번호로 회원가입할 수 있다. 비밀번호는 최소 8자 이상이어야 하며, 영문 대소문자와 숫자를 각각 1개 이상 포함해야 한다. 회원가입 시 이메일 인증을 완료해야 계정이 활성화된다.\n\n### 2.2 로그인 및 세션 관리\n\n사용자는 이메일과 비밀번호로 로그인한다. 로그인 성공 시 JWT 토큰을 발급하며, 액세스 토큰의 유효기간은 1시간, 리프레시 토큰의 유효기간은 7일이다. 5회 연속 로그인 실패 시 계정이 30분간 잠긴다.\n\n## 3. 도서 관리\n\n### 3.1 도서 검색\n\n사용자는 제목, 저자, ISBN으로 도서를 검색할 수 있다. 검색 결과는 관련도순, 출판일순, 가격순으로 정렬할 수 있다. 검색어 자동완성 기능을 제공하여 사용자가 빠르게 원하는 도서를 찾을 수 있도록 한다.\n\n### 3.2 도서 상세 페이지\n\n도서 상세 페이지에는 제목, 저자, 출판사, 출판일, 가격, 재고 상태, 도서 설명, 독자 리뷰 목록이 표시된다. 재고가 0인 도서는 \"품절\" 상태로 표시되며, 사용자가 입고 알림을 신청할 수 있다.\n\n### 3.3 카테고리 및 필터\n\n도서는 대분류(문학, 경영, IT, 자기계발 등)와 소분류로 분류된다. 사용자는 카테고리, 가격 범위, 출판일 범위, 평점 필터를 조합하여 도서를 탐색할 수 있다.\n\n## 4. 주문 및 결제\n\n### 4.1 장바구니\n\n사용자는 도서를 장바구니에 추가, 수량 변경, 삭제할 수 있다. 장바구니에 담긴 도서의 재고가 부족해지면 사용자에게 알림을 표시한다. 비회원도 장바구니를 이용할 수 있으며, 로그인 시 비회원 장바구니가 회원 장바구니에 병합된다.\n\n### 4.2 결제 프로세스\n\n결제는 신용카드, 간편결제(카카오페이, 네이버페이), 무통장입금을 지원한다. 주문 시 배송지 정보를 입력하며, 최근 배송지 3개를 저장하여 재사용할 수 있다. 결제 완료 후 주문 확인 이메일을 발송한다.\n\n### 4.3 주문 상태 관리\n\n주문 상태는 결제완료 → 배송준비 → 배송중 → 배송완료 순서로 변경된다. 결제완료 상태에서만 주문 취소가 가능하며, 배송완료 후 7일 이내에 반품을 신청할 수 있다. 각 상태 변경 시 사용자에게 이메일 또는 푸시 알림을 발송한다.\n\n## 5. 리뷰 시스템\n\n### 5.1 리뷰 작성\n\n구매 확정된 도서에 대해서만 리뷰를 작성할 수 있다. 리뷰는 1~5점 평점과 텍스트로 구성되며, 텍스트는 최소 20자 이상이어야 한다. 한 사용자가 동일 도서에 대해 리뷰를 하나만 작성할 수 있으며, 작성 후 수정은 가능하지만 삭제 후 재작성은 불가하다.\n\n### 5.2 리뷰 표시 및 정렬\n\n도서 상세 페이지에서 리뷰는 최신순, 평점 높은순, 평점 낮은순으로 정렬할 수 있다. 전체 평균 평점과 평점 분포(1~5점 각 비율)를 도서 상세 페이지 상단에 표시한다. 비속어가 포함된 리뷰는 자동으로 필터링되어 관리자 검토 대기 상태로 전환된다.\n",
+      "file_size": 3536,
+      "uploaded_at": "2026-04-07T09:28:51.027809"
+    },
+    "cfef43c9-eee0-4267-a48f-8216991cbb03": {
+      "id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+      "filename": "기능명세서.docx",
+      "format": "docx",
+      "raw_text": "BookFlow 기능명세서\n본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다. 각 기능은 PRD의 해당 요구사항을 참조한다.\n1. 사용자 인증 모듈\n1.1 회원가입 API\nPRD 2.1 회원가입 요구사항을 구현한다.\n엔드포인트: POST /api/auth/register\n요청 필드: email (string, 필수), password (string, 필수, 최소 8자, 영문 대소문자+숫자 각 1개 이상), name (string, 필수)\n응답: 201 Created — 계정 생성 완료. 인증 이메일 발송. 409 Conflict — 이미 등록된 이메일.\n이메일 인증 플로우: 회원가입 시 인증 토큰이 포함된 링크를 이메일로 발송한다. 토큰 유효기간은 24시간이다. GET /api/auth/verify?token={token}으로 인증을 완료하면 계정이 활성화된다.\n1.2 로그인 및 토큰 관리\nPRD 2.2 로그인 및 세션 관리 요구사항을 구현한다.\n엔드포인트: POST /api/auth/login\n요청 필드: email (string), password (string)\n응답: 200 OK — { access_token, refresh_token, expires_in: 3600 }. 401 Unauthorized — 이메일 또는 비밀번호 불일치. 423 Locked — 5회 연속 실패로 계정 잠김 (30분).\n토큰 갱신: POST /api/auth/refresh. 리프레시 토큰으로 새 액세스 토큰을 발급한다. 리프레시 토큰 유효기간은 7일이다.\n2. 도서 검색 모듈\n2.1 통합 검색 API\nPRD 3.1 도서 검색 요구사항을 구현한다.\n엔드포인트: GET /api/books/search?q={query}&sort={sort}&page={page}\nsort 파라미터: relevance (기본값), published_date, price_asc, price_desc\n응답: 페이지네이션된 결과 목록. 각 항목에 id, title, author, price, cover_image_url, average_rating 포함.\n자동완성: GET /api/books/autocomplete?q={query}. 입력 2자 이상부터 최대 5개 제안. 도서 제목과 저자명을 대상으로 한다.\n2.2 도서 상세 조회\nPRD 3.2 도서 상세 페이지 요구사항을 구현한다.\n엔드포인트: GET /api/books/{book_id}\n응답 필드: id, title, author, publisher, published_date, price, stock_status (재고있음/품절), description, reviews (페이지네이션된 리뷰 목록), average_rating, rating_distribution (각 평점별 비율)\n품절 시 입고 알림 신청: POST /api/books/{book_id}/notify. 입고 시 이메일 발송.\n2.3 카테고리 및 필터\nPRD 3.3 카테고리 및 필터 요구사항을 구현한다.\n카테고리 목록: GET /api/categories. 대분류/소분류 트리 구조로 반환.\n필터 검색: GET /api/books?category={id}&price_min={min}&price_max={max}&published_after={date}&published_before={date}&min_rating={rating}\n복합 필터: 모든 필터 파라미터는 AND 조건으로 조합된다.\n3. 주문 및 결제 모듈\n3.1 장바구니 관리\nPRD 4.1 장바구니 요구사항을 구현한다.\n장바구니 조회: GET /api/cart. 응답에 각 항목의 현재 재고 상태와 재고 부족 여부를 포함한다.\n항목 추가: POST /api/cart/items { book_id, quantity }. 재고가 부족하면 409 Conflict 반환.\n수량 변경: PATCH /api/cart/items/{item_id} { quantity }. 재고 초과 시 409 Conflict.\n항목 삭제: DELETE /api/cart/items/{item_id}\n비회원 장바구니: 세션 기반으로 장바구니를 유지한다. 로그인 시 POST /api/cart/merge를 호출하여 비회원 장바구니를 회원 장바구니에 병합한다. 동일 도서가 있으면 수량을 합산한다.\n3.2 결제 처리\nPRD 4.2 결제 프로세스 요구사항을 구현한다.\n주문 생성: POST /api/orders. 요청 필드: payment_method (credit_card | kakao_pay | naver_pay | bank_transfer), shipping_address_id 또는 새 배송지 정보.\n결제 처리 플로우: 재고 확인 → 결제 대행사 연동 → 결제 완료 → 재고 차감 → 주문 확인 이메일 발송. 결제 실패 시 재고는 차감하지 않는다.\n배송지 관리: GET /api/addresses — 최근 3개 배송지 목록. POST /api/addresses — 새 배송지 등록. 변경/삭제도 지원.\n3.3 주문 상태 및 취소/반품\nPRD 4.3 주문 상태 관리 요구사항을 구현한다.\n주문 목록: GET /api/orders. 주문 상세: GET /api/orders/{order_id}. 상태 필드에 current_status와 status_history(각 변경 시각 포함) 포함.\n주문 취소: POST /api/orders/{order_id}/cancel. current_status가 PAID인 경우에만 허용. 취소 시 재고 복원 및 환불 처리.\n반품 신청: POST /api/orders/{order_id}/return. current_status가 DELIVERED이고 배송완료일로부터 7일 이내인 경우에만 허용.\n상태 변경 알림: 주문 상태가 변경될 때마다 사용자에게 이메일과 푸시 알림을 발송한다. 알림 발송은 비동기 큐로 처리하여 주문 처리 성능에 영향을 주지 않는다.\n4. 리뷰 모듈\n4.1 리뷰 CRUD\nPRD 5.1 리뷰 작성 요구사항을 구현한다.\n리뷰 작성: POST /api/books/{book_id}/reviews. 요청 필드: rating (1–5 정수), content (string, 최소 20자). 전제조건: 해당 도서의 주문 상태가 DELIVERED이어야 한다 (PRD 5.1: 구매 확정된 도서에 대해서만). 409 Conflict — 이미 리뷰 존재.\n리뷰 수정: PATCH /api/books/{book_id}/reviews/{review_id}. rating과 content 변경 가능. 수정 시간 기록.\n리뷰 삭제: 불가. 사용자는 리뷰를 삭제할 수 없다. 삭제 후 재작성 방지 정책(PRD 5.1).\n4.2 리뷰 표시 및 필터링\nPRD 5.2 리뷰 표시 및 정렬 요구사항을 구현한다.\n리뷰 목록: GET /api/books/{book_id}/reviews?sort={sort}&page={page}. sort 파라미터: latest (기본값), rating_high, rating_low.\n평점 통계: 도서 상세 API(GET /api/books/{book_id}) 응답에 average_rating과 rating_distribution 필드로 포함된다.\n비속어 필터링: 리뷰 작성/수정 시 비속어 필터를 적용한다. 비속어가 감지되면 리뷰 상태를 PENDING_REVIEW로 설정하고 관리자 검토 대기 목록에 추가한다. 관리자 승인 전까지 해당 리뷰는 다른 사용자에게 보이지 않는다.",
+      "file_size": 10849,
+      "uploaded_at": "2026-04-07T09:28:51.033962"
+    },
+    "457f328e-dcf1-427a-82f5-f260c8832e94": {
+      "id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+      "filename": "QA_체크리스트.pdf",
+      "format": "pdf",
+      "raw_text": "BookFlow QA Checklist\nVersion 1.0 | Based on: PRD.md, Functional Spec\n1. User Authentication Tests\nRef: PRD Section 2, Functional Spec Section 1\n1.1 Registration (PRD 2.1, Spec 1.1)\nID Test Case Steps Expected Result Status\nTC-1001 Valid registration POST /api/auth/register with 201 Created. Verification email\nvalid email, password (8+ chars, sent.\nupper+lower+digit), name\nTC-1002 Weak password POST /api/auth/register with 400 Bad Request. Error\nrejected password 'abc' (too short, no message specifies password\nuppercase/digit) requirements.\nTC-1003 Duplicate email POST /api/auth/register with 409 Conflict. Error indicates\nalready registered email email exists.\nTC-1004 Email verification GET /api/auth/verify?token={vali Account activated. Login now\nd_token} within 24 hours possible.\nTC-1005 Expired verification GET 400 Bad Request. Token\ntoken /api/auth/verify?token={token} expired.\nafter 24 hours\n1.2 Login & Session (PRD 2.2, Spec 1.2)\nID Test Case Steps Expected Result Status\nTC-1101 Successful login POST /api/auth/login with correct 200 OK. access_token (1hr) and\ncredentials refresh_token (7d) returned.\nTC-1102 Wrong password POST /api/auth/login with wrong 401 Unauthorized.\npassword\nTC-1103 Account lockout POST /api/auth/login with wrong 423 Locked. Account locked for\npassword 5 times consecutively 30 minutes.\nTC-1104 Token refresh POST /api/auth/refresh with valid New access_token issued.\nrefresh_token\nTC-1105 Expired access token API call with expired 401 Unauthorized. Client should\naccess_token use refresh token.\n2. Book Search & Display Tests\nRef: PRD Section 3, Functional Spec Section 2\n2.1 Search (PRD 3.1, Spec 2.1)\nID Test Case Steps Expected Result Status\nTC-2001 Search by title GET Results containing 'Python' in\n/api/books/search?q=Python title. Sorted by relevance.\nTC-2002 Sort by price GET /api/books/search?q=Java& Results sorted by price\nsort;=price_asc ascending.\nTC-2003 Autocomplete GET Max 5 suggestions from titles\n/api/books/autocomplete?q=Py and authors.\n(2+ chars)\nTC-2004 Empty search GET /api/books/search?q= 400 Bad Request or empty result\n(empty query) set.\n2.2 Book Detail (PRD 3.2, Spec 2.2)\nID Test Case Steps Expected Result Status\nTC-2101 Book detail view GET /api/books/{book_id} Returns title, author, publisher,\nprice, stock_status, description,\nreviews, average_rating,\nrating_distribution.\nTC-2102 Out of stock display GET /api/books/{book_id} where stock_status shows\nstock=0 'out_of_stock'.\nTC-2103 Restock notification POST /api/books/{book_id}/notify 201 Created. Email sent when\nfor out-of-stock book restocked.\n2.3 Category & Filter (PRD 3.3, Spec 2.3)\nID Test Case Steps Expected Result Status\nTC-2201 Category tree GET /api/categories Returns hierarchical category\ntree (parent/child).\nTC-2202 Combined filters GET /api/books?category=IT&pri Results matching ALL filter\nce;_min=10000&min;_rating=4 conditions (AND logic).\n3. Order & Payment Tests\nRef: PRD Section 4, Functional Spec Section 3\n3.1 Cart (PRD 4.1, Spec 3.1)\nID Test Case Steps Expected Result Status\nTC-3001 Add to cart POST /api/cart/items {book_id, Item added. Cart total updated.\nquantity:1}\nTC-3002 Insufficient stock POST /api/cart/items {book_id, 409 Conflict. Stock insufficient.\nquantity:999} for book with\nstock=5\nTC-3003 Update quantity PATCH /api/cart/items/{item_id} Quantity updated. Subtotal\n{quantity:3} recalculated.\nTC-3004 Remove from cart DELETE /api/cart/items/{item_id} Item removed. Cart total\nupdated.\nTC-3005 Guest cart merge on Add items as guest, then login Guest cart items merged into\nlogin via POST /api/cart/merge member cart. Duplicate books\nhave quantities summed.\n3.2 Payment (PRD 4.2, Spec 3.2)\nID Test Case Steps Expected Result Status\nTC-3101 Credit card payment POST /api/orders Order created. Status: PAID.\n{payment_method: 'credit_card', Confirmation email sent. Stock\nshipping_address_id} decreased.\nTC-3102 Payment failure POST /api/orders with invalid Payment fails. Stock NOT\ncard decreased. Error returned.\nTC-3103 Saved addresses GET /api/addresses Returns up to 3 recent shipping\naddresses.\n3.3 Order Status (PRD 4.3, Spec 3.3)\nID Test Case Steps Expected Result Status\nTC-3201 Order cancel (PAID) POST /api/orders/{id}/cancel Order cancelled. Stock restored.\nwhen status=PAID Refund initiated.\nTC-3202 Cancel after shipping POST /api/orders/{id}/cancel 400 Bad Request. Cannot cancel\nwhen status=SHIPPING after shipping.\nTC-3203 Return request POST /api/orders/{id}/return Return request accepted.\nwithin 7 days of DELIVERED\nTC-3204 Late return POST /api/orders/{id}/return after 400 Bad Request. Return period\n7 days of DELIVERED expired.\nTC-3205 Status change Order status changes from PAID Email and push notification sent\nnotification to PREPARING to user.\n4. Review System Tests\nRef: PRD Section 5, Functional Spec Section 4\n4.1 Review CRUD (PRD 5.1, Spec 4.1)\nID Test Case Steps Expected Result Status\nTC-4001 Write review POST /api/books/{id}/reviews 201 Created. Review visible on\n{rating:5, content:'Great book...'} book detail.\n(20+ chars) after DELIVERED\nTC-4002 Review without POST /api/books/{id}/reviews for 403 Forbidden. Purchase\npurchase book not in DELIVERED orders required.\nTC-4003 Duplicate review POST /api/books/{id}/reviews for 409 Conflict. One review per\nbook already reviewed book.\nTC-4004 Edit review PATCH /api/books/{id}/reviews/{r Review updated. Modified\neview_id} {rating:4} timestamp recorded.\nTC-4005 Delete review DELETE /api/books/{id}/reviews/ 405 Not Allowed. Reviews\n{review_id} cannot be deleted (PRD 5.1\npolicy).\nTC-4006 Short review text POST /api/books/{id}/reviews 400 Bad Request. Minimum 20\n{content:'Good'} (< 20 chars) characters required.\n4.2 Review Display & Filtering (PRD 5.2, Spec 4.2)\nID Test Case Steps Expected Result Status\nTC-4101 Review list sort GET /api/books/{id}/reviews?sort Reviews sorted by highest rating\n=rating_high first.\nTC-4102 Rating stats in book GET /api/books/{id} Response includes\ndetail average_rating and\nrating_distribution (percentage\nper 1-5 stars).\nTC-4103 Profanity filter POST review containing Review saved with status\nprofanity PENDING_REVIEW. Not visible\nto other users. Added to admin\nreview queue.",
+      "file_size": 10845,
+      "uploaded_at": "2026-04-07T09:28:51.116833"
+    }
+  },
+  "requirements": {
+    "7b5e17b1-1d38-4198-9d3d-82b0464eee05": {
+      "id": "7b5e17b1-1d38-4198-9d3d-82b0464eee05",
+      "title": "BookFlow 온라인 서점 플랫폼 개요",
+      "original_text": "## 1. 개요\n\nBookFlow는 도서 검색, 주문, 리뷰를 통합 제공하는 온라인 서점 플랫폼이다. 사용자는 도서를 탐색하고 장바구니에 담아 결제할 수 있으며, 구매한 도서에 대해 리뷰를 작성할 수 있다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 29,
+        "char_end": 144
+      },
+      "display_label": "1. 개요",
+      "changed": false
+    },
+    "2848d842-4712-4e66-8f92-cc0ffd76abef": {
+      "id": "2848d842-4712-4e66-8f92-cc0ffd76abef",
+      "title": "회원가입 요구사항",
+      "original_text": "### 2.1 회원가입\n\n사용자는 이메일과 비밀번호로 회원가입할 수 있다. 비밀번호는 최소 8자 이상이어야 하며, 영문 대소문자와 숫자를 각각 1개 이상 포함해야 한다. 회원가입 시 이메일 인증을 완료해야 계정이 활성화된다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 160,
+        "char_end": 285
+      },
+      "display_label": "2.1 회원가입",
+      "changed": false
+    },
+    "11031b23-415b-4ab7-b025-1007df60de97": {
+      "id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "title": "로그인 및 세션 관리",
+      "original_text": "### 2.2 로그인 및 세션 관리\n\n사용자는 이메일과 비밀번호로 로그인한다. 로그인 성공 시 JWT 토큰을 발급하며, 액세스 토큰의 유효기간은 1시간, 리프레시 토큰의 유효기간은 7일이다. 5회 연속 로그인 실패 시 계정이 30분간 잠긴다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 287,
+        "char_end": 422
+      },
+      "display_label": "2.2 로그인 및 세션 관리",
+      "changed": false
+    },
+    "a1fc793b-2095-4dde-9de0-af105b79e1e9": {
+      "id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "title": "도서 검색 기능",
+      "original_text": "### 3.1 도서 검색\n\n사용자는 제목, 저자, ISBN으로 도서를 검색할 수 있다. 검색 결과는 관련도순, 출판일순, 가격순으로 정렬할 수 있다. 검색어 자동완성 기능을 제공하여 사용자가 빠르게 원하는 도서를 찾을 수 있도록 한다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 437,
+        "char_end": 568
+      },
+      "display_label": "3.1 도서 검색",
+      "changed": false
+    },
+    "fa66c256-bf14-4616-9270-2899b8770152": {
+      "id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "title": "도서 상세 페이지 표시 요구사항",
+      "original_text": "### 3.2 도서 상세 페이지\n\n도서 상세 페이지에는 제목, 저자, 출판사, 출판일, 가격, 재고 상태, 도서 설명, 독자 리뷰 목록이 표시된다. 재고가 0인 도서는 \"품절\" 상태로 표시되며, 사용자가 입고 알림을 신청할 수 있다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 570,
+        "char_end": 700
+      },
+      "display_label": "3.2 도서 상세 페이지",
+      "changed": false
+    },
+    "ee4b3b6a-7694-4191-8df3-aa52b42fd772": {
+      "id": "ee4b3b6a-7694-4191-8df3-aa52b42fd772",
+      "title": "카테고리 및 필터 기능",
+      "original_text": "### 3.3 카테고리 및 필터\n\n도서는 대분류(문학, 경영, IT, 자기계발 등)와 소분류로 분류된다. 사용자는 카테고리, 가격 범위, 출판일 범위, 평점 필터를 조합하여 도서를 탐색할 수 있다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 702,
+        "char_end": 812
+      },
+      "display_label": "3.3 카테고리 및 필터",
+      "changed": false
+    },
+    "6c4ee7bc-8090-4415-81f5-d3af533aa088": {
+      "id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "title": "장바구니 기능",
+      "original_text": "### 4.1 장바구니\n\n사용자는 도서를 장바구니에 추가, 수량 변경, 삭제할 수 있다. 장바구니에 담긴 도서의 재고가 부족해지면 사용자에게 알림을 표시한다. 비회원도 장바구니를 이용할 수 있으며, 로그인 시 비회원 장바구니가 회원 장바구니에 병합된다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 829,
+        "char_end": 970
+      },
+      "display_label": "4.1 장바구니",
+      "changed": false
+    },
+    "3cabe994-4abc-4bd9-a8f1-828eea3e17cf": {
+      "id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "title": "결제 프로세스 요구사항",
+      "original_text": "### 4.2 결제 프로세스\n\n결제는 신용카드, 간편결제(카카오페이, 네이버페이), 무통장입금을 지원한다. 주문 시 배송지 정보를 입력하며, 최근 배송지 3개를 저장하여 재사용할 수 있다. 결제 완료 후 주문 확인 이메일을 발송한다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 972,
+        "char_end": 1102
+      },
+      "display_label": "4.2 결제 프로세스",
+      "changed": false
+    },
+    "f932fa9e-b59f-4259-a062-706e5ab3421c": {
+      "id": "f932fa9e-b59f-4259-a062-706e5ab3421c",
+      "title": "주문 상태 관리",
+      "original_text": "### 4.3 주문 상태 관리\n\n주문 상태는 결제완료 → 배송준비 → 배송중 → 배송완료 순서로 변경된다. 결제완료 상태에서만 주문 취소가 가능하며, 배송완료 후 7일 이내에 반품을 신청할 수 있다. 각 상태 변경 시 사용자에게 이메일 또는 푸시 알림을 발송한다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 1104,
+        "char_end": 1251
+      },
+      "display_label": "4.3 주문 상태 관리",
+      "changed": false
+    },
+    "71119ef0-4748-433a-875f-dac54475730e": {
+      "id": "71119ef0-4748-433a-875f-dac54475730e",
+      "title": "리뷰 작성 요구사항",
+      "original_text": "### 5.1 리뷰 작성\n\n구매 확정된 도서에 대해서만 리뷰를 작성할 수 있다. 리뷰는 1~5점 평점과 텍스트로 구성되며, 텍스트는 최소 20자 이상이어야 한다. 한 사용자가 동일 도서에 대해 리뷰를 하나만 작성할 수 있으며, 작성 후 수정은 가능하지만 삭제 후 재작성은 불가하다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 1267,
+        "char_end": 1424
+      },
+      "display_label": "5.1 리뷰 작성",
+      "changed": false
+    },
+    "8a8d88d7-3819-4825-86a9-a5fa7137f000": {
+      "id": "8a8d88d7-3819-4825-86a9-a5fa7137f000",
+      "title": "리뷰 표시 및 정렬 기능",
+      "original_text": "### 5.2 리뷰 표시 및 정렬\n\n도서 상세 페이지에서 리뷰는 최신순, 평점 높은순, 평점 낮은순으로 정렬할 수 있다. 전체 평균 평점과 평점 분포(1~5점 각 비율)를 도서 상세 페이지 상단에 표시한다. 비속어가 포함된 리뷰는 자동으로 필터링되어 관리자 검토 대기 상태로 전환된다.",
+      "location": {
+        "document_id": "2e4398a0-9262-41f7-bc00-09873c7848d0",
+        "char_start": 1426,
+        "char_end": 1585
+      },
+      "display_label": "5.2 리뷰 표시 및 정렬",
+      "changed": false
+    },
+    "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0": {
+      "id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "title": "문서 개요 및 목적",
+      "original_text": "BookFlow 기능명세서\n본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다. 각 기능은 PRD의 해당 요구사항을 참조한다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 0,
+        "char_end": 85
+      },
+      "display_label": "문서 서두",
+      "changed": false
+    },
+    "45cb1229-bd6e-41d8-b076-72ea8e3d35f8": {
+      "id": "45cb1229-bd6e-41d8-b076-72ea8e3d35f8",
+      "title": "회원가입 API 기능 명세",
+      "original_text": "1.1 회원가입 API\nPRD 2.1 회원가입 요구사항을 구현한다.\n엔드포인트: POST /api/auth/register\n요청 필드: email (string, 필수), password (string, 필수, 최소 8자, 영문 대소문자+숫자 각 1개 이상), name (string, 필수)\n응답: 201 Created — 계정 생성 완료. 인증 이메일 발송. 409 Conflict — 이미 등록된 이메일.\n이메일 인증 플로우: 회원가입 시 인증 토큰이 포함된 링크를 이메일로 발송한다. 토큰 유효기간은 24시간이다. GET /api/auth/verify?token={token}으로 인증을 완료하면 계정이 활성화된다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 99,
+        "char_end": 447
+      },
+      "display_label": "1.1 회원가입 API",
+      "changed": false
+    },
+    "2cdf804e-6ec7-4290-a97a-28427ec24382": {
+      "id": "2cdf804e-6ec7-4290-a97a-28427ec24382",
+      "title": "로그인 및 토큰 관리 기능 명세",
+      "original_text": "1.2 로그인 및 토큰 관리\nPRD 2.2 로그인 및 세션 관리 요구사항을 구현한다.\n엔드포인트: POST /api/auth/login\n요청 필드: email (string), password (string)\n응답: 200 OK — { access_token, refresh_token, expires_in: 3600 }. 401 Unauthorized — 이메일 또는 비밀번호 불일치. 423 Locked — 5회 연속 실패로 계정 잠김 (30분).\n토큰 갱신: POST /api/auth/refresh. 리프레시 토큰으로 새 액세스 토큰을 발급한다. 리프레시 토큰 유효기간은 7일이다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 448,
+        "char_end": 777
+      },
+      "display_label": "1.2 로그인 및 토큰 관리",
+      "changed": false
+    },
+    "47040820-9d84-4434-836d-4de20f6ff3ba": {
+      "id": "47040820-9d84-4434-836d-4de20f6ff3ba",
+      "title": "통합 검색 API 기능 명세",
+      "original_text": "2.1 통합 검색 API\nPRD 3.1 도서 검색 요구사항을 구현한다.\n엔드포인트: GET /api/books/search?q={query}&sort={sort}&page={page}\nsort 파라미터: relevance (기본값), published_date, price_asc, price_desc\n응답: 페이지네이션된 결과 목록. 각 항목에 id, title, author, price, cover_image_url, average_rating 포함.\n자동완성: GET /api/books/autocomplete?q={query}. 입력 2자 이상부터 최대 5개 제안. 도서 제목과 저자명을 대상으로 한다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 790,
+        "char_end": 1132
+      },
+      "display_label": "2.1 통합 검색 API",
+      "changed": false
+    },
+    "792f0cbf-3c82-45ec-b27e-3e75fc67efda": {
+      "id": "792f0cbf-3c82-45ec-b27e-3e75fc67efda",
+      "title": "도서 상세 조회 기능 명세",
+      "original_text": "2.2 도서 상세 조회\nPRD 3.2 도서 상세 페이지 요구사항을 구현한다.\n엔드포인트: GET /api/books/{book_id}\n응답 필드: id, title, author, publisher, published_date, price, stock_status (재고있음/품절), description, reviews (페이지네이션된 리뷰 목록), average_rating, rating_distribution (각 평점별 비율)\n품절 시 입고 알림 신청: POST /api/books/{book_id}/notify. 입고 시 이메일 발송.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 1133,
+        "char_end": 1438
+      },
+      "display_label": "2.2 도서 상세 조회",
+      "changed": false
+    },
+    "1ddc3987-b7c6-451f-9c56-e84219307240": {
+      "id": "1ddc3987-b7c6-451f-9c56-e84219307240",
+      "title": "카테고리 및 필터 기능 명세",
+      "original_text": "2.3 카테고리 및 필터\nPRD 3.3 카테고리 및 필터 요구사항을 구현한다.\n카테고리 목록: GET /api/categories. 대분류/소분류 트리 구조로 반환.\n필터 검색: GET /api/books?category={id}&price_min={min}&price_max={max}&published_after={date}&published_before={date}&min_rating={rating}\n복합 필터: 모든 필터 파라미터는 AND 조건으로 조합된다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 1439,
+        "char_end": 1700
+      },
+      "display_label": "2.3 카테고리 및 필터",
+      "changed": false
+    },
+    "b7aa8f71-2231-40fb-9fc6-1df986f2e7b6": {
+      "id": "b7aa8f71-2231-40fb-9fc6-1df986f2e7b6",
+      "title": "장바구니 관리 기능 명세",
+      "original_text": "3.1 장바구니 관리\nPRD 4.1 장바구니 요구사항을 구현한다.\n장바구니 조회: GET /api/cart. 응답에 각 항목의 현재 재고 상태와 재고 부족 여부를 포함한다.\n항목 추가: POST /api/cart/items { book_id, quantity }. 재고가 부족하면 409 Conflict 반환.\n수량 변경: PATCH /api/cart/items/{item_id} { quantity }. 재고 초과 시 409 Conflict.\n항목 삭제: DELETE /api/cart/items/{item_id}\n비회원 장바구니: 세션 기반으로 장바구니를 유지한다. 로그인 시 POST /api/cart/merge를 호출하여 비회원 장바구니를 회원 장바구니에 병합한다. 동일 도서가 있으면 수량을 합산한다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 1715,
+        "char_end": 2112
+      },
+      "display_label": "3.1 장바구니 관리",
+      "changed": false
+    },
+    "b4783559-47ec-4fca-8dbd-b25a2fc0d1f0": {
+      "id": "b4783559-47ec-4fca-8dbd-b25a2fc0d1f0",
+      "title": "결제 처리 기능 명세",
+      "original_text": "3.2 결제 처리\nPRD 4.2 결제 프로세스 요구사항을 구현한다.\n주문 생성: POST /api/orders. 요청 필드: payment_method (credit_card | kakao_pay | naver_pay | bank_transfer), shipping_address_id 또는 새 배송지 정보.\n결제 처리 플로우: 재고 확인 → 결제 대행사 연동 → 결제 완료 → 재고 차감 → 주문 확인 이메일 발송. 결제 실패 시 재고는 차감하지 않는다.\n배송지 관리: GET /api/addresses — 최근 3개 배송지 목록. POST /api/addresses — 새 배송지 등록. 변경/삭제도 지원.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 2113,
+        "char_end": 2454
+      },
+      "display_label": "3.2 결제 처리",
+      "changed": false
+    },
+    "5f0db31b-45dc-4519-9972-27009687fb99": {
+      "id": "5f0db31b-45dc-4519-9972-27009687fb99",
+      "title": "주문 상태 및 취소/반품 기능 명세",
+      "original_text": "3.3 주문 상태 및 취소/반품\nPRD 4.3 주문 상태 관리 요구사항을 구현한다.\n주문 목록: GET /api/orders. 주문 상세: GET /api/orders/{order_id}. 상태 필드에 current_status와 status_history(각 변경 시각 포함) 포함.\n주문 취소: POST /api/orders/{order_id}/cancel. current_status가 PAID인 경우에만 허용. 취소 시 재고 복원 및 환불 처리.\n반품 신청: POST /api/orders/{order_id}/return. current_status가 DELIVERED이고 배송완료일로부터 7일 이내인 경우에만 허용.\n상태 변경 알림: 주문 상태가 변경될 때마다 사용자에게 이메일과 푸시 알림을 발송한다. 알림 발송은 비동기 큐로 처리하여 주문 처리 성능에 영향을 주지 않는다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 2455,
+        "char_end": 2894
+      },
+      "display_label": "3.3 주문 상태 및 취소/반품",
+      "changed": false
+    },
+    "6389f232-ffd5-4083-9f49-401d53849fa8": {
+      "id": "6389f232-ffd5-4083-9f49-401d53849fa8",
+      "title": "리뷰 CRUD 기능 명세",
+      "original_text": "4.1 리뷰 CRUD\nPRD 5.1 리뷰 작성 요구사항을 구현한다.\n리뷰 작성: POST /api/books/{book_id}/reviews. 요청 필드: rating (1–5 정수), content (string, 최소 20자). 전제조건: 해당 도서의 주문 상태가 DELIVERED이어야 한다 (PRD 5.1: 구매 확정된 도서에 대해서만). 409 Conflict — 이미 리뷰 존재.\n리뷰 수정: PATCH /api/books/{book_id}/reviews/{review_id}. rating과 content 변경 가능. 수정 시간 기록.\n리뷰 삭제: 불가. 사용자는 리뷰를 삭제할 수 없다. 삭제 후 재작성 방지 정책(PRD 5.1).",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 2904,
+        "char_end": 3265
+      },
+      "display_label": "4.1 리뷰 CRUD",
+      "changed": false
+    },
+    "dcc71f10-5ab0-4f0b-9541-e5e35668d8e0": {
+      "id": "dcc71f10-5ab0-4f0b-9541-e5e35668d8e0",
+      "title": "리뷰 표시 및 필터링 기능 명세",
+      "original_text": "4.2 리뷰 표시 및 필터링\nPRD 5.2 리뷰 표시 및 정렬 요구사항을 구현한다.\n리뷰 목록: GET /api/books/{book_id}/reviews?sort={sort}&page={page}. sort 파라미터: latest (기본값), rating_high, rating_low.\n평점 통계: 도서 상세 API(GET /api/books/{book_id}) 응답에 average_rating과 rating_distribution 필드로 포함된다.\n비속어 필터링: 리뷰 작성/수정 시 비속어 필터를 적용한다. 비속어가 감지되면 리뷰 상태를 PENDING_REVIEW로 설정하고 관리자 검토 대기 목록에 추가한다. 관리자 승인 전까지 해당 리뷰는 다른 사용자에게 보이지 않는다.",
+      "location": {
+        "document_id": "cfef43c9-eee0-4267-a48f-8216991cbb03",
+        "char_start": 3266,
+        "char_end": 3648
+      },
+      "display_label": "4.2 리뷰 표시 및 필터링",
+      "changed": false
+    },
+    "669b40f0-3f0d-4c68-8f9c-bba0c45a3109": {
+      "id": "669b40f0-3f0d-4c68-8f9c-bba0c45a3109",
+      "title": "User Authentication Tests Overview",
+      "original_text": "1. User Authentication Tests\nRef: PRD Section 2, Functional Spec Section 1",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 70,
+        "char_end": 144
+      },
+      "display_label": "Section 1: User Authentication Tests",
+      "changed": false
+    },
+    "b9484168-4a11-4811-8f21-da2baec2dc85": {
+      "id": "b9484168-4a11-4811-8f21-da2baec2dc85",
+      "title": "Registration Test Cases",
+      "original_text": "1.1 Registration (PRD 2.1, Spec 1.1)\nID Test Case Steps Expected Result Status\nTC-1001 Valid registration POST /api/auth/register with 201 Created. Verification email\nvalid email, password (8+ chars, sent.\nupper+lower+digit), name\nTC-1002 Weak password POST /api/auth/register with 400 Bad Request. Error\nrejected password 'abc' (too short, no message specifies password\nuppercase/digit) requirements.\nTC-1003 Duplicate email POST /api/auth/register with 409 Conflict. Error indicates\nalready registered email email exists.\nTC-1004 Email verification GET /api/auth/verify?token={vali Account activated. Login now\nd_token} within 24 hours possible.\nTC-1005 Expired verification GET 400 Bad Request. Token\ntoken /api/auth/verify?token={token} expired.\nafter 24 hours",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 145,
+        "char_end": 909
+      },
+      "display_label": "Section 1.1: Registration",
+      "changed": false
+    },
+    "e0501065-d717-4c3d-aecb-2ee19c06948c": {
+      "id": "e0501065-d717-4c3d-aecb-2ee19c06948c",
+      "title": "Login and Session Test Cases",
+      "original_text": "1.2 Login & Session (PRD 2.2, Spec 1.2)\nID Test Case Steps Expected Result Status\nTC-1101 Successful login POST /api/auth/login with correct 200 OK. access_token (1hr) and\ncredentials refresh_token (7d) returned.\nTC-1102 Wrong password POST /api/auth/login with wrong 401 Unauthorized.\npassword\nTC-1103 Account lockout POST /api/auth/login with wrong 423 Locked. Account locked for\npassword 5 times consecutively 30 minutes.\nTC-1104 Token refresh POST /api/auth/refresh with valid New access_token issued.\nrefresh_token\nTC-1105 Expired access token API call with expired 401 Unauthorized. Client should\naccess_token use refresh token.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 910,
+        "char_end": 1544
+      },
+      "display_label": "Section 1.2: Login & Session",
+      "changed": false
+    },
+    "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3": {
+      "id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "title": "Book Search and Display Tests Overview",
+      "original_text": "2. Book Search & Display Tests\nRef: PRD Section 3, Functional Spec Section 2",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 1545,
+        "char_end": 1621
+      },
+      "display_label": "Section 2: Book Search & Display Tests",
+      "changed": false
+    },
+    "cc32c2aa-a88c-45d8-a5b5-347f83306a3b": {
+      "id": "cc32c2aa-a88c-45d8-a5b5-347f83306a3b",
+      "title": "Search Test Cases",
+      "original_text": "2.1 Search (PRD 3.1, Spec 2.1)\nID Test Case Steps Expected Result Status\nTC-2001 Search by title GET Results containing 'Python' in\n/api/books/search?q=Python title. Sorted by relevance.\nTC-2002 Sort by price GET /api/books/search?q=Java& Results sorted by price\nsort;=price_asc ascending.\nTC-2003 Autocomplete GET Max 5 suggestions from titles\n/api/books/autocomplete?q=Py and authors.\n(2+ chars)\nTC-2004 Empty search GET /api/books/search?q= 400 Bad Request or empty result\n(empty query) set.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 1622,
+        "char_end": 2116
+      },
+      "display_label": "Section 2.1: Search",
+      "changed": false
+    },
+    "f4324e2c-887a-4d44-8434-b313db21a75f": {
+      "id": "f4324e2c-887a-4d44-8434-b313db21a75f",
+      "title": "Book Detail View Test Cases",
+      "original_text": "2.2 Book Detail (PRD 3.2, Spec 2.2)\nID Test Case Steps Expected Result Status\nTC-2101 Book detail view GET /api/books/{book_id} Returns title, author, publisher,\nprice, stock_status, description,\nreviews, average_rating,\nrating_distribution.\nTC-2102 Out of stock display GET /api/books/{book_id} where stock_status shows\nstock=0 'out_of_stock'.\nTC-2103 Restock notification POST /api/books/{book_id}/notify 201 Created. Email sent when\nfor out-of-stock book restocked.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 2117,
+        "char_end": 2585
+      },
+      "display_label": "Section 2.2: Book Detail",
+      "changed": false
+    },
+    "bc34eb85-1b72-4d64-9a0e-bc7031f8a8ee": {
+      "id": "bc34eb85-1b72-4d64-9a0e-bc7031f8a8ee",
+      "title": "Category and Filter Test Cases",
+      "original_text": "2.3 Category & Filter (PRD 3.3, Spec 2.3)\nID Test Case Steps Expected Result Status\nTC-2201 Category tree GET /api/categories Returns hierarchical category\ntree (parent/child).\nTC-2202 Combined filters GET /api/books?category=IT&pri Results matching ALL filter\nce;_min=10000&min;_rating=4 conditions (AND logic).",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 2586,
+        "char_end": 2898
+      },
+      "display_label": "Section 2.3: Category & Filter",
+      "changed": false
+    },
+    "3d2452ee-289d-4668-bf70-ba9466d0b933": {
+      "id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "title": "Order and Payment Tests Overview",
+      "original_text": "3. Order & Payment Tests\nRef: PRD Section 4, Functional Spec Section 3",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 2899,
+        "char_end": 2969
+      },
+      "display_label": "Section 3: Order & Payment Tests",
+      "changed": false
+    },
+    "f39d5955-05a2-4295-a072-bd6cd3098b58": {
+      "id": "f39d5955-05a2-4295-a072-bd6cd3098b58",
+      "title": "Shopping Cart Test Cases",
+      "original_text": "3.1 Cart (PRD 4.1, Spec 3.1)\nID Test Case Steps Expected Result Status\nTC-3001 Add to cart POST /api/cart/items {book_id, Item added. Cart total updated.\nquantity:1}\nTC-3002 Insufficient stock POST /api/cart/items {book_id, 409 Conflict. Stock insufficient.\nquantity:999} for book with\nstock=5\nTC-3003 Update quantity PATCH /api/cart/items/{item_id} Quantity updated. Subtotal\n{quantity:3} recalculated.\nTC-3004 Remove from cart DELETE /api/cart/items/{item_id} Item removed. Cart total\nupdated.\nTC-3005 Guest cart merge on Add items as guest, then login Guest cart items merged into\nlogin via POST /api/cart/merge member cart. Duplicate books\nhave quantities summed.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 2970,
+        "char_end": 3637
+      },
+      "display_label": "Section 3.1: Cart",
+      "changed": false
+    },
+    "330e3853-4cb0-49f1-81de-3ece5eeab3ca": {
+      "id": "330e3853-4cb0-49f1-81de-3ece5eeab3ca",
+      "title": "Payment Processing Test Cases",
+      "original_text": "3.2 Payment (PRD 4.2, Spec 3.2)\nID Test Case Steps Expected Result Status\nTC-3101 Credit card payment POST /api/orders Order created. Status: PAID.\n{payment_method: 'credit_card', Confirmation email sent. Stock\nshipping_address_id} decreased.\nTC-3102 Payment failure POST /api/orders with invalid Payment fails. Stock NOT\ncard decreased. Error returned.\nTC-3103 Saved addresses GET /api/addresses Returns up to 3 recent shipping\naddresses.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 3638,
+        "char_end": 4077
+      },
+      "display_label": "Section 3.2: Payment",
+      "changed": false
+    },
+    "4656d2b8-64c7-4cb2-84ac-cf64a7b933c7": {
+      "id": "4656d2b8-64c7-4cb2-84ac-cf64a7b933c7",
+      "title": "Order Status Management Test Cases",
+      "original_text": "3.3 Order Status (PRD 4.3, Spec 3.3)\nID Test Case Steps Expected Result Status\nTC-3201 Order cancel (PAID) POST /api/orders/{id}/cancel Order cancelled. Stock restored.\nwhen status=PAID Refund initiated.\nTC-3202 Cancel after shipping POST /api/orders/{id}/cancel 400 Bad Request. Cannot cancel\nwhen status=SHIPPING after shipping.\nTC-3203 Return request POST /api/orders/{id}/return Return request accepted.\nwithin 7 days of DELIVERED\nTC-3204 Late return POST /api/orders/{id}/return after 400 Bad Request. Return period\n7 days of DELIVERED expired.\nTC-3205 Status change Order status changes from PAID Email and push notification sent\nnotification to PREPARING to user.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 4078,
+        "char_end": 4748
+      },
+      "display_label": "Section 3.3: Order Status",
+      "changed": false
+    },
+    "e699839c-e9bf-4dc1-9181-7a16334ff703": {
+      "id": "e699839c-e9bf-4dc1-9181-7a16334ff703",
+      "title": "Review System Tests Overview",
+      "original_text": "4. Review System Tests\nRef: PRD Section 5, Functional Spec Section 4",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 4749,
+        "char_end": 4817
+      },
+      "display_label": "Section 4: Review System Tests",
+      "changed": false
+    },
+    "374ed650-aa5c-46c8-b714-d3408ebbd8df": {
+      "id": "374ed650-aa5c-46c8-b714-d3408ebbd8df",
+      "title": "Review CRUD Operations Test Cases",
+      "original_text": "4.1 Review CRUD (PRD 5.1, Spec 4.1)\nID Test Case Steps Expected Result Status\nTC-4001 Write review POST /api/books/{id}/reviews 201 Created. Review visible on\n{rating:5, content:'Great book...'} book detail.\n(20+ chars) after DELIVERED\nTC-4002 Review without POST /api/books/{id}/reviews for 403 Forbidden. Purchase\npurchase book not in DELIVERED orders required.\nTC-4003 Duplicate review POST /api/books/{id}/reviews for 409 Conflict. One review per\nbook already reviewed book.\nTC-4004 Edit review PATCH /api/books/{id}/reviews/{r Review updated. Modified\neview_id} {rating:4} timestamp recorded.\nTC-4005 Delete review DELETE /api/books/{id}/reviews/ 405 Not Allowed. Reviews\n{review_id} cannot be deleted (PRD 5.1\npolicy).\nTC-4006 Short review text POST /api/books/{id}/reviews 400 Bad Request. Minimum 20\n{content:'Good'} (< 20 chars) characters required.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 4818,
+        "char_end": 5676
+      },
+      "display_label": "Section 4.1: Review CRUD",
+      "changed": false
+    },
+    "d06c943c-b443-4b5e-897f-46ef6c3cb9f2": {
+      "id": "d06c943c-b443-4b5e-897f-46ef6c3cb9f2",
+      "title": "Review Display and Filtering Test Cases",
+      "original_text": "4.2 Review Display & Filtering (PRD 5.2, Spec 4.2)\nID Test Case Steps Expected Result Status\nTC-4101 Review list sort GET /api/books/{id}/reviews?sort Reviews sorted by highest rating\n=rating_high first.\nTC-4102 Rating stats in book GET /api/books/{id} Response includes\ndetail average_rating and\nrating_distribution (percentage\nper 1-5 stars).\nTC-4103 Profanity filter POST review containing Review saved with status\nprofanity PENDING_REVIEW. Not visible\nto other users. Added to admin\nreview queue.",
+      "location": {
+        "document_id": "457f328e-dcf1-427a-82f5-f260c8832e94",
+        "char_start": 5677,
+        "char_end": 6177
+      },
+      "display_label": "Section 4.2: Review Display & Filtering",
+      "changed": false
+    }
+  },
+  "edges": {
+    "d92c3f0d-3d3b-48f4-9001-2369d5e69911": {
+      "id": "d92c3f0d-3d3b-48f4-9001-2369d5e69911",
+      "source_id": "2848d842-4712-4e66-8f92-cc0ffd76abef",
+      "target_id": "7b5e17b1-1d38-4198-9d3d-82b0464eee05",
+      "relation_type": "depends_on",
+      "evidence": "회원가입 요구사항은 BookFlow 온라인 서점 플랫폼의 핵심 기능 중 하나",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "a0707891-bf6c-46c2-8a97-939c7be5340b": {
+      "id": "a0707891-bf6c-46c2-8a97-939c7be5340b",
+      "source_id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "target_id": "2848d842-4712-4e66-8f92-cc0ffd76abef",
+      "relation_type": "depends_on",
+      "evidence": "로그인하려면 먼저 회원가입을 통해 계정이 생성되어야 함",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "2e170ac3-6dcd-4f6f-b220-f504a2330ea5": {
+      "id": "2e170ac3-6dcd-4f6f-b220-f504a2330ea5",
+      "source_id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "target_id": "7b5e17b1-1d38-4198-9d3d-82b0464eee05",
+      "relation_type": "depends_on",
+      "evidence": "도서 검색은 BookFlow 플랫폼의 핵심 기능",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "754aaff2-767c-4814-9914-7da39abffc5e": {
+      "id": "754aaff2-767c-4814-9914-7da39abffc5e",
+      "source_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "target_id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "relation_type": "depends_on",
+      "evidence": "도서 상세 페이지에는 독자 리뷰 목록이 표시된다",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "522b3c35-c5b0-4928-ba7f-405b859ba044": {
+      "id": "522b3c35-c5b0-4928-ba7f-405b859ba044",
+      "source_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "target_id": "8a8d88d7-3819-4825-86a9-a5fa7137f000",
+      "relation_type": "depends_on",
+      "evidence": "도서 상세 페이지에 독자 리뷰 목록이 표시되며, 리뷰 표시 기능이 필요",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "2c6c698e-efbf-4d0e-a8b7-cd74159b6929": {
+      "id": "2c6c698e-efbf-4d0e-a8b7-cd74159b6929",
+      "source_id": "ee4b3b6a-7694-4191-8df3-aa52b42fd772",
+      "target_id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "relation_type": "related_to",
+      "evidence": "카테고리 및 필터는 도서 검색과 함께 도서를 탐색하는 기능",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "04af820f-b149-4d9d-86bc-8e803b7e2c70": {
+      "id": "04af820f-b149-4d9d-86bc-8e803b7e2c70",
+      "source_id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "target_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "relation_type": "depends_on",
+      "evidence": "장바구니에 담긴 도서의 재고가 부족해지면 알림을 표시하며, 재고 상태는 도서 상세 페이지에 표시됨",
+      "confidence": 0.8,
+      "status": "approved"
+    },
+    "03bb0a0d-60cc-42a9-97db-169969bf216a": {
+      "id": "03bb0a0d-60cc-42a9-97db-169969bf216a",
+      "source_id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "target_id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "relation_type": "depends_on",
+      "evidence": "결제는 장바구니에 담긴 도서를 주문하는 프로세스",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "2ae30d93-3cba-4b26-892a-6113ee899fd9": {
+      "id": "2ae30d93-3cba-4b26-892a-6113ee899fd9",
+      "source_id": "f932fa9e-b59f-4259-a062-706e5ab3421c",
+      "target_id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "relation_type": "depends_on",
+      "evidence": "주문 상태는 결제완료 → 배송준비 → 배송중 → 배송완료 순서로 변경되며, 결제 프로세스 완료 후 시작됨",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "cd28338a-e56f-43a0-9ef0-7b79703e0868": {
+      "id": "cd28338a-e56f-43a0-9ef0-7b79703e0868",
+      "source_id": "71119ef0-4748-433a-875f-dac54475730e",
+      "target_id": "f932fa9e-b59f-4259-a062-706e5ab3421c",
+      "relation_type": "depends_on",
+      "evidence": "구매 확정된 도서에 대해서만 리뷰를 작성할 수 있으며, 구매 확정은 주문 상태 관리의 일부",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "6d8f1153-2302-4dcd-8251-a2243cc60083": {
+      "id": "6d8f1153-2302-4dcd-8251-a2243cc60083",
+      "source_id": "8a8d88d7-3819-4825-86a9-a5fa7137f000",
+      "target_id": "71119ef0-4748-433a-875f-dac54475730e",
+      "relation_type": "depends_on",
+      "evidence": "리뷰 표시 및 정렬은 작성된 리뷰를 보여주는 기능",
+      "confidence": 0.95,
+      "status": "approved"
+    },
+    "a8eb94f1-d7d0-40fe-8115-c14227b451a3": {
+      "id": "a8eb94f1-d7d0-40fe-8115-c14227b451a3",
+      "source_id": "45cb1229-bd6e-41d8-b076-72ea8e3d35f8",
+      "target_id": "2848d842-4712-4e66-8f92-cc0ffd76abef",
+      "relation_type": "depends_on",
+      "evidence": "PRD 2.1 회원가입 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "fb074cf0-566c-4c17-a3eb-b5b3cc41fc16": {
+      "id": "fb074cf0-566c-4c17-a3eb-b5b3cc41fc16",
+      "source_id": "45cb1229-bd6e-41d8-b076-72ea8e3d35f8",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "a1955b91-1b92-48bf-b3dc-1a5c73652cf3": {
+      "id": "a1955b91-1b92-48bf-b3dc-1a5c73652cf3",
+      "source_id": "2cdf804e-6ec7-4290-a97a-28427ec24382",
+      "target_id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "relation_type": "depends_on",
+      "evidence": "PRD 2.2 로그인 및 세션 관리 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "2abb8871-e568-46fc-ab31-f42c0a7b3030": {
+      "id": "2abb8871-e568-46fc-ab31-f42c0a7b3030",
+      "source_id": "2cdf804e-6ec7-4290-a97a-28427ec24382",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "6e42ea8f-0fc1-4117-8ad6-c42d925a6e99": {
+      "id": "6e42ea8f-0fc1-4117-8ad6-c42d925a6e99",
+      "source_id": "47040820-9d84-4434-836d-4de20f6ff3ba",
+      "target_id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "relation_type": "depends_on",
+      "evidence": "PRD 3.1 도서 검색 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "e714d946-fff6-4810-b875-69ae4bb3fc22": {
+      "id": "e714d946-fff6-4810-b875-69ae4bb3fc22",
+      "source_id": "47040820-9d84-4434-836d-4de20f6ff3ba",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "d75e3487-2f5f-4500-b651-5fc501bf635a": {
+      "id": "d75e3487-2f5f-4500-b651-5fc501bf635a",
+      "source_id": "792f0cbf-3c82-45ec-b27e-3e75fc67efda",
+      "target_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "relation_type": "depends_on",
+      "evidence": "PRD 3.2 도서 상세 페이지 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "52cd31cb-5ad4-4c7c-be57-a04f986eaf94": {
+      "id": "52cd31cb-5ad4-4c7c-be57-a04f986eaf94",
+      "source_id": "792f0cbf-3c82-45ec-b27e-3e75fc67efda",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "d6574c82-3087-4771-94f4-dbccd5a7ac0a": {
+      "id": "d6574c82-3087-4771-94f4-dbccd5a7ac0a",
+      "source_id": "1ddc3987-b7c6-451f-9c56-e84219307240",
+      "target_id": "ee4b3b6a-7694-4191-8df3-aa52b42fd772",
+      "relation_type": "depends_on",
+      "evidence": "PRD 3.3 카테고리 및 필터 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "2987a5a3-c465-48a7-9451-beda66387bee": {
+      "id": "2987a5a3-c465-48a7-9451-beda66387bee",
+      "source_id": "1ddc3987-b7c6-451f-9c56-e84219307240",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "fd9e88ae-7b84-4efd-89ff-8f030b35c0a4": {
+      "id": "fd9e88ae-7b84-4efd-89ff-8f030b35c0a4",
+      "source_id": "b7aa8f71-2231-40fb-9fc6-1df986f2e7b6",
+      "target_id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "relation_type": "depends_on",
+      "evidence": "PRD 4.1 장바구니 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "98ad9e8a-0a58-4a3a-9f03-c12836a7b101": {
+      "id": "98ad9e8a-0a58-4a3a-9f03-c12836a7b101",
+      "source_id": "b7aa8f71-2231-40fb-9fc6-1df986f2e7b6",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "0f6df231-7a14-4641-86b5-89ff2bc53cb7": {
+      "id": "0f6df231-7a14-4641-86b5-89ff2bc53cb7",
+      "source_id": "b4783559-47ec-4fca-8dbd-b25a2fc0d1f0",
+      "target_id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "relation_type": "depends_on",
+      "evidence": "PRD 4.2 결제 프로세스 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "897834f8-69d5-4d5f-a333-37a3fe236252": {
+      "id": "897834f8-69d5-4d5f-a333-37a3fe236252",
+      "source_id": "b4783559-47ec-4fca-8dbd-b25a2fc0d1f0",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "876ae90d-4ecd-4be3-bd2e-74f5682d6d18": {
+      "id": "876ae90d-4ecd-4be3-bd2e-74f5682d6d18",
+      "source_id": "5f0db31b-45dc-4519-9972-27009687fb99",
+      "target_id": "f932fa9e-b59f-4259-a062-706e5ab3421c",
+      "relation_type": "depends_on",
+      "evidence": "PRD 4.3 주문 상태 관리 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "b73c0c00-a3a3-4d25-a831-4461a4aafe4e": {
+      "id": "b73c0c00-a3a3-4d25-a831-4461a4aafe4e",
+      "source_id": "5f0db31b-45dc-4519-9972-27009687fb99",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "6d491084-cb23-4993-b553-2cf09a6c5a2d": {
+      "id": "6d491084-cb23-4993-b553-2cf09a6c5a2d",
+      "source_id": "6389f232-ffd5-4083-9f49-401d53849fa8",
+      "target_id": "71119ef0-4748-433a-875f-dac54475730e",
+      "relation_type": "depends_on",
+      "evidence": "PRD 5.1 리뷰 작성 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "8de98239-9a72-493b-bd62-1bb21b5b0987": {
+      "id": "8de98239-9a72-493b-bd62-1bb21b5b0987",
+      "source_id": "6389f232-ffd5-4083-9f49-401d53849fa8",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "27c507eb-47e9-4c26-b93f-c6d460582f5c": {
+      "id": "27c507eb-47e9-4c26-b93f-c6d460582f5c",
+      "source_id": "dcc71f10-5ab0-4f0b-9541-e5e35668d8e0",
+      "target_id": "8a8d88d7-3819-4825-86a9-a5fa7137f000",
+      "relation_type": "depends_on",
+      "evidence": "PRD 5.2 리뷰 표시 및 정렬 요구사항을 구현한다",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "e162b46a-e944-49a1-a267-a77905553848": {
+      "id": "e162b46a-e944-49a1-a267-a77905553848",
+      "source_id": "dcc71f10-5ab0-4f0b-9541-e5e35668d8e0",
+      "target_id": "b9c355dc-7206-4f7c-b91e-7fd2754c3bd0",
+      "relation_type": "depends_on",
+      "evidence": "본 문서는 BookFlow PRD의 요구사항을 구체적인 기능 수준으로 명세한다",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "3155f9d5-2674-43c4-af48-3a2589417f71": {
+      "id": "3155f9d5-2674-43c4-af48-3a2589417f71",
+      "source_id": "b9484168-4a11-4811-8f21-da2baec2dc85",
+      "target_id": "2848d842-4712-4e66-8f92-cc0ffd76abef",
+      "relation_type": "depends_on",
+      "evidence": "1.1 Registration (PRD 2.1, Spec 1.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "78695175-d1d7-4ce0-ab68-73c7bfe6def4": {
+      "id": "78695175-d1d7-4ce0-ab68-73c7bfe6def4",
+      "source_id": "b9484168-4a11-4811-8f21-da2baec2dc85",
+      "target_id": "45cb1229-bd6e-41d8-b076-72ea8e3d35f8",
+      "relation_type": "depends_on",
+      "evidence": "1.1 Registration (PRD 2.1, Spec 1.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "4fbc812d-2cc8-4116-82fc-8db466334140": {
+      "id": "4fbc812d-2cc8-4116-82fc-8db466334140",
+      "source_id": "b9484168-4a11-4811-8f21-da2baec2dc85",
+      "target_id": "669b40f0-3f0d-4c68-8f9c-bba0c45a3109",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 2, Functional Spec Section 1",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "1d1976c9-fd8a-42ff-b2b6-254c6eb9d48c": {
+      "id": "1d1976c9-fd8a-42ff-b2b6-254c6eb9d48c",
+      "source_id": "e0501065-d717-4c3d-aecb-2ee19c06948c",
+      "target_id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "relation_type": "depends_on",
+      "evidence": "1.2 Login & Session (PRD 2.2, Spec 1.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "02eadf8a-8734-4e90-88fb-7590a5731308": {
+      "id": "02eadf8a-8734-4e90-88fb-7590a5731308",
+      "source_id": "e0501065-d717-4c3d-aecb-2ee19c06948c",
+      "target_id": "2cdf804e-6ec7-4290-a97a-28427ec24382",
+      "relation_type": "depends_on",
+      "evidence": "1.2 Login & Session (PRD 2.2, Spec 1.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "c203c7fd-6380-4627-bcb7-42258188b1a4": {
+      "id": "c203c7fd-6380-4627-bcb7-42258188b1a4",
+      "source_id": "e0501065-d717-4c3d-aecb-2ee19c06948c",
+      "target_id": "669b40f0-3f0d-4c68-8f9c-bba0c45a3109",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 2, Functional Spec Section 1",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "eaa572ec-ab16-4656-9fd1-ccb30a65fa89": {
+      "id": "eaa572ec-ab16-4656-9fd1-ccb30a65fa89",
+      "source_id": "cc32c2aa-a88c-45d8-a5b5-347f83306a3b",
+      "target_id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "relation_type": "depends_on",
+      "evidence": "2.1 Search (PRD 3.1, Spec 2.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "6afbef87-1ded-4270-b491-327f7c2721c4": {
+      "id": "6afbef87-1ded-4270-b491-327f7c2721c4",
+      "source_id": "cc32c2aa-a88c-45d8-a5b5-347f83306a3b",
+      "target_id": "47040820-9d84-4434-836d-4de20f6ff3ba",
+      "relation_type": "depends_on",
+      "evidence": "2.1 Search (PRD 3.1, Spec 2.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "6db4ceea-3e5e-4658-bcb7-bed1e064ea22": {
+      "id": "6db4ceea-3e5e-4658-bcb7-bed1e064ea22",
+      "source_id": "cc32c2aa-a88c-45d8-a5b5-347f83306a3b",
+      "target_id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 3, Functional Spec Section 2",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "762bb508-912b-4131-be12-26b5436bf20e": {
+      "id": "762bb508-912b-4131-be12-26b5436bf20e",
+      "source_id": "f4324e2c-887a-4d44-8434-b313db21a75f",
+      "target_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "relation_type": "depends_on",
+      "evidence": "2.2 Book Detail (PRD 3.2, Spec 2.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "b5f4a44d-2d2a-4973-a90c-e023384a1456": {
+      "id": "b5f4a44d-2d2a-4973-a90c-e023384a1456",
+      "source_id": "f4324e2c-887a-4d44-8434-b313db21a75f",
+      "target_id": "792f0cbf-3c82-45ec-b27e-3e75fc67efda",
+      "relation_type": "depends_on",
+      "evidence": "2.2 Book Detail (PRD 3.2, Spec 2.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "4af866e1-9c93-4320-93ad-0351107c8a99": {
+      "id": "4af866e1-9c93-4320-93ad-0351107c8a99",
+      "source_id": "f4324e2c-887a-4d44-8434-b313db21a75f",
+      "target_id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 3, Functional Spec Section 2",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "079efe46-8ee8-485a-b467-4b2909bc84fa": {
+      "id": "079efe46-8ee8-485a-b467-4b2909bc84fa",
+      "source_id": "bc34eb85-1b72-4d64-9a0e-bc7031f8a8ee",
+      "target_id": "ee4b3b6a-7694-4191-8df3-aa52b42fd772",
+      "relation_type": "depends_on",
+      "evidence": "2.3 Category & Filter (PRD 3.3, Spec 2.3)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "3421ff0a-299f-4d68-93c5-ad547bb3a9c7": {
+      "id": "3421ff0a-299f-4d68-93c5-ad547bb3a9c7",
+      "source_id": "bc34eb85-1b72-4d64-9a0e-bc7031f8a8ee",
+      "target_id": "1ddc3987-b7c6-451f-9c56-e84219307240",
+      "relation_type": "depends_on",
+      "evidence": "2.3 Category & Filter (PRD 3.3, Spec 2.3)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "f7e36dc0-49d1-47ba-9ad9-4eaecc91240e": {
+      "id": "f7e36dc0-49d1-47ba-9ad9-4eaecc91240e",
+      "source_id": "bc34eb85-1b72-4d64-9a0e-bc7031f8a8ee",
+      "target_id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 3, Functional Spec Section 2",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "b3de75f5-6929-4348-9127-337712e883bf": {
+      "id": "b3de75f5-6929-4348-9127-337712e883bf",
+      "source_id": "f39d5955-05a2-4295-a072-bd6cd3098b58",
+      "target_id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "relation_type": "depends_on",
+      "evidence": "3.1 Cart (PRD 4.1, Spec 3.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "02ad343c-0b35-4f82-9f13-7057f6632874": {
+      "id": "02ad343c-0b35-4f82-9f13-7057f6632874",
+      "source_id": "f39d5955-05a2-4295-a072-bd6cd3098b58",
+      "target_id": "b7aa8f71-2231-40fb-9fc6-1df986f2e7b6",
+      "relation_type": "depends_on",
+      "evidence": "3.1 Cart (PRD 4.1, Spec 3.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "aeb9f919-b0a2-4d99-86e6-c9cf87cefaac": {
+      "id": "aeb9f919-b0a2-4d99-86e6-c9cf87cefaac",
+      "source_id": "f39d5955-05a2-4295-a072-bd6cd3098b58",
+      "target_id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 4, Functional Spec Section 3",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "8276d11f-74a1-4cf8-aa41-5a113b52a2a8": {
+      "id": "8276d11f-74a1-4cf8-aa41-5a113b52a2a8",
+      "source_id": "330e3853-4cb0-49f1-81de-3ece5eeab3ca",
+      "target_id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "relation_type": "depends_on",
+      "evidence": "3.2 Payment (PRD 4.2, Spec 3.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "7e631453-b430-422b-bc87-6656cc35b5b0": {
+      "id": "7e631453-b430-422b-bc87-6656cc35b5b0",
+      "source_id": "330e3853-4cb0-49f1-81de-3ece5eeab3ca",
+      "target_id": "b4783559-47ec-4fca-8dbd-b25a2fc0d1f0",
+      "relation_type": "depends_on",
+      "evidence": "3.2 Payment (PRD 4.2, Spec 3.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "4f4c374b-8001-464a-af1a-055c4ccd8065": {
+      "id": "4f4c374b-8001-464a-af1a-055c4ccd8065",
+      "source_id": "330e3853-4cb0-49f1-81de-3ece5eeab3ca",
+      "target_id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 4, Functional Spec Section 3",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "d38cf8c5-c7fa-434d-b5c8-a6f864b8db9f": {
+      "id": "d38cf8c5-c7fa-434d-b5c8-a6f864b8db9f",
+      "source_id": "4656d2b8-64c7-4cb2-84ac-cf64a7b933c7",
+      "target_id": "f932fa9e-b59f-4259-a062-706e5ab3421c",
+      "relation_type": "depends_on",
+      "evidence": "3.3 Order Status (PRD 4.3, Spec 3.3)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "ebcbefdb-4733-4b53-a01d-5558cd2e8aae": {
+      "id": "ebcbefdb-4733-4b53-a01d-5558cd2e8aae",
+      "source_id": "4656d2b8-64c7-4cb2-84ac-cf64a7b933c7",
+      "target_id": "5f0db31b-45dc-4519-9972-27009687fb99",
+      "relation_type": "depends_on",
+      "evidence": "3.3 Order Status (PRD 4.3, Spec 3.3)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "4c24701d-2520-4e6a-8fee-52f812e5f0cd": {
+      "id": "4c24701d-2520-4e6a-8fee-52f812e5f0cd",
+      "source_id": "4656d2b8-64c7-4cb2-84ac-cf64a7b933c7",
+      "target_id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 4, Functional Spec Section 3",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "ba626a6d-c34f-496f-bc62-1d563908643a": {
+      "id": "ba626a6d-c34f-496f-bc62-1d563908643a",
+      "source_id": "374ed650-aa5c-46c8-b714-d3408ebbd8df",
+      "target_id": "71119ef0-4748-433a-875f-dac54475730e",
+      "relation_type": "depends_on",
+      "evidence": "4.1 Review CRUD (PRD 5.1, Spec 4.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "801f97d0-1955-47de-b8c1-d16281149be0": {
+      "id": "801f97d0-1955-47de-b8c1-d16281149be0",
+      "source_id": "374ed650-aa5c-46c8-b714-d3408ebbd8df",
+      "target_id": "6389f232-ffd5-4083-9f49-401d53849fa8",
+      "relation_type": "depends_on",
+      "evidence": "4.1 Review CRUD (PRD 5.1, Spec 4.1)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "4dd36998-d31a-4e46-9621-7ca139f91b00": {
+      "id": "4dd36998-d31a-4e46-9621-7ca139f91b00",
+      "source_id": "374ed650-aa5c-46c8-b714-d3408ebbd8df",
+      "target_id": "e699839c-e9bf-4dc1-9181-7a16334ff703",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 5, Functional Spec Section 4",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "1261c70f-294c-4839-8f4d-f5efad8b855f": {
+      "id": "1261c70f-294c-4839-8f4d-f5efad8b855f",
+      "source_id": "d06c943c-b443-4b5e-897f-46ef6c3cb9f2",
+      "target_id": "8a8d88d7-3819-4825-86a9-a5fa7137f000",
+      "relation_type": "depends_on",
+      "evidence": "4.2 Review Display & Filtering (PRD 5.2, Spec 4.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "3d7accbc-28df-4f5d-b120-477295d82025": {
+      "id": "3d7accbc-28df-4f5d-b120-477295d82025",
+      "source_id": "d06c943c-b443-4b5e-897f-46ef6c3cb9f2",
+      "target_id": "dcc71f10-5ab0-4f0b-9541-e5e35668d8e0",
+      "relation_type": "depends_on",
+      "evidence": "4.2 Review Display & Filtering (PRD 5.2, Spec 4.2)",
+      "confidence": 1.0,
+      "status": "approved"
+    },
+    "02727115-6157-4a24-898f-be6ec7080753": {
+      "id": "02727115-6157-4a24-898f-be6ec7080753",
+      "source_id": "d06c943c-b443-4b5e-897f-46ef6c3cb9f2",
+      "target_id": "e699839c-e9bf-4dc1-9181-7a16334ff703",
+      "relation_type": "depends_on",
+      "evidence": "Ref: PRD Section 5, Functional Spec Section 4",
+      "confidence": 0.9,
+      "status": "approved"
+    },
+    "a658406c-5227-43ce-bd95-aed1e16645b4": {
+      "id": "a658406c-5227-43ce-bd95-aed1e16645b4",
+      "source_id": "669b40f0-3f0d-4c68-8f9c-bba0c45a3109",
+      "target_id": "2848d842-4712-4e66-8f92-cc0ffd76abef",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 2",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "3b7f1944-7b47-4323-bee8-91500b80e6ec": {
+      "id": "3b7f1944-7b47-4323-bee8-91500b80e6ec",
+      "source_id": "669b40f0-3f0d-4c68-8f9c-bba0c45a3109",
+      "target_id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 2",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "01a74fd3-e7c8-41de-aeba-16d2b64d4291": {
+      "id": "01a74fd3-e7c8-41de-aeba-16d2b64d4291",
+      "source_id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "target_id": "a1fc793b-2095-4dde-9de0-af105b79e1e9",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 3",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "27d29055-b37e-4cbb-833d-294fc4ab9f2c": {
+      "id": "27d29055-b37e-4cbb-833d-294fc4ab9f2c",
+      "source_id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "target_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 3",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "2802894d-445a-4b56-a14a-3d42e0959e11": {
+      "id": "2802894d-445a-4b56-a14a-3d42e0959e11",
+      "source_id": "88f6a90f-7c5f-4809-a56c-e00edbbeb3b3",
+      "target_id": "ee4b3b6a-7694-4191-8df3-aa52b42fd772",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 3",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "12eac776-3f88-422b-b409-eb3147ac8321": {
+      "id": "12eac776-3f88-422b-b409-eb3147ac8321",
+      "source_id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "target_id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 4",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "410ef163-f0fa-42da-979f-17115a4f8006": {
+      "id": "410ef163-f0fa-42da-979f-17115a4f8006",
+      "source_id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "target_id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 4",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "ffeb49f0-a7ce-45f6-b15f-0577f30d2a1b": {
+      "id": "ffeb49f0-a7ce-45f6-b15f-0577f30d2a1b",
+      "source_id": "3d2452ee-289d-4668-bf70-ba9466d0b933",
+      "target_id": "f932fa9e-b59f-4259-a062-706e5ab3421c",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 4",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "46be776c-48a8-476c-bed3-977d7defe0a4": {
+      "id": "46be776c-48a8-476c-bed3-977d7defe0a4",
+      "source_id": "e699839c-e9bf-4dc1-9181-7a16334ff703",
+      "target_id": "71119ef0-4748-433a-875f-dac54475730e",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 5",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "f06bc6e6-0021-4421-b416-bfd4a4fd6d09": {
+      "id": "f06bc6e6-0021-4421-b416-bfd4a4fd6d09",
+      "source_id": "e699839c-e9bf-4dc1-9181-7a16334ff703",
+      "target_id": "8a8d88d7-3819-4825-86a9-a5fa7137f000",
+      "relation_type": "related_to",
+      "evidence": "Ref: PRD Section 5",
+      "confidence": 0.85,
+      "status": "approved"
+    },
+    "8f7ca479-c7da-4989-9d18-9d7443663e1a": {
+      "id": "8f7ca479-c7da-4989-9d18-9d7443663e1a",
+      "source_id": "6c4ee7bc-8090-4415-81f5-d3af533aa088",
+      "target_id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "relation_type": "depends_on",
+      "evidence": "비회원도 장바구니를 이용할 수 있으며, 로그인 시 비회원",
+      "confidence": 0.75,
+      "status": "approved"
+    },
+    "067d9cc5-fc1a-4f07-a832-a85d130b4836": {
+      "id": "067d9cc5-fc1a-4f07-a832-a85d130b4836",
+      "source_id": "3cabe994-4abc-4bd9-a8f1-828eea3e17cf",
+      "target_id": "11031b23-415b-4ab7-b025-1007df60de97",
+      "relation_type": "depends_on",
+      "evidence": "결제는 로그인한 사용자가 주문을 완료하는 프로세스",
+      "confidence": 0.8,
+      "status": "approved"
+    },
+    "15fcb282-edaf-4ffc-8505-39a99aa65075": {
+      "id": "15fcb282-edaf-4ffc-8505-39a99aa65075",
+      "source_id": "71119ef0-4748-433a-875f-dac54475730e",
+      "target_id": "fa66c256-bf14-4616-9270-2899b8770152",
+      "relation_type": "depends_on",
+      "evidence": "구매 확정된 도서에 대해서만 리뷰를 작성할 수 있다",
+      "confidence": 0.85,
+      "status": "approved"
+    }
+  }
+}
