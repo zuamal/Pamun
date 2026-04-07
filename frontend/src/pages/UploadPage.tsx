@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { Joyride, type EventHandler } from 'react-joyride'
@@ -52,6 +52,16 @@ export default function UploadPage() {
   // Tour
   const { isRunning, tourKey, setRunning } = useTourStore()
   const runTour = isRunning || (isDemoMode() && !hasTourBeenSeen('upload'))
+
+  // Only include steps whose target is actually rendered in the current state.
+  // Static demo before bundle selection: only demo-btn exists.
+  // Static demo after bundle selection: only parse-btn exists.
+  // Normal mode: both targets are rendered.
+  const uploadSteps = useMemo(() => {
+    if (isStaticDemoMode && !pendingBundle) return UPLOAD_STEPS.slice(0, 1)
+    if (isStaticDemoMode && pendingBundle) return UPLOAD_STEPS.slice(1, 2)
+    return UPLOAD_STEPS
+  }, [pendingBundle])
 
   const handleTourCallback: EventHandler = (data) => {
     if (data.status === 'finished' || data.status === 'skipped') {
@@ -192,7 +202,7 @@ export default function UploadPage() {
   const joyride = (
     <Joyride
       key={tourKey}
-      steps={UPLOAD_STEPS}
+      steps={uploadSteps}
       run={runTour}
       continuous
       options={JOYRIDE_OPTIONS}

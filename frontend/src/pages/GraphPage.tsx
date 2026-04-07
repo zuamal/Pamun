@@ -193,7 +193,9 @@ export default function GraphPage() {
       {/* Body */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Graph area — full height */}
-        <div className="flex-1 overflow-hidden relative" data-tour="graph-area">
+        <div className="flex-1 overflow-hidden relative">
+          {/* Small anchor for tour tooltip — avoids clipping from targeting the full-size div */}
+          <div data-tour="graph-anchor" className="absolute top-4 left-4 w-0 h-0 pointer-events-none" />
           <RequirementGraph
             requirements={requirements}
             edges={edges}

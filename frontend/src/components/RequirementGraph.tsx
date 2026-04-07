@@ -28,8 +28,8 @@ type ImpactResult = components['schemas']['ImpactResult']
 
 const nodeTypes = { requirement: RequirementNode }
 
-const NODE_WIDTH = 220
-const NODE_HEIGHT = 90
+const NODE_WIDTH = 256
+const NODE_HEIGHT = 80
 
 function buildLayout(
   requirements: Requirement[],
@@ -43,7 +43,7 @@ function buildLayout(
 ): { nodes: Node[]; edges: FlowEdge[] } {
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', ranksep: 80, nodesep: 40 })
+  g.setGraph({ rankdir: 'TB', ranksep: 80, nodesep: 60 })
 
   for (const req of requirements) {
     g.setNode(req.id, { width: NODE_WIDTH, height: NODE_HEIGHT })
@@ -67,6 +67,10 @@ function buildLayout(
       else if (reviewIds.has(req.id)) impactStatus = 'review'
     }
 
+    const edgeCount = edges.filter(
+      (e) => e.status === 'approved' && (e.source_id === req.id || e.target_id === req.id),
+    ).length
+
     return {
       id: req.id,
       type: 'requirement',
@@ -77,6 +81,7 @@ function buildLayout(
         selected: req.id === selectedNodeId,
         impactMode,
         impactStatus,
+        edgeCount,
       } satisfies RequirementNodeData,
     }
   })
