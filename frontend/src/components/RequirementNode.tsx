@@ -40,8 +40,11 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
 
   // Semantic zoom — subscribe to raw zoom (throttled at source, so ≤60fps rerenders)
   const zoom = useGraphStore((s) => s.zoom)
-  const zoomTier = zoom < 0.9 ? 'low' as const : zoom > 1.2 ? 'detail' as const : 'normal' as const
-  // Counter-scale: keep text legible when zoomed out (capped at 1.8× to avoid overflow)
+  const zoomTier = zoom <= 0.3 ? 'tiny' as const
+    : zoom < 0.9 ? 'low' as const
+    : zoom > 1.2 ? 'detail' as const
+    : 'normal' as const
+  // Counter-scale: keep content legible when zoomed out (capped at 1.8× to avoid overflow)
   const scale = zoom < 0.9 ? Math.min(1 / zoom, 1.8) : 1
 
   const impact = impactMode && impactStatus ? IMPACT_STYLES[impactStatus] : null
@@ -90,19 +93,21 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
         }}
         className="flex flex-col justify-between h-full"
       >
-        {/* Top row: dot + ID label + edge count badge */}
+        {/* Top row: dot + (conditionally) ID label + badge */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Document color dot */}
+          {/* Document color dot — always visible */}
           <span
             className="w-1.5 h-1.5 rounded-full shrink-0"
             style={{ background: docColor }}
           />
-          {/* ID label */}
-          <span style={{ color: docColor }} className="text-[11px] font-semibold truncate flex-1">
-            {requirement.display_label}
-          </span>
+          {/* ID label — hidden at tiny zoom */}
+          {zoomTier !== 'tiny' && (
+            <span style={{ color: docColor }} className="text-[11px] font-semibold truncate flex-1">
+              {requirement.display_label}
+            </span>
+          )}
           {/* F17: Flag icon for changed nodes in impact mode */}
-          {impactMode && impactStatus === 'changed' && (
+          {zoomTier !== 'tiny' && impactMode && impactStatus === 'changed' && (
             <span className="text-[10px] leading-none shrink-0" title="변경 예정">🚩</span>
           )}
           {/* APPROVED edge count badge — only at detail zoom */}
@@ -111,8 +116,8 @@ const RequirementNode = memo(({ data, id }: NodeProps) => {
           )}
         </div>
 
-        {/* Title — hidden at low zoom; 1-line at normal, 2-line at detail */}
-        {zoomTier !== 'low' && (
+        {/* Title — only at normal/detail zoom */}
+        {(zoomTier === 'normal' || zoomTier === 'detail') && (
           <div className={[
             'text-slate-900 text-sm leading-snug',
             zoomTier === 'detail' ? 'line-clamp-2' : 'line-clamp-1',
