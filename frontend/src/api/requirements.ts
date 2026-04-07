@@ -1,5 +1,6 @@
 import type { components } from './types.generated'
 import { consumeSSE, type ProgressEvent } from './sseTypes'
+import { isDemoMode, patchRequirement } from '../lib/demoApi'
 
 type Requirement = components['schemas']['Requirement']
 type ParseRequest = components['schemas']['ParseRequest']
@@ -32,6 +33,7 @@ export async function updateRequirement(
   id: string,
   body: RequirementUpdateRequest,
 ): Promise<Requirement> {
+  if (isDemoMode()) return Promise.resolve(patchRequirement(id, body))
   const res = await fetch(`${BASE}/requirements/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

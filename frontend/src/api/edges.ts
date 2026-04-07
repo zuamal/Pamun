@@ -1,5 +1,6 @@
 import type { components } from './types.generated'
 import { consumeSSE, type ProgressEvent } from './sseTypes'
+import { isDemoMode, patchEdge } from '../lib/demoApi'
 
 type Edge = components['schemas']['Edge']
 type EdgeStatus = components['schemas']['EdgeStatus']
@@ -41,6 +42,7 @@ export async function createEdge(body: EdgeCreateRequest): Promise<Edge> {
 }
 
 export async function updateEdge(id: string, body: EdgeUpdateRequest): Promise<Edge> {
+  if (isDemoMode()) return Promise.resolve(patchEdge(id, body))
   const res = await fetch(`${BASE}/edges/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

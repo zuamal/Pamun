@@ -1,4 +1,5 @@
 import type { components } from './types.generated'
+import { isDemoMode, getDocument as demoGetDocument } from '../lib/demoApi'
 
 type Document = components['schemas']['Document']
 type DocumentListResponse = components['schemas']['DocumentListResponse']
@@ -22,6 +23,7 @@ export async function listDocuments(): Promise<DocumentListResponse> {
 }
 
 export async function getDocument(id: string): Promise<Document> {
+  if (isDemoMode()) return Promise.resolve(demoGetDocument(id))
   const res = await fetch(`${BASE}/documents/${id}`)
   if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<Document>

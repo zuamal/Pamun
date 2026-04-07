@@ -12,6 +12,7 @@ import EmptyState from '../components/EmptyState'
 import DemoBundleModal from '../components/DemoBundleModal'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
+import { useDemoStore } from '../stores/demoStore'
 import { toastError, toastSuccess } from '../lib/toast'
 import type { ProgressEvent } from '../api/sseTypes'
 import type { components } from '../api/types.generated'
@@ -19,16 +20,20 @@ import type { components } from '../api/types.generated'
 type BundleInfo = components['schemas']['BundleInfo']
 type DemoBundleInfo = components['schemas']['DemoBundleInfo']
 
+/** True when built with VITE_DEMO_MODE=true (GitHub Pages static build). */
+const isStaticDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+
 export default function UploadPage() {
   const navigate = useNavigate()
   const { documents, setDocuments } = useDocumentStore()
   const { setRequirements, setEdges } = useGraphStore()
+  const { setIsDemoMode } = useDemoStore()
   const [uploading, setUploading] = useState(false)
   const [parsing, setParsing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressMsg, setProgressMsg] = useState('')
 
-  // Bundle loader state
+  // Bundle loader state (backend mode only)
   const [bundles, setBundles] = useState<BundleInfo[]>([])
   const [showBundleMenu, setShowBundleMenu] = useState(false)
   const [loadingBundle, setLoadingBundle] = useState(false)
@@ -41,8 +46,10 @@ export default function UploadPage() {
   const [loadingDemo, setLoadingDemo] = useState(false)
 
   useEffect(() => {
-    listBundles().then(setBundles).catch(() => {})
     listDemoBundles().then(setDemoBundles).catch(() => {})
+    if (!isStaticDemoMode) {
+      listBundles().then(setBundles).catch(() => {})
+    }
   }, [])
 
   // Close menu on outside click
@@ -122,17 +129,35 @@ export default function UploadPage() {
   async function handleLoadDemo(bundle: DemoBundleInfo) {
     setLoadingDemo(true)
     try {
-      const result = await loadDemoBundle(bundle.name)
-      const [reqs, edgesResp, docs] = await Promise.all([
-        listRequirements(),
-        listEdges(),
-        fetch('/api/documents').then((r) => r.json()) as Promise<{ documents: components['schemas']['Document'][] }>,
-      ])
-      setDocuments(docs.documents)
-      setRequirements(reqs)
-      setEdges(edgesResp.edges)
+      if (isStaticDemoMode) {
+        // GitHub Pages: fetch static pre-parsed JSON, populate stores directly
+        const resp = await fetch(`${import.meta.env.BASE_URL}demo/${bundle.name}.json`)
+        if (!resp.ok) throw new Error('데모 파일을 불러올 수 없습니다.')
+        const session = await resp.json() as {
+          documents: Record<string, components['schemas']['Document']>
+          requirements: Record<string, components['schemas']['Requirement']>
+          edges: Record<string, components['schemas']['Edge']>
+        }
+        setDocuments(Object.values(session.documents))
+        setRequirements(Object.values(session.requirements))
+        setEdges(Object.values(session.edges))
+        setIsDemoMode(true)
+      } else {
+        // Local backend: POST /api/demo/load then sync stores from API
+        const result = await loadDemoBundle(bundle.name)
+        const [reqs, edgesResp, docResp] = await Promise.all([
+          listRequirements(),
+          listEdges(),
+          fetch('/api/documents').then((r) => r.json()) as Promise<{ documents: components['schemas']['Document'][] }>,
+        ])
+        setDocuments(docResp.documents)
+        setRequirements(reqs)
+        setEdges(edgesResp.edges)
+        void result // suppress unused-var warning
+      }
+
       setShowDemoModal(false)
-      toastSuccess(`${result.bundle} 데모를 불러왔습니다`)
+      toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
       navigate('/graph')
     } catch (e) {
       toastError(e instanceof Error ? e.message : '데모 적재 실패')
@@ -143,6 +168,50 @@ export default function UploadPage() {
 
   const busy = uploading || parsing || loadingBundle || loadingDemo
 
+  // ── Static demo mode: show only the demo launcher ─────────────────────────
+  if (isStaticDemoMode) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="max-w-sm w-full text-center">
+          <div className="text-5xl mb-4">🗺️</div>
+          <h1 className="text-xl font-bold text-slate-900 mb-2">Pamun Demo</h1>
+          <p className="text-sm text-slate-500 mb-6">
+            사전 파싱된 샘플 세션을 선택하면 그래프·영향 분석을 즉시 체험할 수 있습니다.
+          </p>
+          <button
+            onClick={() => setShowDemoModal(true)}
+            disabled={loadingDemo}
+            className="px-6 py-3 rounded-xl bg-blue-500 text-white font-bold text-base cursor-pointer hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-none w-full"
+          >
+            {loadingDemo ? '불러오는 중...' : '데모 체험 시작'}
+          </button>
+          <p className="text-xs text-slate-400 mt-4">
+            실제 LLM 파싱·추론은{' '}
+            <a
+              href="https://github.com/zuamal/Pamun"
+              className="underline hover:text-slate-600"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              셀프호스팅
+            </a>
+            이 필요합니다.
+          </p>
+        </div>
+
+        {showDemoModal && (
+          <DemoBundleModal
+            bundles={demoBundles}
+            loading={loadingDemo}
+            onSelect={(bundle) => void handleLoadDemo(bundle)}
+            onClose={() => setShowDemoModal(false)}
+          />
+        )}
+      </div>
+    )
+  }
+
+  // ── Normal mode ────────────────────────────────────────────────────────────
   return (
     <div className="flex-1 overflow-y-auto">
     <div className="max-w-2xl mx-auto py-8 px-4">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { isDemoMode } from '../lib/demoApi'
 import { inferEdgesSSE, listEdges } from '../api/edges'
 import {
   deleteRequirement,
@@ -149,13 +150,20 @@ export default function ReviewPage() {
           />
 
           <div className="mt-8 pt-6 border-t border-slate-200">
-            <button
-              onClick={() => void handleInfer()}
-              disabled={inferring || requirements.length === 0}
-              className="px-6 py-2.5 rounded-lg border-none bg-violet-700 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-violet-600 transition-colors"
-            >
-              의존관계 추론 시작
-            </button>
+            <div className="relative inline-block group">
+              <button
+                onClick={() => void handleInfer()}
+                disabled={inferring || requirements.length === 0 || isDemoMode()}
+                className="px-6 py-2.5 rounded-lg border-none bg-violet-700 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-violet-600 transition-colors"
+              >
+                의존관계 추론 시작
+              </button>
+              {isDemoMode() && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  셀프호스팅 환경에서 이용하세요
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
