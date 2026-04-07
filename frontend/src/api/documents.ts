@@ -1,5 +1,6 @@
 import type { components } from './types.generated'
 import { isDemoMode, getDocument as demoGetDocument } from '../lib/demoApi'
+import { useDocumentStore } from '../stores/documentStore'
 
 type Document = components['schemas']['Document']
 type DocumentListResponse = components['schemas']['DocumentListResponse']
@@ -17,6 +18,9 @@ export async function uploadDocuments(files: File[]): Promise<Document[]> {
 }
 
 export async function listDocuments(): Promise<DocumentListResponse> {
+  if (isDemoMode()) {
+    return Promise.resolve({ documents: useDocumentStore.getState().documents })
+  }
   const res = await fetch(`${BASE}/documents`)
   if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<DocumentListResponse>

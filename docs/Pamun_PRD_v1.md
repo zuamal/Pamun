@@ -167,6 +167,8 @@ GraphPage는 Edge 검토·관리에 집중한다. 영향 분석 모드는 별도
 | FR-9.2 | UploadPage에 "데모 체험" 버튼을 제공한다. 클릭 시 BookFlow / LearnHub / MediBook 3개 번들 중 하나를 선택할 수 있는 UI가 표시된다. |
 | FR-9.3 | 번들 선택 시 `frontend/public/demo/{BundleName}.json`(정적 자산)을 fetch하여 store를 즉시 초기화하고 그래프 페이지로 이동한다. LLM 호출 없이 그래프·영향 분석까지 즉시 체험 가능하다. |
 | FR-9.4 | 데모 모드에서 Edge 승인·거부·수정, `changed` 플래그 토글, 1-hop 영향 분석 실행이 정상 동작한다. 영향 분석은 store 데이터 기반으로 프론트엔드에서 직접 계산한다. |
+| FR-9.4a | 데모 모드에서 mock 처리 대상 API: `GET /api/edges`, `GET /api/documents`, `GET /api/documents/{id}`, `PATCH /api/requirements/{id}`, `PATCH /api/edges/{id}`, `DELETE /api/edges/{id}`, `POST /api/edges`, `GET /api/impact`. 이 목록에 속한 호출은 백엔드를 호출하지 않고 store를 직접 조작하거나 store에서 반환한다. 수동 Edge 추가(`POST /api/edges`)는 demo mode에서도 동작하며 그래프에 즉시 반영된다. 세션 저장 버튼은 `disabled` + 툴팁으로 처리한다. |
+| FR-9.4b | 번들 선택 후 store 업데이트가 완료된 시점에 페이지 이동이 발생한다. store가 비어 있어 ProtectedRoute에 의해 리디렉션되는 현상이 없어야 한다. |
 | FR-9.5 | LLM 의존 기능(파싱, 의존관계 추론)은 데모 모드에서 비활성화된다. 해당 버튼에 "LLM API 키가 필요합니다. 셀프호스팅으로 이용하세요" 안내를 표시한다. |
 | FR-9.6 | 데모 세션 JSON은 `frontend/public/demo/{BundleName}.json`에 위치하며 레포에 커밋된다. |
 | FR-9.7 | `VITE_DEMO_MODE=true` 빌드 시 앱은 데모 전용 모드로 동작한다. 실제 파일 업로드 UI는 숨기고 "데모 체험" 진입만 노출한다. |

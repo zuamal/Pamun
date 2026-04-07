@@ -478,11 +478,16 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 | 실제 API | mock 동작 |
 |----------|-----------|
+| `GET /api/edges` | `graphStore.edges`를 `{ edges: [...] }` 형태로 반환 |
+| `GET /api/documents` | `documentStore.documents`를 `{ documents: [...] }` 형태로 반환 |
+| `GET /api/documents/{id}` | `documentStore`에서 해당 document 반환 |
 | `PATCH /api/requirements/{id}` | `graphStore`의 해당 requirement 직접 업데이트 |
 | `PATCH /api/edges/{id}` | `graphStore`의 해당 edge 직접 업데이트 |
+| `DELETE /api/edges/{id}` | `graphStore`에서 해당 edge 제거 |
+| `POST /api/edges` | 새 Edge 객체 생성(`crypto.randomUUID()`, `status: approved`) 후 `graphStore`에 추가 |
 | `GET /api/impact` | `impactCompute.ts`로 store에서 1-hop 계산 |
-| `GET /api/documents/{id}` | store의 document 데이터 반환 |
-| `POST /api/parse`, `POST /api/edges/infer` | 비활성화. 안내 토스트 표시. |
+| `POST /api/parse`, `POST /api/edges/infer` | 비활성화. 버튼 `disabled` + 셀프호스팅 안내 표시. |
+| `POST /api/session/save` | 비활성화. 세션 저장 버튼 `disabled` + 툴팁 표시. |
 
 **Rationale:** 진짜 API 호출 구조를 유지하면서 mock만 교체하므로 셀프호스팅 모드와 코드 공유가 최대화된다. 영향 분석 로직은 1-hop traversal로 단순하여 프론트에서 재구현 비용이 낮다.
 

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { listEdges, updateEdge, createEdge, deleteEdge } from '../api/edges'
 import { listDocuments } from '../api/documents'
 import { saveSession } from '../api/impact'
+import { isDemoMode } from '../lib/demoApi'
 import { useGraphStore } from '../stores/graphStore'
 import RequirementGraph from '../components/RequirementGraph'
 import NodeDetailPanel from '../components/NodeDetailPanel'
@@ -158,7 +159,8 @@ export default function GraphPage() {
         {loading && <span className="text-xs text-slate-400">로딩 중...</span>}
         <button
           onClick={() => void handleSave()}
-          disabled={saving}
+          disabled={saving || isDemoMode()}
+          title={isDemoMode() ? '데모 모드에서는 세션 저장이 지원되지 않습니다' : undefined}
           className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
         >
           {saving ? '저장 중...' : '세션 저장'}

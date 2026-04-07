@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { deleteDocument, uploadDocuments } from '../api/documents'
 import { listBundles, loadBundle } from '../api/dummy'
@@ -138,10 +139,15 @@ export default function UploadPage() {
           requirements: Record<string, components['schemas']['Requirement']>
           edges: Record<string, components['schemas']['Edge']>
         }
-        setDocuments(Object.values(session.documents))
-        setRequirements(Object.values(session.requirements))
-        setEdges(Object.values(session.edges))
-        setIsDemoMode(true)
+        flushSync(() => {
+          setDocuments(Object.values(session.documents))
+          setRequirements(Object.values(session.requirements))
+          setEdges(Object.values(session.edges))
+          setIsDemoMode(true)
+        })
+        setShowDemoModal(false)
+        toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
+        navigate('/graph')
       } else {
         // Local backend: POST /api/demo/load then sync stores from API
         const result = await loadDemoBundle(bundle.name)
@@ -154,11 +160,10 @@ export default function UploadPage() {
         setRequirements(reqs)
         setEdges(edgesResp.edges)
         void result // suppress unused-var warning
+        setShowDemoModal(false)
+        toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
+        navigate('/graph')
       }
-
-      setShowDemoModal(false)
-      toastSuccess(`${bundle.name} 데모를 불러왔습니다`)
-      navigate('/graph')
     } catch (e) {
       toastError(e instanceof Error ? e.message : '데모 적재 실패')
     } finally {
