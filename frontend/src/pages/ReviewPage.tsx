@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Joyride, type EventHandler } from 'react-joyride'
 import { inferEdgesSSE, listEdges } from '../api/edges'
 import {
   deleteRequirement,
@@ -14,6 +15,9 @@ import FloatingActionBar from '../components/FloatingActionBar'
 import EmptyState from '../components/EmptyState'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
+import { useTourStore, hasTourBeenSeen, markTourSeen } from '../stores/tourStore'
+import { isDemoMode } from '../lib/demoApi'
+import { REVIEW_STEPS, JOYRIDE_OPTIONS, JOYRIDE_LOCALE } from '../lib/tourSteps'
 import { toastError, toastSuccess } from '../lib/toast'
 import type { components } from '../api/types.generated'
 import type { ProgressEvent } from '../api/sseTypes'
@@ -29,6 +33,16 @@ export default function ReviewPage() {
   const [inferring, setInferring] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressMsg, setProgressMsg] = useState('')
+
+  const { isRunning, tourKey, setRunning } = useTourStore()
+  const runTour = isRunning || (isDemoMode() && !hasTourBeenSeen('review'))
+
+  const handleTourCallback: EventHandler = (data) => {
+    if (data.status === 'finished' || data.status === 'skipped') {
+      markTourSeen('review')
+      setRunning(false)
+    }
+  }
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) =>
@@ -111,6 +125,16 @@ export default function ReviewPage() {
   }
 
   return (
+    <>
+    <Joyride
+      key={tourKey}
+      steps={REVIEW_STEPS}
+      run={runTour}
+      continuous
+      options={JOYRIDE_OPTIONS}
+      locale={JOYRIDE_LOCALE}
+      onEvent={handleTourCallback}
+    />
     <div className="flex-1 overflow-y-auto">
     <div className="max-w-3xl mx-auto py-8 px-4 pb-24">
       <div className="flex items-center gap-4 mb-6">
@@ -138,18 +162,21 @@ export default function ReviewPage() {
         />
       ) : (
         <>
-          <RequirementList
-            requirements={requirements}
-            documents={documents}
-            selectedIds={selectedIds}
-            onToggleSelect={toggleSelect}
-            onTitleUpdate={handleTitleUpdate}
-            onSplit={setSplitTarget}
-            disabled={inferring}
-          />
+          <div data-tour="req-list">
+            <RequirementList
+              requirements={requirements}
+              documents={documents}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onTitleUpdate={handleTitleUpdate}
+              onSplit={setSplitTarget}
+              disabled={inferring}
+            />
+          </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200">
             <button
+              data-tour="infer-btn"
               onClick={() => void handleInfer()}
               disabled={inferring || requirements.length === 0}
               className="px-6 py-2.5 rounded-lg border-none bg-violet-700 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-violet-600 transition-colors"
@@ -177,5 +204,6 @@ export default function ReviewPage() {
       {inferring && <ProgressModal message={progressMsg} progress={progress} />}
     </div>
     </div>
+    </>
   )
 }

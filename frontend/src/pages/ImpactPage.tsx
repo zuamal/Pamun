@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Joyride, type EventHandler } from 'react-joyride'
 import { updateRequirement } from '../api/requirements'
 import { getImpact, saveSession } from '../api/impact'
 import { useGraphStore } from '../stores/graphStore'
+import { useTourStore, hasTourBeenSeen, markTourSeen } from '../stores/tourStore'
+import { isDemoMode } from '../lib/demoApi'
+import { IMPACT_STEPS, JOYRIDE_OPTIONS, JOYRIDE_LOCALE } from '../lib/tourSteps'
 import RequirementGraph from '../components/RequirementGraph'
 import DocumentViewer from '../components/DocumentViewer'
 import ImpactItem from '../components/ImpactItem'
@@ -28,6 +32,16 @@ export default function ImpactPage() {
   const [saving, setSaving] = useState(false)
   const [panelWidth, setPanelWidth] = useState(PANEL_DEFAULT)
   const isDragging = useRef(false)
+
+  const { isRunning, tourKey, setRunning } = useTourStore()
+  const runTour = isRunning || (isDemoMode() && !hasTourBeenSeen('impact'))
+
+  const handleTourCallback: EventHandler = (data) => {
+    if (data.status === 'finished' || data.status === 'skipped') {
+      markTourSeen('impact')
+      setRunning(false)
+    }
+  }
 
   // Recompute impact whenever requirements change
   const refreshImpact = useCallback(async () => {
@@ -137,6 +151,16 @@ export default function ImpactPage() {
   }
 
   return (
+    <>
+    <Joyride
+      key={tourKey}
+      steps={IMPACT_STEPS}
+      run={runTour}
+      continuous
+      options={JOYRIDE_OPTIONS}
+      locale={JOYRIDE_LOCALE}
+      onEvent={handleTourCallback}
+    />
     <div className="flex h-full flex-col bg-slate-50">
       {/* Header */}
       <div className="flex items-center px-5 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
@@ -160,7 +184,7 @@ export default function ImpactPage() {
           style={{ width: panelWidth }}
         >
           {/* Requirements list — top half */}
-          <div className="flex flex-col min-h-0" style={{ flex: '0 0 55%' }}>
+          <div className="flex flex-col min-h-0" style={{ flex: '0 0 55%' }} data-tour="changed-toggle">
             <div className="px-3 py-2 border-b border-slate-100 shrink-0">
               <span className="text-[12px] font-semibold text-slate-600 uppercase tracking-wide">
                 요구사항
@@ -205,7 +229,7 @@ export default function ImpactPage() {
           </div>
 
           {/* Impact results — bottom half */}
-          <div className="flex flex-col border-t border-slate-200 min-h-0" style={{ flex: '0 0 45%' }}>
+          <div className="flex flex-col border-t border-slate-200 min-h-0" style={{ flex: '0 0 45%' }} data-tour="impact-result">
             <div className="px-3 py-2 border-b border-slate-100 shrink-0">
               <span className="text-[12px] font-semibold text-slate-600 uppercase tracking-wide">
                 영향 분석 결과
@@ -314,5 +338,6 @@ export default function ImpactPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

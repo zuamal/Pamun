@@ -172,6 +172,16 @@ GraphPage는 Edge 검토·관리에 집중한다. 영향 분석 모드는 별도
 | FR-9.6 | 데모 세션 JSON은 `frontend/public/demo/{BundleName}.json`에 위치하며 레포에 커밋된다. JSON 구조: `{ documents: Record<id, Document>, requirements: Record<id, Requirement>, edges: Record<id, Edge> }` |
 | FR-9.7 | `VITE_DEMO_MODE=true` 빌드 시 UploadPage에서 FileDropzone(실제 파일 업로드 영역)을 숨기거나 비활성화한다. 번들 로드 전에는 "데모 체험" 버튼만 노출하고, 번들 로드 후에는 문서 목록과 "파싱 시작" 버튼을 표시한다. |
 
+### 3.12 온보딩 튜토리얼
+
+| ID | Requirement |
+|----|-------------|
+| FR-12.1 | 4단계 워크플로우의 핵심 UI 요소를 spotlight + 툴팁 코치마크로 안내하는 투어를 제공한다. 총 8스텝으로 구성되며 페이지당 1–2스텝이 배정된다. |
+| FR-12.2 | 데모 모드에서는 각 페이지 최초 진입 시 해당 페이지의 투어가 자동 시작된다. 세션당 1회(`sessionStorage` 플래그 사용). 이후 재실행은 Sidebar 하단 "가이드 보기" 버튼으로 가능하다. |
+| FR-12.3 | 셀프호스팅 모드에서는 자동 시작하지 않는다. Sidebar 하단 "가이드 보기" 버튼 클릭 시 현재 페이지의 투어가 시작된다. |
+| FR-12.4 | 투어 진행 중 "건너뛰기" 버튼으로 즉시 종료할 수 있다. "가이드 보기" 버튼은 데모/셀프호스팅 모두 Sidebar 하단에 항상 노출된다. |
+| FR-12.5 | 스텝 정의: (1) UploadPage — "데모 체험" 버튼, (2) UploadPage — "파싱 시작" 버튼, (3) ReviewPage — 요구사항 목록, (4) ReviewPage — "의존관계 추론 시작" 버튼, (5) GraphPage — 그래프 영역, (6) GraphPage — Edge 검토 패널, (7) ImpactPage — changed 토글, (8) ImpactPage — 영향 결과 패널. |
+
 ### 3.11 배포 아키텍처
 
 | ID | Requirement |

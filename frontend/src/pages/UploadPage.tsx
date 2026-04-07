@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
+import { Joyride, type EventHandler } from 'react-joyride'
 import { deleteDocument, uploadDocuments } from '../api/documents'
 import { listBundles, loadBundle } from '../api/dummy'
 import { listDemoBundles, loadDemoBundle } from '../api/demo'
@@ -13,6 +14,9 @@ import DemoBundleModal from '../components/DemoBundleModal'
 import { useDocumentStore } from '../stores/documentStore'
 import { useGraphStore } from '../stores/graphStore'
 import { useDemoStore } from '../stores/demoStore'
+import { useTourStore, hasTourBeenSeen, markTourSeen } from '../stores/tourStore'
+import { isDemoMode } from '../lib/demoApi'
+import { UPLOAD_STEPS, JOYRIDE_OPTIONS, JOYRIDE_LOCALE } from '../lib/tourSteps'
 import { toastError, toastSuccess } from '../lib/toast'
 import type { ProgressEvent } from '../api/sseTypes'
 import type { components } from '../api/types.generated'
@@ -44,6 +48,17 @@ export default function UploadPage() {
   const [demoBundles, setDemoBundles] = useState<DemoBundleInfo[]>([])
   const [showDemoModal, setShowDemoModal] = useState(false)
   const [loadingDemo, setLoadingDemo] = useState(false)
+
+  // Tour
+  const { isRunning, tourKey, setRunning } = useTourStore()
+  const runTour = isRunning || (isDemoMode() && !hasTourBeenSeen('upload'))
+
+  const handleTourCallback: EventHandler = (data) => {
+    if (data.status === 'finished' || data.status === 'skipped') {
+      markTourSeen('upload')
+      setRunning(false)
+    }
+  }
 
   useEffect(() => {
     listDemoBundles().then(setDemoBundles).catch(() => {})
@@ -174,87 +189,109 @@ export default function UploadPage() {
 
   const busy = uploading || parsing || loadingBundle || loadingDemo
 
+  const joyride = (
+    <Joyride
+      key={tourKey}
+      steps={UPLOAD_STEPS}
+      run={runTour}
+      continuous
+      options={JOYRIDE_OPTIONS}
+      locale={JOYRIDE_LOCALE}
+      onEvent={handleTourCallback}
+    />
+  )
+
   // ── Static demo mode ──────────────────────────────────────────────────────
   if (isStaticDemoMode) {
     // After bundle selection: show document list + "파싱 시작"
     if (pendingBundle) {
       return (
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl mx-auto py-8 px-4">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="text-2xl">🗺️</div>
-              <h1 className="text-xl font-bold text-slate-900">Pamun Demo</h1>
-              <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2.5 py-0.5 font-medium">데모 모드</span>
+        <>
+          {joyride}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-2xl mx-auto py-8 px-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="text-2xl">🗺️</div>
+                <h1 className="text-xl font-bold text-slate-900">Pamun Demo</h1>
+                <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2.5 py-0.5 font-medium">데모 모드</span>
+              </div>
+
+              <section className="mb-8">
+                <h2 className="text-base font-semibold mb-3 text-slate-700">
+                  업로드된 문서
+                  <span className="ml-2 text-xs font-normal bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">
+                    {documents.length}
+                  </span>
+                </h2>
+                <DocumentList documents={documents} onDelete={() => {}} disabled />
+              </section>
+
+              <button
+                data-tour="parse-btn"
+                onClick={() => void handleParse()}
+                disabled={busy}
+                className="px-6 py-2.5 rounded-lg border-none bg-blue-500 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {parsing ? '파싱 중...' : '파싱 시작'}
+              </button>
+
+              {parsing && <ProgressModal message={progressMsg} progress={progress} />}
             </div>
-
-            <section className="mb-8">
-              <h2 className="text-base font-semibold mb-3 text-slate-700">
-                업로드된 문서
-                <span className="ml-2 text-xs font-normal bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">
-                  {documents.length}
-                </span>
-              </h2>
-              <DocumentList documents={documents} onDelete={() => {}} disabled />
-            </section>
-
-            <button
-              onClick={() => void handleParse()}
-              disabled={busy}
-              className="px-6 py-2.5 rounded-lg border-none bg-blue-500 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {parsing ? '파싱 중...' : '파싱 시작'}
-            </button>
-
-            {parsing && <ProgressModal message={progressMsg} progress={progress} />}
           </div>
-        </div>
+        </>
       )
     }
 
     // Before bundle selection: show launcher
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-sm w-full text-center">
-          <div className="text-5xl mb-4">🗺️</div>
-          <h1 className="text-xl font-bold text-slate-900 mb-2">Pamun Demo</h1>
-          <p className="text-sm text-slate-500 mb-6">
-            샘플 번들을 선택하면 파싱·추론 과정을 직접 체험할 수 있습니다.
-          </p>
-          <button
-            onClick={() => setShowDemoModal(true)}
-            disabled={loadingDemo}
-            className="px-6 py-3 rounded-xl bg-blue-500 text-white font-bold text-base cursor-pointer hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-none w-full"
-          >
-            {loadingDemo ? '불러오는 중...' : '데모 체험 시작'}
-          </button>
-          <p className="text-xs text-slate-400 mt-4">
-            실제 LLM 파싱·추론은{' '}
-            <a
-              href="https://github.com/zuamal/Pamun"
-              className="underline hover:text-slate-600"
-              target="_blank"
-              rel="noopener noreferrer"
+      <>
+        {joyride}
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-sm w-full text-center">
+            <div className="text-5xl mb-4">🗺️</div>
+            <h1 className="text-xl font-bold text-slate-900 mb-2">Pamun Demo</h1>
+            <p className="text-sm text-slate-500 mb-6">
+              샘플 번들을 선택하면 파싱·추론 과정을 직접 체험할 수 있습니다.
+            </p>
+            <button
+              data-tour="demo-btn"
+              onClick={() => setShowDemoModal(true)}
+              disabled={loadingDemo}
+              className="px-6 py-3 rounded-xl bg-blue-500 text-white font-bold text-base cursor-pointer hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-none w-full"
             >
-              셀프호스팅
-            </a>
-            이 필요합니다.
-          </p>
-        </div>
+              {loadingDemo ? '불러오는 중...' : '데모 체험 시작'}
+            </button>
+            <p className="text-xs text-slate-400 mt-4">
+              실제 LLM 파싱·추론은{' '}
+              <a
+                href="https://github.com/zuamal/Pamun"
+                className="underline hover:text-slate-600"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                셀프호스팅
+              </a>
+              이 필요합니다.
+            </p>
+          </div>
 
-        {showDemoModal && (
-          <DemoBundleModal
-            bundles={demoBundles}
-            loading={loadingDemo}
-            onSelect={(bundle) => void handleLoadDemo(bundle)}
-            onClose={() => setShowDemoModal(false)}
-          />
-        )}
-      </div>
+          {showDemoModal && (
+            <DemoBundleModal
+              bundles={demoBundles}
+              loading={loadingDemo}
+              onSelect={(bundle) => void handleLoadDemo(bundle)}
+              onClose={() => setShowDemoModal(false)}
+            />
+          )}
+        </div>
+      </>
     )
   }
 
   // ── Normal mode ────────────────────────────────────────────────────────────
   return (
+    <>
+    {joyride}
     <div className="flex-1 overflow-y-auto">
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Demo section */}
@@ -265,6 +302,7 @@ export default function UploadPage() {
             <p className="text-xs text-blue-600 mt-0.5">파싱·추론이 완료된 샘플 세션을 즉시 불러옵니다</p>
           </div>
           <button
+            data-tour="demo-btn"
             onClick={() => setShowDemoModal(true)}
             disabled={busy}
             className="px-4 py-2 rounded-lg border border-blue-300 bg-white text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
@@ -339,6 +377,7 @@ export default function UploadPage() {
       </section>
 
       <button
+        data-tour="parse-btn"
         onClick={() => void handleParse()}
         disabled={busy || documents.length === 0}
         className="px-6 py-2.5 rounded-lg border-none bg-blue-500 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2"
@@ -384,5 +423,6 @@ export default function UploadPage() {
       />
     )}
     </div>
+    </>
   )
 }

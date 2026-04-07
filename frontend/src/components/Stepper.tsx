@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGraphStore } from '../stores/graphStore'
+import { useTourStore, resetTourSeen } from '../stores/tourStore'
 
 interface Step {
   label: string
@@ -33,6 +34,24 @@ export default function Stepper({ compact = false }: StepperProps) {
 
   const hasRequirements = requirements.length > 0
   const hasApprovedEdges = edges.some((e) => e.status === 'approved')
+
+  const { restartTour } = useTourStore()
+
+  function getPageName(path: string): string | null {
+    if (path === '/') return 'upload'
+    if (path.startsWith('/review')) return 'review'
+    if (path.startsWith('/graph')) return 'graph'
+    if (path.startsWith('/impact')) return 'impact'
+    return null
+  }
+
+  function handleGuide() {
+    const pageName = getPageName(pathname)
+    if (pageName) {
+      resetTourSeen(pageName)
+      restartTour()
+    }
+  }
 
   function isEnabled(step: number): boolean {
     if (step === 1) return true
@@ -86,6 +105,7 @@ export default function Stepper({ compact = false }: StepperProps) {
   return (
     <nav className="flex flex-col gap-1 p-3 flex-1">
       {STEPS.map((step, i) => {
+
         const active = isActive(step)
         const enabled = isEnabled(step.step)
         const showTooltip = tooltip === step.step
@@ -123,6 +143,15 @@ export default function Stepper({ compact = false }: StepperProps) {
           </div>
         )
       })}
+
+      <div className="mt-auto pt-3 border-t border-slate-100">
+        <button
+          onClick={handleGuide}
+          className="w-full text-left px-3 py-1.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer bg-transparent border-none transition-colors"
+        >
+          가이드 보기
+        </button>
+      </div>
     </nav>
   )
 }

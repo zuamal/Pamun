@@ -39,6 +39,7 @@
 | F19 · Frontend-only Demo + GitHub Pages 배포 | [F19.md](F19.md) | [ ] | F18, F13, F17 |
 | F20 · GraphPage/ImpactPage UI/UX 재구성 | [F20.md](F20.md) | [ ] | F17, F19 |
 | F21 · 데모 워크플로우 자연스러운 흐름 개선 | [F21.md](F21.md) | [ ] | BUG-01, F19 |
+| F22 · 온보딩 투어 (코치마크) | [F22.md](F22.md) | [ ] | F20, F21 |
 
 ---
 

@@ -34,6 +34,7 @@
 | ADR-18 | Toast 라이브러리 | sonner |
 | ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions 직접 배포 (gh-pages 브랜치 없음) |
 | ADR-20 | 데모 모드 API 처리 | 프론트엔드 mock 레이어. LLM 기능은 비활성화 안내. |
+| ADR-21 | 온보딩 튜토리얼 라이브러리 | react-joyride (spotlight + 툴팁 코치마크) |
 
 ---
 
@@ -494,6 +495,35 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 **Alternatives:**
 - MSW(Mock Service Worker): fetch 인터셉트 레이어로 더 투명하지만, 번들 크기 증가 및 Service Worker 설정 복잡도.
 - 읽기 전용 데모: 구현은 단순하지만 인터랙티브 체험을 포기하게 되어 포트폴리오 가치 저하.
+
+---
+
+## ADR-21. 온보딩 튜토리얼 라이브러리: react-joyride
+
+**Context:** 4단계 선형 워크플로우를 처음 접하는 방문자에게 각 단계의 핵심 UI 요소를 spotlight + 툴팁으로 안내하는 코치마크 투어가 필요하다.
+
+**Decision:** `react-joyride`를 사용한다.
+
+**투어 구성:**
+- 페이지당 1–2스텝, 4개 페이지 총 8스텝
+- 각 스텝은 DOM 요소를 `target`(CSS selector 또는 ref)으로 지정하고 spotlight + 툴팁을 오버레이
+
+**트리거 방식:**
+
+| 환경 | 트리거 | 비고 |
+|------|--------|------|
+| 데모 모드 | 각 페이지 최초 진입 시 자동 시작 (세션당 1회, `sessionStorage` 플래그) | 첫 방문자 대상 |
+| 셀프호스팅 | Sidebar 하단 "가이드 보기" 버튼 클릭 시 시작 | 작업 중 방해 방지 |
+
+- 진행 중 "건너뛰기"로 즉시 종료 가능
+- "가이드 보기" 버튼은 데모/셀프호스팅 모두 Sidebar 하단에 항상 노출 (재실행용)
+
+**Rationale:** react-joyride는 React 생태계에서 가장 널리 사용되는 투어 라이브러리다. spotlight overlay, 커스텀 스타일, step-by-step 콜백을 기본 제공하며 Tailwind CSS와 충돌 없이 통합된다.
+
+**Alternatives:**
+- driver.js: 더 가벼운 API이지만 React 비의존 라이브러리라 ref 관리가 번거롭다.
+- intro.js: 오래된 API, React 통합 wrapper가 별도 패키지로 분리되어 있어 유지보수 부담.
+- 자체 구현: Tailwind로 가능하지만 spotlight 마스크 + 포지셔닝 계산 비용이 높다.
 
 ---
 

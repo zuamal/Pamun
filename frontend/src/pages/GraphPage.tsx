@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Joyride, type EventHandler } from 'react-joyride'
 import { listEdges, updateEdge, createEdge, deleteEdge } from '../api/edges'
 import { listDocuments } from '../api/documents'
 import { saveSession } from '../api/impact'
 import { isDemoMode } from '../lib/demoApi'
 import { useGraphStore } from '../stores/graphStore'
+import { useTourStore, hasTourBeenSeen, markTourSeen } from '../stores/tourStore'
+import { GRAPH_STEPS, JOYRIDE_OPTIONS, JOYRIDE_LOCALE } from '../lib/tourSteps'
 import RequirementGraph from '../components/RequirementGraph'
 import NodeDetailPanel from '../components/NodeDetailPanel'
 import EdgeReviewPanel from '../components/EdgeReviewPanel'
@@ -33,6 +36,16 @@ export default function GraphPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null)
+
+  const { isRunning, tourKey, setRunning } = useTourStore()
+  const runTour = isRunning || (isDemoMode() && !hasTourBeenSeen('graph'))
+
+  const handleTourCallback: EventHandler = (data) => {
+    if (data.status === 'finished' || data.status === 'skipped') {
+      markTourSeen('graph')
+      setRunning(false)
+    }
+  }
 
   useEffect(() => {
     void (async () => {
@@ -152,6 +165,16 @@ export default function GraphPage() {
   }
 
   return (
+    <>
+    <Joyride
+      key={tourKey}
+      steps={GRAPH_STEPS}
+      run={runTour}
+      continuous
+      options={JOYRIDE_OPTIONS}
+      locale={JOYRIDE_LOCALE}
+      onEvent={handleTourCallback}
+    />
     <div className="flex h-full flex-col bg-slate-50">
       {/* Header toolbar */}
       <div className="flex items-center px-5 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
@@ -170,7 +193,7 @@ export default function GraphPage() {
       {/* Body */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Graph area — full height */}
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-hidden relative" data-tour="graph-area">
           <RequirementGraph
             requirements={requirements}
             edges={edges}
@@ -186,6 +209,7 @@ export default function GraphPage() {
         <AnimatePresence mode="wait">
           <motion.div
             key="normal-panel"
+            data-tour="edge-panel"
             className="w-80 border-l border-slate-200 flex flex-col bg-slate-50 overflow-hidden"
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -256,5 +280,6 @@ export default function GraphPage() {
         />
       )}
     </div>
+    </>
   )
 }
