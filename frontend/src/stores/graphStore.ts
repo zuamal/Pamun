@@ -11,21 +11,23 @@ interface GraphStore {
   setRequirements: (reqs: Requirement[]) => void
   setEdges: (edges: Edge[]) => void
 
-  // Frontend-only graph state
-  zoom: number
-  layout: 'dagre' | 'force'
-  setZoom: (zoom: number) => void
-  setLayout: (layout: 'dagre' | 'force') => void
-
   // Filter state
   hiddenDocIds: string[]
   showPending: boolean
   toggleDocFilter: (docId: string) => void
   setShowPending: (show: boolean) => void
 
-  // Pending handle-drag connection
+  // Click-to-connect: intermediate source selection
+  pendingSource: string | null
+  setPendingSource: (id: string | null) => void
+
+  // Edge creation modal (source + target confirmed)
   pendingConnection: { sourceId: string; targetId: string } | null
   setPendingConnection: (conn: { sourceId: string; targetId: string } | null) => void
+
+  // Pinned node positions (survive data refresh)
+  pinnedNodes: Record<string, { x: number; y: number }>
+  setPinnedNode: (id: string, pos: { x: number; y: number } | null) => void
 }
 
 export const useGraphStore = create<GraphStore>((set, get) => ({
@@ -33,11 +35,6 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   edges: [],
   setRequirements: (reqs) => set({ requirements: reqs }),
   setEdges: (edges) => set({ edges }),
-
-  zoom: 1,
-  layout: 'dagre',
-  setZoom: (zoom) => set({ zoom }),
-  setLayout: (layout) => set({ layout }),
 
   hiddenDocIds: [],
   showPending: true,
@@ -51,6 +48,20 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   },
   setShowPending: (show) => set({ showPending: show }),
 
+  pendingSource: null,
+  setPendingSource: (id) => set({ pendingSource: id }),
+
   pendingConnection: null,
   setPendingConnection: (conn) => set({ pendingConnection: conn }),
+
+  pinnedNodes: {},
+  setPinnedNode: (id, pos) =>
+    set((state) => {
+      if (pos === null) {
+        const next = { ...state.pinnedNodes }
+        delete next[id]
+        return { pinnedNodes: next }
+      }
+      return { pinnedNodes: { ...state.pinnedNodes, [id]: pos } }
+    }),
 }))

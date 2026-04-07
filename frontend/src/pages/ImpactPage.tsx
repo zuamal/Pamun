@@ -328,10 +328,10 @@ export default function ImpactPage() {
                   requirements={requirements}
                   edges={edges}
                   selectedNodeId={null}
-                  onNodeClick={() => {}}
-                  onEdgeClick={() => {}}
-                  onConnect={() => {}}
-                  impactMode={true}
+                  onNodeClick={() => undefined}
+                  onEdgeClick={() => undefined}
+                  onConnect={() => undefined}
+                  impactMode
                   impactResult={impactResult}
                 />
               </>
