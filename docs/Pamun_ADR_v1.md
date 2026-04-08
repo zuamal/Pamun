@@ -27,7 +27,7 @@
 | ADR-11 | LLM 공급자 | Anthropic Claude (claude-sonnet-4-5) |
 | ADR-12 | 문서 텍스트 추출 | python-docx + pdfplumber + markdown 파싱. Scanned PDF 미지원. |
 | ADR-13 | LLM 장시간 작업 처리 | SSE(Server-Sent Events). 파이프라인 단계별 진행상황 스트리밍. |
-| ADR-14 | 그래프 시각화 라이브러리 | React Flow |
+| ADR-14 | 그래프 시각화 라이브러리 | React Flow ⚠️ ADR-23으로 대체됨 |
 | ADR-15 | 원문 뷰어 | plain text 렌더링 + char offset 기반 하이라이트 |
 | ADR-16 | 프론트엔드 스타일링 | Tailwind CSS. 인라인 style 전면 제거. |
 | ADR-17 | App Shell 레이아웃 | 좌측 고정 Sidebar + 4단계 Stepper (GraphPage/ImpactPage 분리) |
@@ -35,7 +35,8 @@
 | ADR-19 | 데모 배포 아키텍처 | GitHub Pages (정적 SPA) + GitHub Actions 직접 배포 (gh-pages 브랜치 없음) |
 | ADR-20 | 데모 모드 API 처리 | 프론트엔드 mock 레이어. LLM 기능은 비활성화 안내. |
 | ADR-21 | 온보딩 튜토리얼 라이브러리 | react-joyride (spotlight + 툴팁 코치마크) |
-| ADR-22 | Semantic Zoom 구현 방식 | React Flow onViewportChange + Zustand zoomLevel 상태 |
+| ADR-22 | Semantic Zoom 구현 방식 | React Flow onViewportChange + Zustand zoomLevel 상태 ⚠️ ADR-23(F26)으로 대체됨 |
+| ADR-23 | 그래프 시각화 라이브러리 (F26 대개편) | react-force-graph-2d (WebGL/Canvas + d3-force) |
 
 ---
 
@@ -536,7 +537,7 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 **노드 역보정(Counter-scale):** zoom < 0.9 구간에서 노드 내부 컨테이너에 `transform: scale(min(1/zoom, 1.8))`을 적용한다. React Flow가 캔버스 전체를 CSS transform으로 축소하면 노드 내 텍스트도 함께 작아지는데, 역보정으로 라벨을 읽을 수 있는 크기로 유지한다. 상한 1.8은 매우 작은 줌(< 0.56)에서 노드가 지나치게 커지는 것을 방지한다.
 
-**Edge 두께 및 화살표 보정:** zoom < 0.9 구간에서 선 두께와 화살표 마커 크기를 동일한 공식으로 보정한다. `strokeWidth = max(2, 기본값 / zoom)`, `markerSize = max(8, 기본값 / zoom)`. 줌 아웃 시 선과 화살표가 함께 사라지듯 작아지는 현상을 방지한다.
+**Edge 두께 보정:** zoom < 0.9 구간에서 `strokeWidth = max(2, 기본값 / zoom)`으로 두께를 보정한다. 화살표 마커는 별도 보정하지 않는다. SVG `<marker>`의 기본 `markerUnits="strokeWidth"` 속성에 의해 마커 크기가 strokeWidth에 자동 비례하므로, strokeWidth만 보정하면 화살표도 함께 보정된다. 마커에 추가 보정을 적용하면 strokeWidth 보정과 이중 적용되어 화살표가 의도보다 커지는 현상이 발생한다.
 
 **임계값:** zoom < 0.9 (overview), 0.9–1.2 (normal), > 1.2 (detail). 구현 중 미세 조정 가능.
 
@@ -546,6 +547,37 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 - React Flow `useViewport` hook 직접 사용: 노드 컴포넌트 내부에서 호출 가능하지만, 매 viewport 변경마다 모든 노드가 리렌더링되어 성능 부담. store에 debounce 적용으로 완화.
 - CSS zoom 기반: React Flow 내부 스케일과 충돌하여 좌표 계산 오류 발생.
 - `nodeOrigin` + `transform-origin` 조합: 노드 위치 계산과 얽혀 레이아웃 오류 발생 가능.
+
+---
+
+## ADR-23. 그래프 시각화 라이브러리: react-force-graph-2d (ADR-14 대체)
+
+**Context:** 요구사항 의존관계 그래프가 정적인 DAG 레이아웃의 한계를 넘어, 노드 수 증가에도 가독성을 유지하고 의존성 파급 효과를 직관적으로 전달하는 "살아있는 네트워크"로 발전해야 한다.
+
+**Decision:** `@xyflow/react`(React Flow) + `@dagrejs/dagre`를 제거하고, `react-force-graph-2d`(WebGL/Canvas + d3-force)로 교체한다. GraphPage와 ImpactPage의 그래프 뷰 모두 교체한다.
+
+**핵심 선택 이유:**
+
+| 기준 | React Flow (이전) | react-force-graph-2d (현재) |
+|------|-------------------|-----------------------------|
+| 렌더링 방식 | DOM/SVG | WebGL/Canvas |
+| 노드 수 한계 | ~100개 이상 성능 저하 | 수천 개도 60fps 유지 |
+| 레이아웃 | 정적 Dagre | d3-force 물리 엔진 (동적) |
+| 파티클 애니메이션 | 불가 | `linkDirectionalParticles` 내장 |
+| Semantic Zoom | CSS transform 역보정 필요 | Canvas 좌표계에서 폰트 크기 직접 제어 |
+
+**트레이드오프:**
+- Canvas 기반이므로 DOM/CSS 스타일링 불가. 노드 렌더링을 `nodeCanvasObject` 콜백에서 Canvas 2D API로 직접 구현해야 한다.
+- React Flow의 핸들 드래그 방식 Edge 생성 불가 → 클릭-투-커넥트 방식으로 대체.
+- 접근성(a11y) 측면에서 Canvas는 스크린 리더 지원이 제한적. 포트폴리오 데모 규모에서 수용 가능.
+
+**Semantic Zoom:** Canvas 좌표계에서 카메라 줌에 따라 `ctx.font` 크기를 직접 계산하므로 ADR-22의 CSS 역보정이 불필요하다.
+
+**Alternatives:**
+- Cytoscape.js: 오래된 생태계, React 통합이 어색하다.
+- D3.js 직접 사용: 구현 자유도는 높지만 React 상태와의 동기화 비용이 크다.
+- Three.js / react-force-graph-3d: 3D는 텍스트 레이블 가독성이 낮아 제외.
+- React Flow 유지: 노드 수 증가 시 성능 한계, 파티클 구현 불가.
 
 ---
 

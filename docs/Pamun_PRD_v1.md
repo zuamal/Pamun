@@ -89,13 +89,16 @@ GraphPage는 Edge 검토·관리에 집중한다. 영향 분석 모드는 별도
 | ID | Requirement |
 |----|-------------|
 | FR-3.1 | 승인된 연결만으로 구성된 요구사항 의존관계 그래프를 표시한다. |
-| FR-3.2 | 노드 디자인: 폭 220px 고정, 높이 80px 고정. 상단 행에 문서 색상 도트 + 요구사항 ID 라벨(11–12px) + 우측 APPROVED 연결 수 뱃지 배치. 하단 영역에 요약 제목(sm/14px, line-clamp-2). 문서별 색상 구분은 테두리 색상 + 라벨 앞 색상 도트 두 가지로 표시한다. 엣지: 관계 유형(depends_on / related_to). |
+| FR-3.2 | **노드 디자인 (Canvas):** WebGL/Canvas 기반 렌더링. 문서별 고유 색상의 원형 노드. 줌 레벨에 따라 레이블과 제목이 Canvas 2D API(`ctx.fillText`)로 그려진다. Impact 상태(changed/affected/review_recommended)는 노드 외곽 글로우 또는 링으로 표현한다. |
 | FR-3.3 | 노드 클릭 시 해당 요구사항 상세 패널 표시: 원문 범위, 연결된 요구사항 목록, 근거 문장. |
-| FR-3.4 | 그래프에서 직접 연결을 추가/삭제할 수 있다 (FR-2.4, FR-2.5의 UI). |
-| FR-3.5 | 우측 Edge 검토 카드에서 hover 시 그래프의 해당 Edge가 강조된다(두께 증가 + 색상 강조). Edge 카드와 그래프 간 시각적 대응을 제공한다. |
-| FR-3.6 | Edge 라벨은 기본 숨김. 선 스타일로만 관계 유형을 구분한다: `depends_on` = 실선 + 단방향 화살표, `related_to` = 점선 + 양방향 화살표. Edge hover 시 라벨(관계 유형) + evidence + confidence 수치를 툴팁으로 표시한다. |
-| FR-3.7 | Semantic Zoom: 줌 레벨에 따라 노드 콘텐츠와 Edge 두께를 보정한다. **노드:** (1) zoom ≤ 0.3 — 색상 도트만 표시(극축소). (2) 0.3 < zoom < 0.9 — 색상 도트 + ID 라벨만 표시. (1)·(2) 구간에서 노드 내부에 `scale(min(1/zoom, 1.8))` 역보정을 적용하여 요소가 읽히는 크기를 유지한다. (3) zoom 0.9–1.2 — 라벨 + 제목 1줄(`line-clamp-1`), 보정 없음. (4) zoom > 1.2 — 라벨 + 제목 2줄 + 연결 수 뱃지, 보정 없음. **Edge:** zoom < 0.9 시 선 두께와 화살표 마커 크기를 동일한 방식으로 보정한다. `strokeWidth = max(2, 기본값 / zoom)`, `markerSize = max(8, 기본값 / zoom)`. zoom ≥ 0.9에서는 현행 두께(approved 2px, impact 3px) 및 마커 크기 유지. 임계값(0.9 / 1.2)은 구현 중 미세 조정 가능. |
-| FR-3.8 | 그래프 좌측 하단에 범례 패널을 배치한다. 기본 펼침 상태. 클릭으로 접기/펼치기 가능. 현재 그래프에 표시 중인 문서 목록(색상 도트 + 파일명)과 Edge 선 스타일(실선/점선/점선-pending) 안내를 동적으로 표시한다. ImpactPage에서는 영향 분석 상태 범례(changed/affected/review_recommended)를 추가 표시한다. |
+| FR-3.4 | 수동 Edge 추가: source 노드 클릭으로 선택(강조) → target 노드 클릭으로 Edge 생성 모달 오픈. 기존 React Flow 핸들 드래그 방식을 대체한다. |
+| FR-3.5 | 우측 Edge 검토 카드에서 hover 시 그래프의 해당 Edge가 강조된다(두께 증가 + 색상 강조). |
+| FR-3.6 | Edge 라벨은 기본 숨김. 선 스타일로만 구분한다: `depends_on` = 실선 + 단방향 화살표, `related_to` = 점선 + 양방향 화살표. Edge hover 시 관계 유형 + evidence + confidence 수치를 툴팁으로 표시한다. |
+| FR-3.7 | **Semantic Zoom (Level of Detail):** 카메라 줌 레벨에 따라 Canvas 렌더링 디테일을 조절한다. (1) zoom ≤ 0.3 — 색상 도트만. (2) 0.3 < zoom < 0.9 — 도트 + ID 라벨. (3) 0.9–1.2 — 라벨 + 제목 1줄 Fade-in. (4) zoom > 1.2 — 라벨 + 제목 + 연결 수. Canvas 좌표계에서 직접 폰트 크기를 보정하므로 역보정 CSS transform이 불필요하다. Edge 두께는 `max(2, 기본값 / zoom)`으로 보정한다. |
+| FR-3.8 | 그래프 좌측 하단에 DOM 오버레이 범례 패널을 배치한다. 기본 펼침. 현재 그래프의 문서 목록(색상 도트 + 파일명)과 Edge 선 스타일 안내를 동적으로 표시한다. ImpactPage에서는 영향 분석 상태 범례를 추가 표시한다. |
+| FR-3.9 | **포커스 모드 (Neighborhood Ghosting):** 노드 hover 시 해당 노드와 1-hop 연결 노드/Edge만 불투명 유지. 나머지 노드는 opacity 10%로 페이드아웃. hover 해제 시 전체 복원. |
+| FR-3.10 | **물리 레이아웃:** d3-force 엔진으로 노드 배치. `depends_on` 연결 거리 > `related_to` 연결 거리. 척력(repulsion)으로 노드 겹침 방지. 노드 드래그로 위치 고정(pin) 가능. 고정 노드를 기준으로 나머지가 재정렬된다. |
+| FR-3.11 | **파티클 애니메이션 (Impact Mode):** ImpactPage에서 `changed` 노드 설정 시, 영향받는 노드 방향으로 Edge를 따라 빛나는 파티클이 흐르는 애니메이션을 표시한다(`linkDirectionalParticles`). |
 
 ### 3.4 변경 영향 분석 (Step 4 — ImpactPage)
 
@@ -145,7 +148,7 @@ GraphPage는 Edge 검토·관리에 집중한다. 영향 분석 모드는 별도
 | FR-7.1 | **[UploadPage]** 파일 드래그 중 드롭존 테두리가 강조되고 아이콘 애니메이션이 활성화된다. 업로드된 파일은 파일 유형 아이콘·용량·삭제 버튼을 포함한 카드 형태로 표시한다. |
 | FR-7.2 | **[ReviewPage]** 요구사항 목록을 문서 단위 Accordion으로 그룹화한다. 여러 항목을 체크박스로 다중 선택 시 화면 하단에 병합·삭제 액션 바(Floating Action Bar)가 노출된다. |
 | FR-7.3 | **[ReviewPage]** Split 액션은 offset 숫자 입력 방식을 유지하되, 레이아웃과 스타일만 개선한다. |
-| FR-7.4 | **[GraphPage]** 엣지 생성 방식을 버튼 클릭 방식에서 React Flow Handle 드래그&드롭 방식으로 전환한다. 노드 핸들을 드래그하여 다른 노드에 드롭하면 Edge 생성 모달이 열린다. |
+| FR-7.4 | **[GraphPage]** 수동 Edge 추가는 클릭-투-커넥트 방식으로 동작한다. source 노드 클릭 시 선택 강조, 이후 target 노드 클릭 시 Edge 생성 모달이 열린다. (React Flow 핸들 드래그 방식 대체 — F26) |
 | FR-7.5 | **[GraphPage]** 우측 하단에 미니맵을 추가한다. 문서별·Edge 상태별 필터 컨트롤을 제공한다. |
 | FR-7.6 | **[GraphPage]** Edge 검토 패널에서 승인/거부 버튼 영역을 키우고 confidence 점수를 시각화하여 빠른 검토를 지원한다. |
 | FR-7.7 | **[ImpactPage]** 좌측 패널의 요구사항 카드에 changed 토글을 포함한다. 토글 활성화 시 해당 요구사항 카드에 주황 강조를 즉시 반영한다. |
