@@ -176,9 +176,9 @@ export default function GraphPage() {
       locale={JOYRIDE_LOCALE}
       onEvent={handleTourCallback}
     />
-    <div className="flex h-full flex-col bg-slate-50">
+    <div className="flex h-full flex-col">
       {/* Header toolbar */}
-      <div className="flex items-center px-5 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
+      <div className="flex items-center px-5 py-2.5 glass-panel border-b gap-3 shrink-0">
         <div className="font-bold text-base text-slate-900 flex-1">의존관계 그래프</div>
         {loading && <span className="text-xs text-slate-400">로딩 중...</span>}
         <button
@@ -214,14 +214,14 @@ export default function GraphPage() {
           <motion.div
             key="normal-panel"
             data-tour="edge-panel"
-            className="w-80 border-l border-slate-200 flex flex-col bg-slate-50 overflow-hidden"
+            className="w-80 border-l glass-panel flex flex-col overflow-hidden transition-transform duration-300 ease-out"
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
             {/* Panel tabs */}
-            <div className="flex border-b border-slate-200 bg-white shrink-0">
+            <div className="flex border-b border-white/30 dark:border-slate-600/30 shrink-0">
               <button
                 onClick={() => setActivePanel('review')}
                 className={[
@@ -252,6 +252,7 @@ export default function GraphPage() {
                 <EdgeReviewPanel
                   pendingEdges={pendingEdges}
                   requirements={requirements}
+                  documents={documents}
                   onApprove={handleApprove}
                   onReject={handleReject}
                   onEdgeHover={setHoveredEdgeId}

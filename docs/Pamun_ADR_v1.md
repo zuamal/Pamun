@@ -581,6 +581,40 @@ data: {"step":"done","message":"추론 완료 — Edge 8개 생성","progress":1
 
 ---
 
+## ADR-24. UI 비주얼 고도화: Pretendard + Framer Motion + Glassmorphism
+
+**날짜:** 2026-04-10
+**상태:** Accepted
+**관련 Feature:** F27
+
+### 결정
+
+1. **Pretendard** 폰트를 전체 UI에 적용한다. CDN 방식(dynamic subset `woff2`)으로 제공한다.
+2. **Framer Motion**을 도입하여 리스트 자리 이동 애니메이션, 모달 Spring 등장, ImpactPage stagger를 구현한다.
+3. **Glassmorphism**(`bg-white/70 backdrop-blur-md`)을 모든 DOM 패널·카드·모달에 적용한다. 캔버스 배경은 제외한다.
+4. **다크 모드**는 `darkMode: 'media'`(시스템 설정 자동 감지)만 지원한다. 수동 토글 없음.
+
+### 이유
+
+**Pretendard:** 앱 내 한국어 텍스트 비중이 높다. 시스템 폰트(Apple SD Gothic Neo, Malgun Gothic)는 기기마다 렌더링 품질이 다르고 Inter/Outfit은 한글 미지원이다. Pretendard Variable은 한글·영문 혼용 최적화로 일관된 타이포그래피를 제공하며 CDN subset 방식으로 번들 크기 증가를 최소화한다.
+
+**Framer Motion:** CSS transition만으로는 React 리스트의 DOM 삽입·삭제 시 레이아웃 이동 애니메이션이 불가능하다. `layout` prop이 이를 자동 처리한다. Spring 물리 애니메이션은 CSS cubic-bezier보다 자연스럽다. 번들 크기(~50KB gzip)는 포트폴리오 데모 맥락에서 허용 가능하다.
+
+**Glassmorphism:** 배경 그라데이션 메시 위에 패널이 반투명하게 올라오는 효과는 다크 코스모스 캔버스와 밝은 DOM 패널 사이의 시각적 연결을 만든다. `backdrop-filter` 브라우저 지원은 2024년 기준 95% 이상으로 안정적이다.
+
+**다크 모드 토글 미제공:** 수동 토글을 위해서는 `localStorage` 영속화 + ThemeProvider 레이어가 필요하다. 포트폴리오 MVP에서 개발 비용 대비 효과가 낮다. 시스템 설정 자동 감지로 대부분의 다크 모드 사용자 커버 가능.
+
+### 대안 검토
+
+| 대안 | 거부 이유 |
+|------|-----------|
+| Inter + 한글 시스템 폰트 | 한글 렌더링 불일치, 포트폴리오 완성도 저하 |
+| React Spring | Framer Motion보다 API 복잡도 높음, 학습 비용 |
+| CSS transition만 사용 | 리스트 레이아웃 이동 애니메이션 불가 |
+| 수동 다크 모드 토글 | MVP 범위 초과, ThemeProvider 복잡도 |
+
+---
+
 ## Appendix A: Pydantic Schema Code
 
 All models below serve as the Single Source of Truth for the entire system. FastAPI uses these for request/response validation, OpenAPI spec generation, and Instructor uses them for LLM output validation.

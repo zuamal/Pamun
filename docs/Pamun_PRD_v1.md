@@ -209,6 +209,19 @@ B2B 생산성 툴의 목적성에 맞추어, 데이터의 생성·변경·소멸
 | FR-9.5 | **[Global]** 모달(AddEdgeModal, SplitModal)과 FloatingActionBar에 Glassmorphism(backdrop-blur + 반투명 배경)을 적용한다. 팝업 등장 시 아래에서 위로 Spring 물리 애니메이션으로 튀어 오른다. |
 | FR-9.6 | **[GraphPage]** 핸들 드래그 중 타깃 노드 근방에 진입하면 연결선이 해당 핸들에 자석처럼 스냅되는 시각적 강조(핸들 글로우 또는 강조 링)를 표시한다. |
 
+### 3.13 글로벌 UI 비주얼 고도화
+
+폰트, 색상 체계, 마이크로 인터랙션, 다크 모드를 통일된 디자인 시스템으로 정립한다. 모든 페이지에 일관성 있게 적용한다.
+
+| ID | Requirement |
+|----|-------------|
+| FR-13.1 | **[폰트]** 전체 UI에 Pretendard 폰트를 적용한다. Google Fonts CDN 또는 서브셋 self-host(`woff2`) 방식으로 제공한다. 한글·영문 혼용 최적화로 일관된 타이포그래피를 보장한다. 문서 고유 색상을 나타내는 배지는 원형 도트 대신 `rounded-full` 필 배지(색상 + 파일명)로 표시한다. |
+| FR-13.2 | **[Glassmorphism]** 전 페이지의 카드·패널·모달에 `bg-white/70 backdrop-blur-md border border-white/30` 글라스모피즘을 적용한다. 캔버스(GraphPage/ImpactPage) 배경(#0f1117)과 분리된 DOM 패널에만 적용하며 캔버스 자체에는 적용하지 않는다. |
+| FR-13.3 | **[다크 모드]** `prefers-color-scheme: dark` 시스템 설정을 감지하여 자동으로 다크 모드를 적용한다. 수동 토글은 제공하지 않는다. Tailwind `dark:` 프리픽스로 배경·텍스트·보더·패널 색상을 전환한다. GraphPage/ImpactPage 캔버스 배경(#0f1117)은 다크 모드와 무관하게 고정한다. |
+| FR-13.4 | **[마이크로 애니메이션 — DOM]** 요구사항 카드·Edge 카드·버튼·패널에 hover 시 미세 부상(`-translate-y-1 shadow-xl`) + 전환(`transition-all duration-200`)을 적용한다. ImpactPage의 `affected` 노드 카드는 subtle pulse 애니메이션(`animate-pulse` 또는 커스텀 keyframe)을 표시한다. |
+| FR-13.5 | **[마이크로 애니메이션 — Canvas]** F26 `nodeCanvasObject`에서 hover 노드에 float 효과를 표현한다: `ctx.shadowBlur` 값을 기본 대비 1.5× 확대하고 `scale` 보정 없이 글로우만 강화한다. (기존 F26 Step 3 hover 스케일 1.2× 위에 추가) |
+| FR-13.6 | **[Skeleton + 트랜지션]** Framer Motion(`framer-motion`)을 도입한다. 스피너 대신 shimmer 그라데이션 Skeleton 컴포넌트(`animate-shimmer`)를 사용한다. 리스트 항목 마운트 시 Framer Motion `layout` prop으로 자연스러운 자리 이동 애니메이션을 적용한다. (F13 Skeleton 대체) |
+
 ---
 
 ## 4. Key Design Decisions

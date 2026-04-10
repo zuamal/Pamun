@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Joyride, type EventHandler } from 'react-joyride'
 import { updateRequirement } from '../api/requirements'
@@ -173,15 +174,15 @@ export default function ImpactPage() {
       locale={JOYRIDE_LOCALE}
       onEvent={handleTourCallback}
     />
-    <div className="flex h-full flex-col bg-slate-50">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center px-5 py-2.5 bg-white border-b border-slate-200 gap-3 shrink-0">
-        <div className="font-bold text-base text-slate-900 flex-1">영향 분석</div>
+      <div className="flex items-center px-5 py-2.5 glass-panel border-b gap-3 shrink-0">
+        <div className="font-bold text-base text-slate-900 dark:text-slate-100 flex-1">영향 분석</div>
         {analyzing && <span className="text-xs text-slate-400 animate-pulse">분석 중...</span>}
         <button
           onClick={() => void handleSave()}
           disabled={saving}
-          className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+          className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50/80 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed hover:bg-slate-100 transition-all duration-150"
         >
           {saving ? '저장 중...' : '세션 저장'}
         </button>
@@ -192,7 +193,7 @@ export default function ImpactPage() {
 
         {/* Left panel (resizable) */}
         <div
-          className="flex flex-col border-r border-slate-200 bg-white shrink-0 overflow-hidden"
+          className="flex flex-col border-r glass-panel shrink-0 overflow-hidden"
           style={{ width: panelWidth }}
         >
           {/* Requirements list — top half */}
@@ -213,10 +214,10 @@ export default function ImpactPage() {
                   key={req.id}
                   onClick={() => void handleToggleChanged(req)}
                   className={[
-                    'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer',
+                    'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all duration-200 cursor-pointer hover:-translate-y-px hover:shadow-sm',
                     req.changed
                       ? 'border-orange-300 bg-orange-50'
-                      : 'border-slate-200 bg-white hover:bg-slate-50',
+                      : 'border-slate-200 bg-white/80 hover:bg-slate-50',
                   ].join(' ')}
                 >
                   <div className="flex items-start gap-2">
@@ -269,16 +270,23 @@ export default function ImpactPage() {
                   영향받는 요구사항 없음
                 </p>
               ) : (
-                <ul className="flex flex-col gap-1.5 list-none p-0 m-0">
-                  {allImpactItems.map((item) => (
-                    <ImpactItem
-                      key={item.requirement_id}
-                      item={item}
-                      selected={selectedItem?.requirement_id === item.requirement_id}
-                      onClick={handleItemClick}
-                    />
-                  ))}
-                </ul>
+                <motion.ul
+                  className="flex flex-col gap-1.5 list-none p-0 m-0"
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <AnimatePresence>
+                    {allImpactItems.map((item, index) => (
+                      <ImpactItem
+                        key={item.requirement_id}
+                        item={item}
+                        selected={selectedItem?.requirement_id === item.requirement_id}
+                        onClick={handleItemClick}
+                        index={index}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </motion.ul>
               )}
             </div>
           </div>
@@ -293,7 +301,7 @@ export default function ImpactPage() {
         {/* Right area — tabs */}
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           {/* Tab bar */}
-          <div className="flex border-b border-slate-200 bg-white shrink-0">
+          <div className="flex border-b glass-panel shrink-0">
             <button
               onClick={() => setActiveTab('graph')}
               className={[

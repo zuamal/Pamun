@@ -112,10 +112,14 @@ function drawNode(
     else if (status === 'affected') borderColor = '#ef4444'
     else if (status === 'review_recommended') borderColor = '#eab308'
   }
-  if (hovered || isPendingSource || selected) {
+  if (hovered) {
+    lineWidth = 2.5 / globalScale
+    ctx.shadowBlur = 20 / globalScale
+    ctx.shadowColor = 'rgba(255,255,255,0.6)'
+  } else if (isPendingSource || selected) {
     lineWidth = 2.5 / globalScale
     ctx.shadowBlur = 10 / globalScale
-    ctx.shadowColor = hovered || isPendingSource ? '#ffffff' : '#93c5fd'
+    ctx.shadowColor = isPendingSource ? '#ffffff' : '#93c5fd'
   }
   if (impactMode && status === 'changed') {
     ctx.shadowBlur = 14 / globalScale
