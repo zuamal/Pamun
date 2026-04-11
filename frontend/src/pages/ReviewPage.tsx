@@ -179,7 +179,7 @@ export default function ReviewPage() {
               data-tour="infer-btn"
               onClick={() => void handleInfer()}
               disabled={inferring || requirements.length === 0}
-              className="px-6 py-2.5 rounded-lg border-none bg-violet-700 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-violet-600 transition-colors"
+              className="px-6 py-2.5 rounded-lg border-none bg-violet-700 text-white font-bold text-base cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-violet-600 transition-all duration-150"
             >
               의존관계 추론 시작
             </button>

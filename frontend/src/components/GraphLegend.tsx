@@ -89,21 +89,23 @@ export default function GraphLegend({ documents, showImpactLegend = false }: Gra
             </div>
           )}
 
-          {/* Document colors */}
+          {/* Document colors — pill badges */}
           {docEntries.length > 0 && (
             <div className="flex flex-col gap-1">
               <div className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">문서</div>
-              {docEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center gap-1.5">
+              {docEntries.map((entry) => {
+                const shortName = entry.filename.length > 8 ? entry.filename.slice(0, 8) + '…' : entry.filename
+                return (
                   <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ background: entry.color }}
-                  />
-                  <span className="text-slate-600 truncate" title={entry.filename}>
-                    {entry.filename}
+                    key={entry.id}
+                    className="rounded-full px-2 py-0.5 text-xs font-medium text-white inline-block truncate max-w-full"
+                    style={{ backgroundColor: entry.color }}
+                    title={entry.filename}
+                  >
+                    {shortName}
                   </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

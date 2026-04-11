@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, LayoutGroup } from 'framer-motion'
 import type { components } from '../api/types.generated'
 import RequirementItem from './RequirementItem'
+import { DOC_COLORS } from '../utils/docColors'
 
 type Requirement = components['schemas']['Requirement']
 type Document = components['schemas']['Document']
@@ -46,9 +47,11 @@ export default function RequirementList({
   return (
     <LayoutGroup>
       <div className="flex flex-col gap-3">
-        {groups.map(({ docId, docName, items }) => {
+        {groups.map(({ docId, docName, items }, groupIndex) => {
           const isOpen = openGroups[docId] ?? true
           const selectedInGroup = items.filter((r) => selectedIds.includes(r.id)).length
+          const color = DOC_COLORS[groupIndex % DOC_COLORS.length]
+          const shortName = docName.length > 8 ? docName.slice(0, 8) + '…' : docName
           return (
             <div key={docId} className="border border-slate-200 rounded-xl overflow-hidden">
               {/* Accordion header */}
@@ -64,8 +67,12 @@ export default function RequirementList({
                 >
                   ▶
                 </span>
-                <span className="flex-1 font-semibold text-sm text-slate-800 truncate">
-                  📄 {docName}
+                <span
+                  className="rounded-full px-2 py-0.5 text-xs font-medium text-white shrink-0"
+                  style={{ backgroundColor: color }}
+                  title={docName}
+                >
+                  {shortName}
                 </span>
                 {selectedInGroup > 0 && (
                   <span className="text-[10px] font-bold bg-blue-500 text-white rounded-full px-1.5 py-0.5 shrink-0">

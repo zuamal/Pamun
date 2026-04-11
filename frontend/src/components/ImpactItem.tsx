@@ -7,26 +7,28 @@ interface ImpactItemProps {
   item: ImpactItemData
   onClick: (item: ImpactItemData) => void
   selected: boolean
+  index?: number
 }
 
-// FR-9.4: item-level variants for stagger parent (transition set on the element, not here)
 export const itemVariants = {
   hidden: { opacity: 0, y: 12 },
   visible: { opacity: 1, y: 0 },
 }
 
-export default function ImpactItem({ item, onClick, selected }: ImpactItemProps) {
+export default function ImpactItem({ item, onClick, selected, index = 0 }: ImpactItemProps) {
   const isAffected = item.impact_level === 'affected'
 
   return (
     <motion.li
       variants={itemVariants}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      transition={{ delay: index * 0.08, duration: 0.25, ease: 'easeOut' }}
       onClick={() => onClick(item)}
       className={[
-        'px-3 py-2.5 rounded-lg border cursor-pointer transition-all list-none',
+        'px-3 py-2.5 rounded-lg border cursor-pointer transition-all list-none hover:-translate-y-0.5 hover:shadow-md',
         isAffected
-          ? selected ? 'border-red-300 bg-red-50 shadow-[0_0_0_2px_#ef444433]' : 'border-red-200 bg-white'
+          ? selected
+            ? 'border-red-300 bg-red-50 shadow-[0_0_0_2px_#ef444433] animate-impact-pulse'
+            : 'border-red-200 bg-white animate-impact-pulse'
           : selected ? 'border-yellow-300 bg-amber-50 shadow-[0_0_0_2px_#f59e0b33]' : 'border-yellow-200 bg-white',
       ].join(' ')}
     >

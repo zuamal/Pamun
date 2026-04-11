@@ -84,6 +84,11 @@ def _relink_edges(old_id: str, new_id: str, seen: set[tuple[str, str]]) -> None:
         if store.graph.has_edge(edge.source_id, edge.target_id):
             store.graph.remove_edge(edge.source_id, edge.target_id)
 
+        # Discard self-loops
+        if new_source == new_target:
+            del store.edges[eid]
+            continue
+
         if pair in seen:
             # Duplicate — discard this edge
             del store.edges[eid]

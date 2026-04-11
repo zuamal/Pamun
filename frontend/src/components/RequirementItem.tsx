@@ -45,8 +45,10 @@ export default function RequirementItem({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className={[
-        'border rounded-lg px-4 py-3 flex flex-col gap-1.5 transition-colors',
-        isSelected ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300',
+        'border rounded-lg px-4 py-3 flex flex-col gap-1.5 transition-all duration-200',
+        isSelected
+          ? 'border-blue-400 bg-blue-50'
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:-translate-y-1 hover:shadow-xl',
       ].join(' ')}
     >
       <div className="flex items-center gap-2">

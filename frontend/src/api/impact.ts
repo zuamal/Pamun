@@ -15,6 +15,7 @@ export async function getImpact(): Promise<ImpactResponse> {
 }
 
 export async function saveSession(): Promise<SessionSaveResponse> {
+  if (isDemoMode()) throw new Error('데모 모드에서는 세션 저장이 지원되지 않습니다')
   const res = await fetch(`${BASE}/session/save`, { method: 'POST' })
   if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.detail ?? '요청 실패') }
   return res.json() as Promise<SessionSaveResponse>
