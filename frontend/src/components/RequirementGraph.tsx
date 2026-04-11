@@ -263,6 +263,7 @@ interface RequirementGraphProps {
   onNodeClick: (req: Requirement) => void
   onEdgeClick: (edgeId: string) => void
   onConnect: (sourceId: string, targetId: string) => void
+  connectMode?: boolean
   impactMode?: boolean
   impactResult?: ImpactResult | null
   hoveredEdgeId?: string | null
@@ -275,6 +276,7 @@ export default function RequirementGraph({
   onNodeClick,
   onEdgeClick,
   onConnect,
+  connectMode = false,
   impactMode = false,
   impactResult = null,
   hoveredEdgeId = null,
@@ -368,6 +370,7 @@ export default function RequirementGraph({
     pendingSource,
     hoveredEdgeId,
     hoveredLinkId: null as string | null,
+    connectMode,
     impactMode,
     affectedIds,
     reviewIds,
@@ -380,6 +383,7 @@ export default function RequirementGraph({
       pendingSource,
       hoveredEdgeId,
       hoveredLinkId: hoveredLink?.id ?? null,
+      connectMode,
       impactMode,
       affectedIds,
       reviewIds,
@@ -442,12 +446,16 @@ export default function RequirementGraph({
   const handleNodeClick = useCallback((node: NodeObject<GraphNode>) => {
     const n = node as GraphNode
     if (impactMode) return
-    const { pendingSource: ps } = optsRef.current
+    const { pendingSource: ps, connectMode: cm } = optsRef.current
     if (ps) {
+      // Second click: complete connection or cancel if same node
       if (ps !== n.id) {
         onConnect(ps, n.id)
       }
       setPendingSource(null)
+    } else if (cm) {
+      // Connect mode active, no source yet: select this node as source
+      setPendingSource(n.id)
     } else {
       const req = requirements.find((r) => r.id === n.id)
       if (req) onNodeClick(req)

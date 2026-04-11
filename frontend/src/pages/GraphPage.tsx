@@ -29,6 +29,7 @@ export default function GraphPage() {
     setEdges,
     pendingConnection,
     setPendingConnection,
+    setPendingSource,
   } = useGraphStore()
 
   const [documents, setDocuments] = useState<Record<string, string>>({})
@@ -37,6 +38,7 @@ export default function GraphPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null)
+  const [connectMode, setConnectMode] = useState(false)
 
   const { isRunning, tourKey, setRunning } = useTourStore()
   const runTour = isRunning || (isDemoMode() && !hasTourBeenSeen('graph'))
@@ -87,6 +89,7 @@ export default function GraphPage() {
 
   const handleConnect = useCallback((sourceId: string, targetId: string) => {
     setPendingConnection({ sourceId, targetId })
+    setConnectMode(false)
   }, [setPendingConnection])
 
   const handleApprove = useCallback(async (edgeId: string) => {
@@ -143,6 +146,17 @@ export default function GraphPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setConnectMode(false)
+        setPendingSource(null)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [setPendingSource])
+
   const pendingSourceReq = pendingConnection
     ? requirements.find((r) => r.id === pendingConnection.sourceId) ?? null
     : null
@@ -182,6 +196,22 @@ export default function GraphPage() {
         <div className="font-bold text-base text-slate-900 flex-1">의존관계 그래프</div>
         {loading && <span className="text-xs text-slate-400">로딩 중...</span>}
         <button
+          onClick={() => {
+            const next = !connectMode
+            setConnectMode(next)
+            if (!next) setPendingSource(null)
+          }}
+          title={connectMode ? '연결 모드 취소 (ESC)' : '노드를 클릭해 Edge를 추가합니다'}
+          className={[
+            'px-4 py-1.5 rounded-lg border text-[13px] cursor-pointer transition-all duration-150',
+            connectMode
+              ? 'bg-blue-500 border-blue-500 text-white hover:bg-blue-600'
+              : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100',
+          ].join(' ')}
+        >
+          {connectMode ? '연결 중... (취소)' : '노드 연결'}
+        </button>
+        <button
           onClick={() => void handleSave()}
           disabled={saving || isDemoMode()}
           title={isDemoMode() ? '데모 모드에서는 세션 저장이 지원되지 않습니다' : undefined}
@@ -205,6 +235,7 @@ export default function GraphPage() {
             onNodeClick={handleNodeClick}
             onEdgeClick={handleEdgeClick}
             onConnect={handleConnect}
+            connectMode={connectMode}
             hoveredEdgeId={hoveredEdgeId}
           />
         </div>

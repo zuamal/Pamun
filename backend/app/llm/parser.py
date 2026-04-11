@@ -85,12 +85,24 @@ def parse_document(doc: Document) -> list[Requirement]:
         char_start = max(0, min(char_start, len(raw)))
         char_end = max(char_start, min(char_end, len(raw)))
 
-        # If the extracted text doesn't match, try to find it
+        # If the extracted text doesn't match, find the nearest occurrence
         if raw[char_start:char_end] != parsed_req.original_text:
-            pos = raw.find(parsed_req.original_text)
-            if pos != -1:
-                char_start = pos
-                char_end = pos + len(parsed_req.original_text)
+            text = parsed_req.original_text
+            best_pos = -1
+            best_dist: float = float('inf')
+            search_from = 0
+            while True:
+                pos = raw.find(text, search_from)
+                if pos == -1:
+                    break
+                dist = abs(pos - parsed_req.char_start)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_pos = pos
+                search_from = pos + 1
+            if best_pos != -1:
+                char_start = best_pos
+                char_end = best_pos + len(text)
 
         req = Requirement(
             id=str(uuid.uuid4()),

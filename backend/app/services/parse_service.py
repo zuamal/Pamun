@@ -31,6 +31,17 @@ def parse_documents(documents: list[Document]) -> list[Requirement]:
             if req.location.document_id == doc.id
         ]
         for req_id in existing_ids:
+            # Remove edges referencing this requirement before deleting it
+            edge_ids = [
+                eid for eid, e in store.edges.items()
+                if e.source_id == req_id or e.target_id == req_id
+            ]
+            for eid in edge_ids:
+                edge = store.edges.pop(eid)
+                if store.graph.has_edge(edge.source_id, edge.target_id):
+                    store.graph.remove_edge(edge.source_id, edge.target_id)
+            if store.graph.has_node(req_id):
+                store.graph.remove_node(req_id)
             del store.requirements[req_id]
 
         new_reqs = parse_document(doc)
@@ -66,6 +77,16 @@ def stream_parse_documents(documents: list[Document]) -> Iterator[str]:
             if req.location.document_id == doc.id
         ]
         for req_id in existing_ids:
+            edge_ids = [
+                eid for eid, e in store.edges.items()
+                if e.source_id == req_id or e.target_id == req_id
+            ]
+            for eid in edge_ids:
+                edge = store.edges.pop(eid)
+                if store.graph.has_edge(edge.source_id, edge.target_id):
+                    store.graph.remove_edge(edge.source_id, edge.target_id)
+            if store.graph.has_node(req_id):
+                store.graph.remove_node(req_id)
             del store.requirements[req_id]
 
         try:

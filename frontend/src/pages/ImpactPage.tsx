@@ -181,7 +181,8 @@ export default function ImpactPage() {
         {analyzing && <span className="text-xs text-slate-400 animate-pulse">분석 중...</span>}
         <button
           onClick={() => void handleSave()}
-          disabled={saving}
+          disabled={saving || isDemoMode()}
+          title={isDemoMode() ? '데모 모드에서는 세션 저장이 지원되지 않습니다' : undefined}
           className="px-4 py-1.5 rounded-lg border border-slate-200 bg-slate-50/80 text-slate-600 cursor-pointer text-[13px] disabled:opacity-70 disabled:cursor-not-allowed hover:bg-slate-100 transition-all duration-150"
         >
           {saving ? '저장 중...' : '세션 저장'}
